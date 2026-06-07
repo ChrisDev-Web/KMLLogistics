@@ -10,9 +10,13 @@ using E1___Sosa_Morales.Services.Provincias;
 
 using E1___Sosa_Morales.Services.Regiones;
 
+using E1___Sosa_Morales.Services.Roles;
+
 using E1___Sosa_Morales.Services.TiposDocumento;
 
 using E1___Sosa_Morales.Services.Users;
+
+using E1___Sosa_Morales.Services.Usuarios;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -49,6 +53,10 @@ builder.Services.AddScoped<IRegionService, RegionService>();
 builder.Services.AddScoped<IProvinceService, ProvinceService>();
 
 builder.Services.AddScoped<IDistrictService, DistrictService>();
+
+builder.Services.AddScoped<IRoleService, RoleService>();
+
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 

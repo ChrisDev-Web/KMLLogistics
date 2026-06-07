@@ -1,6 +1,7 @@
 using E1___Sosa_Morales.Data;
 using E1___Sosa_Morales.Models.Roles;
 using E1___Sosa_Morales.Models.Users;
+using E1___Sosa_Morales.Models.Usuarios;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -32,9 +33,11 @@ public class UserService : IUserService
 
     public async Task<List<Role>> GetActiveRolesAsync()
     {
-        return await _context.Database
-            .SqlQueryRaw<Role>("EXEC sp_role_list_active")
+        var options = await _context.Database
+            .SqlQueryRaw<UsuarioRoleOption>("EXEC dbo.sp_role_list_select_active")
             .ToListAsync();
+
+        return options.Select(o => new Role { IdRole = o.IdRole, Name = o.Name }).ToList();
     }
 
     public async Task<(bool Success, string Message)> RegisterAsync(string username, string password, int idRole)

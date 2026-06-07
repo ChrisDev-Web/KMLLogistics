@@ -6,16 +6,140 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Roles/roles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Roles/roles.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="rol" id="rolRoot">
+    <div class="rol__panel">
+        <div class="rol__toolbar">
+            <div class="rol__search-group">
+                <div class="rol__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="rolSearchInput" placeholder="Buscar en Roles" autocomplete="off" />
+                </div>
+                <button type="button" class="rol__btn rol__btn--ghost" id="rolClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="rol__actions">
+                <button type="button" class="rol__btn rol__btn--outline" id="rolInactiveBtn">Ver inactivos</button>
+                <button type="button" class="rol__btn rol__btn--primary" id="rolCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="rolToast" class="rol__toast" role="status" aria-live="polite"></div>
+        <div class="rol__table-scroll" id="rolTableScroll">
+            <table class="rol__table" id="rolActiveTable">
+                <thead><tr>
+                        <th>ID_ROLE</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th class="rol__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="rolActiveBody">
+                    <tr class="rol__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="rol__footer">
+            <div class="rol__page-size">
+                <span>Mostrar</span>
+                <select id="rolPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="rol__pagination">
+                <span id="rolPageInfo">Página 1 de 1</span>
+                <button type="button" class="rol__btn rol__btn--ghost" id="rolPrevBtn" disabled>Anterior</button>
+                <button type="button" class="rol__btn rol__btn--ghost" id="rolNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="rol-modal" id="rolFormModal" aria-hidden="true">
+    <div class="rol-modal__backdrop"></div>
+    <div class="rol-modal__dialog" role="dialog" aria-modal="true">
+        <div class="rol-modal__header">
+            <h3 id="rolFormModalTitle">Crear</h3>
+            <button type="button" class="rol-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="rolForm" class="rol-modal__body" novalidate>
+            <input type="hidden" id="rolFormId" value="" />
+            <div class="rol-field"><label for="rolName">Nombre *</label><input type="text" id="rolName" name="name" required maxlength="50" /></div>
+            <div class="rol-field"><label for="rolDescription">Descripción</label><textarea id="rolDescription" name="description" rows="3" maxlength="255"></textarea></div>
+        </form>
+        <div class="rol-modal__footer">
+            <button type="button" class="rol__btn rol__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="rol__btn rol__btn--primary" id="rolFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="rol-modal" id="rolDetailModal" aria-hidden="true">
+    <div class="rol-modal__backdrop"></div>
+    <div class="rol-modal__dialog rol-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="rol-modal__header"><h3>Detalle</h3><button type="button" class="rol-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="rol-modal__body" id="rolDetailBody"></div>
+        <div class="rol-modal__footer"><button type="button" class="rol__btn rol__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="rol-modal" id="rolInactiveModal" aria-hidden="true">
+    <div class="rol-modal__backdrop"></div>
+    <div class="rol-modal__dialog rol-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="rol-modal__header"><h3>Registros inactivos</h3><button type="button" class="rol-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="rol-modal__body">
+            <div class="rol__search-group rol__search-group--modal">
+                <div class="rol__search"><i class="bi bi-search"></i><input type="text" id="rolInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="rol__btn rol__btn--ghost" id="rolInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="rol__table-scroll rol__table-scroll--modal" id="rolInactiveTableScroll">
+                <table class="rol__table" id="rolInactiveTable">
+                    <thead><tr>
+                        <th>ID_ROLE</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th class="rol__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="rolInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="rol__footer rol__footer--modal">
+                <div class="rol__page-size"><span>Mostrar</span><select id="rolInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="rol__pagination">
+                    <span id="rolInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="rol__btn rol__btn--ghost" id="rolInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="rol__btn rol__btn--ghost" id="rolInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="rol-modal" id="rolConfirmModal" aria-hidden="true">
+    <div class="rol-modal__backdrop"></div>
+    <div class="rol-modal__dialog rol-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="rol-modal__header"><h3 id="rolConfirmTitle">Confirmar</h3><button type="button" class="rol-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="rol-modal__body"><p id="rolConfirmMessage"></p></div>
+        <div class="rol-modal__footer">
+            <button type="button" class="rol__btn rol__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="rol__btn rol__btn--danger" id="rolConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Roles/roles.js" asp-append-version="true"></script>
+    <script>
+        window.rolUrls = {
+            list: '@Url.Action("List", "Roles")',
+            listInactive: '@Url.Action("ListInactive", "Roles")',
+            get: '@Url.Action("Get", "Roles")',
+            create: '@Url.Action("Create", "Roles")',
+            update: '@Url.Action("Update", "Roles")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Roles")',
+            restore: '@Url.Action("Restore", "Roles")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Roles")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Roles/roles.js")" asp-append-version="true"></script>
 }

@@ -6,16 +6,111 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Usuarios/usuarios.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Usuarios/usuarios.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="usr" id="usrRoot">
+    <div class="usr__panel">
+        <div class="usr__toolbar">
+            <div class="usr__search-group">
+                <div class="usr__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="usrSearchInput" placeholder="Buscar en Usuarios" autocomplete="off" />
+                </div>
+                <button type="button" class="usr__btn usr__btn--ghost" id="usrClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="usr__actions">
+                <button type="button" class="usr__btn usr__btn--primary" id="usrCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="usrToast" class="usr__toast" role="status" aria-live="polite"></div>
+        <div class="usr__table-scroll" id="usrTableScroll">
+            <table class="usr__table" id="usrActiveTable">
+                <thead><tr>
+                        <th>ID_USER</th>
+                        <th>USERNAME</th>
+                        <th>ROLE_NAME</th>
+                        <th class="usr__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="usrActiveBody">
+                    <tr class="usr__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="usr__footer">
+            <div class="usr__page-size">
+                <span>Mostrar</span>
+                <select id="usrPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="usr__pagination">
+                <span id="usrPageInfo">Página 1 de 1</span>
+                <button type="button" class="usr__btn usr__btn--ghost" id="usrPrevBtn" disabled>Anterior</button>
+                <button type="button" class="usr__btn usr__btn--ghost" id="usrNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="usr-modal" id="usrFormModal" aria-hidden="true">
+    <div class="usr-modal__backdrop"></div>
+    <div class="usr-modal__dialog" role="dialog" aria-modal="true">
+        <div class="usr-modal__header">
+            <h3 id="usrFormModalTitle">Crear</h3>
+            <button type="button" class="usr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="usrForm" class="usr-modal__body" novalidate>
+            <input type="hidden" id="usrFormId" value="" />
+            <div class="usr-field"><label for="usrUsername">Usuario *</label><input type="text" id="usrUsername" name="username" required maxlength="50" autocomplete="off" /></div>
+            <div class="usr-field"><label for="usrPassword">Contraseña <span id="usrPasswordHint">*</span></label><input type="password" id="usrPassword" name="password" maxlength="100" autocomplete="new-password" /></div>
+            <div class="usr-field">
+                <label for="usrRoleSelect">Rol *</label>
+                <select id="usrRoleSelect" name="idRole" required>
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+        </form>
+        <div class="usr-modal__footer">
+            <button type="button" class="usr__btn usr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="usr__btn usr__btn--primary" id="usrFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="usr-modal" id="usrDetailModal" aria-hidden="true">
+    <div class="usr-modal__backdrop"></div>
+    <div class="usr-modal__dialog usr-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="usr-modal__header"><h3>Detalle</h3><button type="button" class="usr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="usr-modal__body" id="usrDetailBody"></div>
+        <div class="usr-modal__footer"><button type="button" class="usr__btn usr__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="usr-modal" id="usrConfirmModal" aria-hidden="true">
+    <div class="usr-modal__backdrop"></div>
+    <div class="usr-modal__dialog usr-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="usr-modal__header"><h3 id="usrConfirmTitle">Confirmar</h3><button type="button" class="usr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="usr-modal__body"><p id="usrConfirmMessage"></p></div>
+        <div class="usr-modal__footer">
+            <button type="button" class="usr__btn usr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="usr__btn usr__btn--danger" id="usrConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Usuarios/usuarios.js" asp-append-version="true"></script>
+    <script>
+        window.usrUrls = {
+            list: '@Url.Action("List", "Usuarios")',
+            get: '@Url.Action("Get", "Usuarios")',
+            fkOptions: '@Url.Action("FkOptions", "Usuarios")',
+            create: '@Url.Action("Create", "Usuarios")',
+            update: '@Url.Action("Update", "Usuarios")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Usuarios")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Usuarios/usuarios.js")" asp-append-version="true"></script>
 }

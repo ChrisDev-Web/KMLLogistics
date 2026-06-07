@@ -6,6 +6,7 @@ using E1___Sosa_Morales.Models.Regiones;
 using E1___Sosa_Morales.Models.Roles;
 using E1___Sosa_Morales.Models.TiposDocumento;
 using E1___Sosa_Morales.Models.Users;
+using E1___Sosa_Morales.Models.Usuarios;
 using Microsoft.EntityFrameworkCore;
 
 namespace E1___Sosa_Morales.Data;
@@ -43,5 +44,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DistrictDetail>().HasNoKey();
         modelBuilder.Entity<DistrictFkOption>().HasNoKey();
         modelBuilder.Entity<DistrictSpResult>().HasNoKey();
+        modelBuilder.Entity<RoleListItem>().HasNoKey();
+        modelBuilder.Entity<RoleDetail>().HasNoKey();
+        modelBuilder.Entity<RoleSpResult>().HasNoKey();
+        modelBuilder.Entity<UsuarioListItem>().HasNoKey();
+        modelBuilder.Entity<UsuarioDetail>().HasNoKey();
+        modelBuilder.Entity<UsuarioSpResult>().HasNoKey();
+        modelBuilder.Entity<UsuarioRoleOption>().HasNoKey();
     }
 }

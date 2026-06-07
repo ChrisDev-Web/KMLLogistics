@@ -762,3 +762,233 @@ BEGIN
     END CATCH
 END
 GO
+
+-- ############################################################
+-- ROLES (Seguridad)
+-- ############################################################
+
+IF OBJECT_ID('dbo.sp_role_list_select_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_list_select_active;
+GO
+CREATE PROCEDURE dbo.sp_role_list_select_active
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_role, name FROM Roles WHERE deleted_at IS NULL AND status = 1 ORDER BY name;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_list_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_list_active;
+GO
+CREATE PROCEDURE dbo.sp_role_list_active
+    @search    VARCHAR(100) = NULL,
+    @page      INT = 1,
+    @page_size INT = 10
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @page < 1 SET @page = 1;
+    IF @page_size NOT IN (10, 20, 50) SET @page_size = 10;
+
+    SELECT r.id_role, r.name, r.description, COUNT(*) OVER() AS total_count
+    FROM Roles r
+    WHERE r.deleted_at IS NULL AND r.status = 1
+      AND (@search IS NULL OR @search = '' OR r.name LIKE '%' + @search + '%' OR r.description LIKE '%' + @search + '%')
+    ORDER BY r.id_role DESC
+    OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_list_inactive', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_list_inactive;
+GO
+CREATE PROCEDURE dbo.sp_role_list_inactive
+    @search    VARCHAR(100) = NULL,
+    @page      INT = 1,
+    @page_size INT = 10
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @page < 1 SET @page = 1;
+    IF @page_size NOT IN (10, 20, 50) SET @page_size = 10;
+
+    SELECT r.id_role, r.name, r.description, COUNT(*) OVER() AS total_count
+    FROM Roles r
+    WHERE r.deleted_at IS NULL AND r.status = 0
+      AND (@search IS NULL OR @search = '' OR r.name LIKE '%' + @search + '%' OR r.description LIKE '%' + @search + '%')
+    ORDER BY r.id_role DESC
+    OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_get_by_id', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_get_by_id;
+GO
+CREATE PROCEDURE dbo.sp_role_get_by_id @id_role INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_role, name, description, status, created_at, updated_at
+    FROM Roles WHERE id_role = @id_role AND deleted_at IS NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_create', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_create;
+GO
+CREATE PROCEDURE dbo.sp_role_create @name VARCHAR(50), @description VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM Roles WHERE name = @name AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Ya existe un rol con ese nombre.' AS message, NULL AS id_role; RETURN; END
+    INSERT INTO Roles (name, description) VALUES (@name, @description);
+    SELECT 1 AS success, 'Rol creado correctamente.' AS message, CAST(SCOPE_IDENTITY() AS INT) AS id_role;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_update', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_update;
+GO
+CREATE PROCEDURE dbo.sp_role_update @id_role INT, @name VARCHAR(50), @description VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Registro no encontrado.' AS message; RETURN; END
+    IF EXISTS (SELECT 1 FROM Roles WHERE name = @name AND id_role <> @id_role AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Ya existe otro rol con ese nombre.' AS message; RETURN; END
+    UPDATE Roles SET name = @name, description = @description, updated_at = GETDATE() WHERE id_role = @id_role;
+    SELECT 1 AS success, 'Rol actualizado correctamente.' AS message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_delete_logic', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_delete_logic;
+GO
+CREATE PROCEDURE dbo.sp_role_delete_logic @id_role INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND status = 1 AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Registro no encontrado o ya está inactivo.' AS message; RETURN; END
+    UPDATE Roles SET status = 0, updated_at = GETDATE() WHERE id_role = @id_role;
+    SELECT 1 AS success, 'Rol desactivado correctamente.' AS message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_restore', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_restore;
+GO
+CREATE PROCEDURE dbo.sp_role_restore @id_role INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND status = 0 AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Registro no encontrado o ya está activo.' AS message; RETURN; END
+    IF EXISTS (SELECT 1 FROM Roles WHERE name = (SELECT name FROM Roles WHERE id_role = @id_role) AND status = 1 AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'No se puede restaurar: ya existe un rol activo con el mismo nombre.' AS message; RETURN; END
+    UPDATE Roles SET status = 1, updated_at = GETDATE() WHERE id_role = @id_role;
+    SELECT 1 AS success, 'Rol restaurado correctamente.' AS message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_role_delete_physical', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_role_delete_physical;
+GO
+CREATE PROCEDURE dbo.sp_role_delete_physical @id_role INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND status = 0 AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Solo se pueden eliminar registros inactivos.' AS message; RETURN; END
+    BEGIN TRY
+        DELETE FROM Roles WHERE id_role = @id_role;
+        SELECT 1 AS success, 'Rol eliminado permanentemente.' AS message;
+    END TRY
+    BEGIN CATCH
+        SELECT 0 AS success, 'No se puede eliminar: el rol tiene usuarios asociados.' AS message;
+    END CATCH
+END
+GO
+
+-- ############################################################
+-- USERS (Seguridad) — sin eliminación lógica
+-- ############################################################
+
+IF OBJECT_ID('dbo.sp_user_role_list_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_user_role_list_active;
+GO
+CREATE PROCEDURE dbo.sp_user_role_list_active
+AS
+BEGIN
+    SET NOCOUNT ON;
+    EXEC dbo.sp_role_list_select_active;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_list_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_user_list_active;
+GO
+CREATE PROCEDURE dbo.sp_user_list_active
+    @search    VARCHAR(100) = NULL,
+    @page      INT = 1,
+    @page_size INT = 10
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @page < 1 SET @page = 1;
+    IF @page_size NOT IN (10, 20, 50) SET @page_size = 10;
+
+    SELECT u.id_user, u.username, r.name AS role_name, COUNT(*) OVER() AS total_count
+    FROM Users u INNER JOIN Roles r ON r.id_role = u.id_role
+    WHERE u.deleted_at IS NULL AND r.deleted_at IS NULL
+      AND (@search IS NULL OR @search = '' OR u.username LIKE '%' + @search + '%' OR r.name LIKE '%' + @search + '%')
+    ORDER BY u.id_user DESC
+    OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_get_by_id', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_user_get_by_id;
+GO
+CREATE PROCEDURE dbo.sp_user_get_by_id @id_user INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT u.id_user, u.id_role, u.username, r.name AS role_name, u.created_at, u.updated_at
+    FROM Users u INNER JOIN Roles r ON r.id_role = u.id_role
+    WHERE u.id_user = @id_user AND u.deleted_at IS NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_update', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_user_update;
+GO
+CREATE PROCEDURE dbo.sp_user_update
+    @id_user       INT,
+    @username      VARCHAR(50),
+    @id_role       INT,
+    @password_hash VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE id_user = @id_user AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Registro no encontrado.' AS message; RETURN; END
+    IF EXISTS (SELECT 1 FROM Users WHERE username = @username AND id_user <> @id_user AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Ya existe otro usuario con ese nombre.' AS message; RETURN; END
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND status = 1 AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'El rol seleccionado no es válido.' AS message; RETURN; END
+    IF @password_hash IS NULL OR @password_hash = ''
+        UPDATE Users SET username = @username, id_role = @id_role, updated_at = GETDATE() WHERE id_user = @id_user;
+    ELSE
+        UPDATE Users SET username = @username, id_role = @id_role, password_hash = @password_hash, updated_at = GETDATE() WHERE id_user = @id_user;
+    SELECT 1 AS success, 'Usuario actualizado correctamente.' AS message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_delete_physical', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_user_delete_physical;
+GO
+CREATE PROCEDURE dbo.sp_user_delete_physical @id_user INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE id_user = @id_user AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS success, 'Registro no encontrado.' AS message; RETURN; END
+    BEGIN TRY
+        DELETE FROM Users WHERE id_user = @id_user;
+        SELECT 1 AS success, 'Usuario eliminado permanentemente.' AS message;
+    END TRY
+    BEGIN CATCH
+        SELECT 0 AS success, 'No se puede eliminar: el usuario tiene dependencias.' AS message;
+    END CATCH
+END
+GO
