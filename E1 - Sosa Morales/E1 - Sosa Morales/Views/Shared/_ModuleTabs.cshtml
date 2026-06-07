@@ -1,0 +1,17 @@
+@model E1___Sosa_Morales.Models.Dashboard.ModuleViewModel
+
+<div class="module-topbar">
+    <div class="module-tabs">
+        @foreach (var tab in Model.Tabs)
+        {
+            <a asp-controller="@tab.Controller" asp-action="@tab.Action"
+               class="module-tab @(string.Equals(tab.Controller, Model.CurrentController, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                @tab.Label
+            </a>
+        }
+    </div>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn-back-dashboard">
+        <i class="bi bi-arrow-left"></i>
+        Volver a Dashboard
+    </a>
+</div>

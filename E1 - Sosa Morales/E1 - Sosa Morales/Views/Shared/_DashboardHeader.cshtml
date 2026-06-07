@@ -1,0 +1,36 @@
+@{
+    var pageTitle = ViewBag.PageTitle as string ?? "Dashboard";
+    var username = User.Identity?.Name ?? "Usuario";
+    var initials = username.Length >= 2
+        ? username[..2].ToUpper()
+        : username.ToUpper();
+    var perfilUrl = Url.Action("Index", "Perfil") ?? "/Perfil";
+}
+
+<header class="dashboard-header">
+    <span class="dashboard-header__title">@pageTitle</span>
+    <div class="dashboard-header__actions">
+        @await Component.InvokeAsync("StockAlertCount")
+        <div class="header-user-dropdown">
+            <button type="button" class="header-user__trigger" id="headerUserTrigger" aria-expanded="false" aria-haspopup="true">
+                <span class="header-user__avatar">@initials</span>
+                <span class="header-user__name">@username</span>
+                <i class="bi bi-chevron-down header-user__chevron"></i>
+            </button>
+            <div class="header-user__menu" id="headerUserMenu" role="menu">
+                <div class="header-user__menu-header">
+                    <span class="header-user__menu-avatar">@initials</span>
+                    <div>
+                        <p class="header-user__menu-name">@username</p>
+                        <p class="header-user__menu-sub">Cuenta activa</p>
+                    </div>
+                </div>
+                <div class="header-user__menu-divider"></div>
+                <a asp-controller="Perfil" asp-action="Index" class="header-user__menu-item" role="menuitem">
+                    <i class="bi bi-person"></i>
+                    Mi perfil
+                </a>
+            </div>
+        </div>
+    </div>
+</header>

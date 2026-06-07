@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <partial name="_BrowserTab" />
+    <link rel="stylesheet" href="~/Public/CSS/LandingPage/landing.css" asp-append-version="true" />
+</head>
+<body class="landing-body">
+    <nav class="landing-nav">
+        <a asp-controller="LandingPage" asp-action="Index" class="landing-nav__brand">
+            <img src="~/Public/Images/Logo - KMLLogistics.png" alt="KML Logistics" class="landing-nav__logo" />
+        </a>
+        <ul class="landing-nav__links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#sobre-nosotros">Sobre Nosotros</a></li>
+            <li><a href="#servicios">Servicios</a></li>
+        </ul>
+        <div class="landing-nav__actions">
+            <a asp-controller="Login" asp-action="Index" class="btn-outline-primary-custom">Login</a>
+            <a asp-controller="Register" asp-action="Index" class="btn-primary-custom">Register</a>
+        </div>
+    </nav>
+    @RenderBody()
+</body>
+</html>

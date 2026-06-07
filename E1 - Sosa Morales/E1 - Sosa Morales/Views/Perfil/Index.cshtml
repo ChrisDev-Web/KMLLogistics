@@ -1,0 +1,39 @@
+@model E1___Sosa_Morales.Models.Perfil.PerfilViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.PageTitle = "Mi perfil";
+    ViewBag.SidebarActive = "dashboard";
+}
+
+<div class="profile-card">
+    <div class="profile-card__header">
+        <div class="profile-card__avatar">
+            @(Model.Username.Length >= 2 ? Model.Username[..2].ToUpper() : Model.Username.ToUpper())
+        </div>
+        <div>
+            <h2 class="profile-card__name">@Model.Username</h2>
+            <p class="profile-card__role">@Model.RoleName</p>
+        </div>
+    </div>
+
+    <div class="profile-card__body">
+        <div class="profile-field">
+            <span class="profile-field__label">Usuario</span>
+            <span class="profile-field__value">@Model.Username</span>
+        </div>
+        <div class="profile-field">
+            <span class="profile-field__label">Rol</span>
+            <span class="profile-field__value">@Model.RoleName</span>
+        </div>
+    </div>
+
+    <div class="module-placeholder" style="margin-top:1.5rem">
+        <h2>EN DESARROLLO</h2>
+        <p>Edición de perfil — próximamente disponible.</p>
+    </div>
+</div>
+
+<a asp-controller="Dashboard" asp-action="Index" class="btn-back-dashboard" style="margin-top:1.5rem">
+    <i class="bi bi-arrow-left"></i>
+    Volver a Dashboard
+</a>

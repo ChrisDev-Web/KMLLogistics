@@ -1,0 +1,42 @@
+@using E1___Sosa_Morales.Config
+@{
+    var activeKey = ViewBag.SidebarActive as string ?? "dashboard";
+    var username = User.Identity?.Name ?? "Usuario";
+    var initials = username.Length >= 2
+        ? username[..2].ToUpper()
+        : username.ToUpper();
+}
+
+<aside class="dashboard-sidebar">
+    <div class="sidebar-brand">
+        <img src="~/Public/Images/Logo - KMLLogistics.png" alt="KML Logistics" />
+        <div>
+            <p class="sidebar-brand__title">KML Logistics</p>
+            <p class="sidebar-brand__sub">SISTEMA DE GESTIÓN</p>
+        </div>
+    </div>
+
+    <p class="sidebar-section-title">Principal</p>
+    <ul class="sidebar-nav">
+        @foreach (var item in ModuleRegistry.SidebarItems)
+        {
+            <li>
+                <a asp-controller="@item.Controller" asp-action="@item.Action"
+                   class="@(activeKey == item.Key ? "active" : "")">
+                    <i class="bi @item.Icon"></i>
+                    @item.Label
+                </a>
+            </li>
+        }
+    </ul>
+
+    <div class="sidebar-logout">
+        <form asp-controller="Login" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit">
+                <i class="bi bi-box-arrow-left"></i>
+                Cerrar sesión
+            </button>
+        </form>
+    </div>
+</aside>

@@ -1,0 +1,39 @@
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Dashboard";
+    ViewBag.PageTitle = "Dashboard";
+    ViewBag.SidebarActive = "dashboard";
+    var cards = ViewBag.Cards as List<DashboardCard> ?? [];
+}
+
+<div class="page-heading">
+    <h1>Sistema de Gestión Empresarial</h1>
+    <p>Resumen general y accesos directos a los módulos del sistema.</p>
+</div>
+
+<div class="filter-pills">
+    <button class="filter-pill active" data-filter="todos">Todos</button>
+    <button class="filter-pill" data-filter="sistema">Sistema</button>
+    <button class="filter-pill" data-filter="gestion">Gestión</button>
+    <button class="filter-pill" data-filter="comercial">Comercial</button>
+    <button class="filter-pill" data-filter="operaciones">Operaciones</button>
+    <button class="filter-pill" data-filter="estadisticas">Estadísticas</button>
+</div>
+
+<div class="cards-grid" id="cardsGrid">
+    @foreach (var card in cards)
+    {
+        <a asp-controller="@card.Controller" asp-action="@card.DefaultAction"
+           class="module-card" data-category="@card.Category">
+            <div class="module-card__icon" style="background:@card.IconColor">
+                <i class="bi @card.Icon"></i>
+            </div>
+            <h3 class="module-card__title">@card.Title</h3>
+            <p class="module-card__desc">@card.Description</p>
+            <div class="module-card__footer">
+                <span class="module-card__stat">@card.Footer</span>
+                <span class="module-card__tag">@card.CategoryLabel</span>
+            </div>
+        </a>
+    }
+</div>

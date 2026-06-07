@@ -1,0 +1,21 @@
+﻿@model E1___Sosa_Morales.Models.VentasEnvio.VentasEnvioViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Public/CSS/VentasEnvio/ventas-envio.css" asp-append-version="true" />
+}
+
+<partial name="_ModuleTabs" model="Model.Module" />
+
+<div class="module-placeholder">
+    <h2>EN DESARROLLO</h2>
+    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+</div>
+
+@section Scripts {
+    <script src="~/Public/JS/VentasEnvio/ventas-envio.js" asp-append-version="true"></script>
+}

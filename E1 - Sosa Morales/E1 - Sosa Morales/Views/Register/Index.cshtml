@@ -1,0 +1,72 @@
+@model E1___Sosa_Morales.Models.Users.RegisterViewModel
+@{
+    Layout = "~/Views/Register/_Layout.cshtml";
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<div class="auth-card">
+    <h1 class="auth-card__title">Crear cuenta</h1>
+    <p class="auth-card__subtitle">Registra un nuevo acceso al sistema.</p>
+
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors.Count > 0)
+    {
+        <div class="auth-error">
+            @Html.ValidationSummary(excludePropertyErrors: true)
+        </div>
+    }
+
+    <form asp-controller="Register" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="auth-field">
+            <label asp-for="Username">Usuario</label>
+            <div class="auth-input-wrap">
+                <i class="bi bi-person"></i>
+                <input asp-for="Username" placeholder="Usuario" />
+            </div>
+            <span asp-validation-for="Username" class="field-error"></span>
+        </div>
+
+        <div class="auth-field">
+            <label asp-for="IdRole">Rol</label>
+            <div class="auth-input-wrap">
+                <i class="bi bi-shield"></i>
+                <select asp-for="IdRole" class="auth-select" asp-items="@(new SelectList(Model.Roles, "IdRole", "Name"))">
+                    <option value="">Seleccione un rol</option>
+                </select>
+            </div>
+            <span asp-validation-for="IdRole" class="field-error"></span>
+        </div>
+
+        <div class="auth-field">
+            <label asp-for="Password">Contraseña</label>
+            <div class="auth-input-wrap">
+                <i class="bi bi-lock"></i>
+                <input asp-for="Password" placeholder="Crea una contraseña" />
+            </div>
+            <span asp-validation-for="Password" class="field-error"></span>
+        </div>
+
+        <div class="auth-field">
+            <label asp-for="ConfirmPassword">Confirmar contraseña</label>
+            <div class="auth-input-wrap">
+                <i class="bi bi-shield-check"></i>
+                <input asp-for="ConfirmPassword" placeholder="Confirma tu contraseña" />
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+        </div>
+
+        <button type="submit" class="auth-btn">
+            <i class="bi bi-person-plus"></i>
+            Registrarse
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        ¿Ya tienes cuenta? <a asp-controller="Login" asp-action="Index">Iniciar sesión</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
