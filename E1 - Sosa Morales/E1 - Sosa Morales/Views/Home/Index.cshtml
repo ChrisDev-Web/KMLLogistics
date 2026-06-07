@@ -1,8 +1,20 @@
-﻿@{
+@model E1___Sosa_Morales.Models.HomeIndexViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="alert @(Model.IsConnected ? "alert-success" : "alert-danger") shadow-sm" role="alert">
+                <h4 class="alert-heading mb-2">KMLLogistics</h4>
+                <p class="mb-1">@Model.Message</p>
+                @if (Model.IsConnected && !string.IsNullOrWhiteSpace(Model.ServerName))
+                {
+                    <hr />
+                    <p class="mb-0">Servidor: @Model.ServerName</p>
+                }
+            </div>
+        </div>
+    </div>
 </div>
