@@ -6,16 +6,138 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Countries/countries.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Countries/countries.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="ctry" id="ctryRoot">
+    <div class="ctry__panel">
+        <div class="ctry__toolbar">
+            <div class="ctry__search-group">
+                <div class="ctry__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="ctrySearchInput" placeholder="Buscar en Países" autocomplete="off" />
+                </div>
+                <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="ctry__actions">
+                <button type="button" class="ctry__btn ctry__btn--outline" id="ctryInactiveBtn">Ver inactivos</button>
+                <button type="button" class="ctry__btn ctry__btn--primary" id="ctryCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="ctryToast" class="ctry__toast" role="status" aria-live="polite"></div>
+        <div class="ctry__table-scroll" id="ctryTableScroll">
+            <table class="ctry__table" id="ctryActiveTable">
+                <thead><tr>
+                        <th>ID_COUNTRY</th>
+                        <th>NAME</th>
+                        <th class="ctry__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="ctryActiveBody">
+                    <tr class="ctry__loading-row"><td colspan="3">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="ctry__footer">
+            <div class="ctry__page-size">
+                <span>Mostrar</span>
+                <select id="ctryPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="ctry__pagination">
+                <span id="ctryPageInfo">Página 1 de 1</span>
+                <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryPrevBtn" disabled>Anterior</button>
+                <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ctry-modal" id="ctryFormModal" aria-hidden="true">
+    <div class="ctry-modal__backdrop"></div>
+    <div class="ctry-modal__dialog" role="dialog" aria-modal="true">
+        <div class="ctry-modal__header">
+            <h3 id="ctryFormModalTitle">Crear</h3>
+            <button type="button" class="ctry-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="ctryForm" class="ctry-modal__body" novalidate>
+            <input type="hidden" id="ctryFormId" value="" />
+            <div class="ctry-field"><label for="ctryName">Nombre *</label><input type="text" id="ctryName" name="name" required maxlength="100" /></div>
+        </form>
+        <div class="ctry-modal__footer">
+            <button type="button" class="ctry__btn ctry__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ctry__btn ctry__btn--primary" id="ctryFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="ctry-modal" id="ctryDetailModal" aria-hidden="true">
+    <div class="ctry-modal__backdrop"></div>
+    <div class="ctry-modal__dialog ctry-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="ctry-modal__header"><h3>Detalle</h3><button type="button" class="ctry-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ctry-modal__body" id="ctryDetailBody"></div>
+        <div class="ctry-modal__footer"><button type="button" class="ctry__btn ctry__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="ctry-modal" id="ctryInactiveModal" aria-hidden="true">
+    <div class="ctry-modal__backdrop"></div>
+    <div class="ctry-modal__dialog ctry-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ctry-modal__header"><h3>Registros inactivos</h3><button type="button" class="ctry-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ctry-modal__body">
+            <div class="ctry__search-group ctry__search-group--modal">
+                <div class="ctry__search"><i class="bi bi-search"></i><input type="text" id="ctryInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="ctry__table-scroll ctry__table-scroll--modal" id="ctryInactiveTableScroll">
+                <table class="ctry__table" id="ctryInactiveTable">
+                    <thead><tr>
+                        <th>ID_COUNTRY</th>
+                        <th>NAME</th>
+                        <th class="ctry__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="ctryInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="ctry__footer ctry__footer--modal">
+                <div class="ctry__page-size"><span>Mostrar</span><select id="ctryInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="ctry__pagination">
+                    <span id="ctryInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="ctry__btn ctry__btn--ghost" id="ctryInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ctry-modal" id="ctryConfirmModal" aria-hidden="true">
+    <div class="ctry-modal__backdrop"></div>
+    <div class="ctry-modal__dialog ctry-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="ctry-modal__header"><h3 id="ctryConfirmTitle">Confirmar</h3><button type="button" class="ctry-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ctry-modal__body"><p id="ctryConfirmMessage"></p></div>
+        <div class="ctry-modal__footer">
+            <button type="button" class="ctry__btn ctry__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ctry__btn ctry__btn--danger" id="ctryConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Countries/countries.js" asp-append-version="true"></script>
+    <script>
+        window.ctryUrls = {
+            list: '@Url.Action("List", "Countries")',
+            listInactive: '@Url.Action("ListInactive", "Countries")',
+            get: '@Url.Action("Get", "Countries")',
+            create: '@Url.Action("Create", "Countries")',
+            update: '@Url.Action("Update", "Countries")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Countries")',
+            restore: '@Url.Action("Restore", "Countries")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Countries")',
+
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Countries/countries.js")" asp-append-version="true"></script>
 }

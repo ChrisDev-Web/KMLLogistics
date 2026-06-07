@@ -6,16 +6,141 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Regiones/regiones.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Regiones/regiones.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="reg" id="regRoot">
+    <div class="reg__panel">
+        <div class="reg__toolbar">
+            <div class="reg__search-group">
+                <div class="reg__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="regSearchInput" placeholder="Buscar en Regiones" autocomplete="off" />
+                </div>
+                <button type="button" class="reg__btn reg__btn--ghost" id="regClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="reg__actions">
+                <button type="button" class="reg__btn reg__btn--outline" id="regInactiveBtn">Ver inactivos</button>
+                <button type="button" class="reg__btn reg__btn--primary" id="regCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="regToast" class="reg__toast" role="status" aria-live="polite"></div>
+        <div class="reg__table-scroll" id="regTableScroll">
+            <table class="reg__table" id="regActiveTable">
+                <thead><tr>
+                        <th>ID_REGION</th>
+                        <th>COUNTRY</th>
+                        <th>NAME</th>
+                        <th class="reg__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="regActiveBody">
+                    <tr class="reg__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reg__footer">
+            <div class="reg__page-size">
+                <span>Mostrar</span>
+                <select id="regPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="reg__pagination">
+                <span id="regPageInfo">Página 1 de 1</span>
+                <button type="button" class="reg__btn reg__btn--ghost" id="regPrevBtn" disabled>Anterior</button>
+                <button type="button" class="reg__btn reg__btn--ghost" id="regNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reg-modal" id="regFormModal" aria-hidden="true">
+    <div class="reg-modal__backdrop"></div>
+    <div class="reg-modal__dialog" role="dialog" aria-modal="true">
+        <div class="reg-modal__header">
+            <h3 id="regFormModalTitle">Crear</h3>
+            <button type="button" class="reg-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="regForm" class="reg-modal__body" novalidate>
+            <input type="hidden" id="regFormId" value="" />
+            <div class="reg-field"><label for="regFkSelect">País *</label><select id="regFkSelect" name="idCountry" required><option value="">Seleccione...</option></select></div>
+            <div class="reg-field"><label for="regName">Nombre *</label><input type="text" id="regName" name="name" required maxlength="100" /></div>
+        </form>
+        <div class="reg-modal__footer">
+            <button type="button" class="reg__btn reg__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="reg__btn reg__btn--primary" id="regFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="reg-modal" id="regDetailModal" aria-hidden="true">
+    <div class="reg-modal__backdrop"></div>
+    <div class="reg-modal__dialog reg-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="reg-modal__header"><h3>Detalle</h3><button type="button" class="reg-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="reg-modal__body" id="regDetailBody"></div>
+        <div class="reg-modal__footer"><button type="button" class="reg__btn reg__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="reg-modal" id="regInactiveModal" aria-hidden="true">
+    <div class="reg-modal__backdrop"></div>
+    <div class="reg-modal__dialog reg-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="reg-modal__header"><h3>Registros inactivos</h3><button type="button" class="reg-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="reg-modal__body">
+            <div class="reg__search-group reg__search-group--modal">
+                <div class="reg__search"><i class="bi bi-search"></i><input type="text" id="regInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="reg__btn reg__btn--ghost" id="regInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="reg__table-scroll reg__table-scroll--modal" id="regInactiveTableScroll">
+                <table class="reg__table" id="regInactiveTable">
+                    <thead><tr>
+                        <th>ID_REGION</th>
+                        <th>COUNTRY</th>
+                        <th>NAME</th>
+                        <th class="reg__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="regInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="reg__footer reg__footer--modal">
+                <div class="reg__page-size"><span>Mostrar</span><select id="regInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="reg__pagination">
+                    <span id="regInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="reg__btn reg__btn--ghost" id="regInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="reg__btn reg__btn--ghost" id="regInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reg-modal" id="regConfirmModal" aria-hidden="true">
+    <div class="reg-modal__backdrop"></div>
+    <div class="reg-modal__dialog reg-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="reg-modal__header"><h3 id="regConfirmTitle">Confirmar</h3><button type="button" class="reg-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="reg-modal__body"><p id="regConfirmMessage"></p></div>
+        <div class="reg-modal__footer">
+            <button type="button" class="reg__btn reg__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="reg__btn reg__btn--danger" id="regConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Regiones/regiones.js" asp-append-version="true"></script>
+    <script>
+        window.regUrls = {
+            list: '@Url.Action("List", "Regiones")',
+            listInactive: '@Url.Action("ListInactive", "Regiones")',
+            get: '@Url.Action("Get", "Regiones")',
+            create: '@Url.Action("Create", "Regiones")',
+            update: '@Url.Action("Update", "Regiones")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Regiones")',
+            restore: '@Url.Action("Restore", "Regiones")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Regiones")',
+                fkOptions: '@Url.Action("FkOptions", "Regiones")',
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Regiones/regiones.js")" asp-append-version="true"></script>
 }

@@ -7,7 +7,8 @@ CREATE TABLE DocumentTypes (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -18,7 +19,8 @@ CREATE TABLE Countries (
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 CREATE TABLE Regions (
@@ -28,6 +30,7 @@ CREATE TABLE Regions (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_region_country FOREIGN KEY (id_country) REFERENCES Countries(id_country),
     CONSTRAINT uq_region UNIQUE (id_country, name)
 );
@@ -39,6 +42,7 @@ CREATE TABLE Provinces (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_province_region FOREIGN KEY (id_region) REFERENCES Regions(id_region),
     CONSTRAINT uq_province UNIQUE (id_region, name)
 );
@@ -50,6 +54,7 @@ CREATE TABLE Districts (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_district_province FOREIGN KEY (id_province) REFERENCES Provinces(id_province),
     CONSTRAINT uq_district UNIQUE (id_province, name)
 );
@@ -64,7 +69,8 @@ CREATE TABLE Categories (
     photo VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -76,7 +82,8 @@ CREATE TABLE Brands (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -94,6 +101,7 @@ CREATE TABLE Suppliers (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_supplier_document_type FOREIGN KEY (id_document_type) REFERENCES DocumentTypes(id_document_type),
     CONSTRAINT fk_supplier_district FOREIGN KEY (id_district) REFERENCES Districts(id_district)
 );
@@ -119,6 +127,7 @@ CREATE TABLE Products (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_product_category FOREIGN KEY (id_category) REFERENCES Categories(id_category),
     CONSTRAINT fk_product_brand FOREIGN KEY (id_brand) REFERENCES Brands(id_brand),
     CONSTRAINT chk_product_profit CHECK (profit_percentage > 0 AND profit_percentage < 100),
@@ -138,6 +147,7 @@ CREATE TABLE ProductSuppliers (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_product_supplier_product FOREIGN KEY (id_product) REFERENCES Products(id_product),
     CONSTRAINT fk_product_supplier_supplier FOREIGN KEY (id_supplier) REFERENCES Suppliers(id_supplier),
     CONSTRAINT uq_product_supplier UNIQUE (id_product, id_supplier),
@@ -164,6 +174,7 @@ CREATE TABLE Warehouses (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_warehouse_district FOREIGN KEY (id_district) REFERENCES Districts(id_district)
 );
 
@@ -191,7 +202,8 @@ CREATE TABLE Roles (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -217,7 +229,8 @@ CREATE TABLE JobPositions (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -236,6 +249,7 @@ CREATE TABLE Employees (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_employee_user FOREIGN KEY (id_user) REFERENCES Users(id_user),
     CONSTRAINT fk_employee_job_position FOREIGN KEY (id_job_position) REFERENCES JobPositions(id_job_position),
     CONSTRAINT fk_employee_district FOREIGN KEY (id_district) REFERENCES Districts(id_district)
@@ -258,6 +272,7 @@ CREATE TABLE Clients (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
     CONSTRAINT fk_client_document_type FOREIGN KEY (id_document_type) REFERENCES DocumentTypes(id_document_type),
     CONSTRAINT fk_client_district FOREIGN KEY (id_district) REFERENCES Districts(id_district),
     CONSTRAINT uq_client_document UNIQUE (id_document_type, document_number)
@@ -271,7 +286,8 @@ CREATE TABLE PurchaseStatuses (
     name VARCHAR(50) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -325,7 +341,8 @@ CREATE TABLE StatusTransfers (
     name VARCHAR(50) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -365,7 +382,8 @@ CREATE TABLE MovementTypes (
     name VARCHAR(50) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 CREATE TABLE InventoryMovements (
@@ -395,7 +413,8 @@ CREATE TABLE SaleStatuses (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 -- ==========================================
@@ -467,7 +486,8 @@ CREATE TABLE Boxes (
     volume AS (height * width * length) PERSISTED,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 CREATE TABLE BoxDetails (
@@ -494,7 +514,8 @@ CREATE TABLE VehicleTypes (
     description VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 CREATE TABLE Vehicles (
@@ -509,6 +530,7 @@ CREATE TABLE Vehicles (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1),
 
     CONSTRAINT fk_vehicle_vehicle_type
         FOREIGN KEY (id_vehicle_type)
@@ -519,10 +541,10 @@ CREATE TABLE ShipmentStatuses (
     id_shipment_status INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255) NULL,
-
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
-    deleted_at DATETIME NULL
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
 );
 
 CREATE TABLE Shipments (

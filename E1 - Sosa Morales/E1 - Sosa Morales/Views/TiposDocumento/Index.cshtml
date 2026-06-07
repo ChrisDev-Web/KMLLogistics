@@ -6,16 +6,141 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/TiposDocumento/tipos-documento.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/TiposDocumento/tipos-documento.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="tdoc" id="tdocRoot">
+    <div class="tdoc__panel">
+        <div class="tdoc__toolbar">
+            <div class="tdoc__search-group">
+                <div class="tdoc__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="tdocSearchInput" placeholder="Buscar en Tipos documento" autocomplete="off" />
+                </div>
+                <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="tdoc__actions">
+                <button type="button" class="tdoc__btn tdoc__btn--outline" id="tdocInactiveBtn">Ver inactivos</button>
+                <button type="button" class="tdoc__btn tdoc__btn--primary" id="tdocCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="tdocToast" class="tdoc__toast" role="status" aria-live="polite"></div>
+        <div class="tdoc__table-scroll" id="tdocTableScroll">
+            <table class="tdoc__table" id="tdocActiveTable">
+                <thead><tr>
+                        <th>ID_DOCUMENT_TYPE</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th class="tdoc__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="tdocActiveBody">
+                    <tr class="tdoc__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="tdoc__footer">
+            <div class="tdoc__page-size">
+                <span>Mostrar</span>
+                <select id="tdocPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="tdoc__pagination">
+                <span id="tdocPageInfo">Página 1 de 1</span>
+                <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocPrevBtn" disabled>Anterior</button>
+                <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tdoc-modal" id="tdocFormModal" aria-hidden="true">
+    <div class="tdoc-modal__backdrop"></div>
+    <div class="tdoc-modal__dialog" role="dialog" aria-modal="true">
+        <div class="tdoc-modal__header">
+            <h3 id="tdocFormModalTitle">Crear</h3>
+            <button type="button" class="tdoc-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="tdocForm" class="tdoc-modal__body" novalidate>
+            <input type="hidden" id="tdocFormId" value="" />
+            <div class="tdoc-field"><label for="tdocName">Nombre *</label><input type="text" id="tdocName" name="name" required maxlength="255" /></div>
+            <div class="tdoc-field"><label for="tdocDescription">Descripción</label><textarea id="tdocDescription" name="description" rows="3"></textarea></div>
+        </form>
+        <div class="tdoc-modal__footer">
+            <button type="button" class="tdoc__btn tdoc__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="tdoc__btn tdoc__btn--primary" id="tdocFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="tdoc-modal" id="tdocDetailModal" aria-hidden="true">
+    <div class="tdoc-modal__backdrop"></div>
+    <div class="tdoc-modal__dialog tdoc-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="tdoc-modal__header"><h3>Detalle</h3><button type="button" class="tdoc-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="tdoc-modal__body" id="tdocDetailBody"></div>
+        <div class="tdoc-modal__footer"><button type="button" class="tdoc__btn tdoc__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="tdoc-modal" id="tdocInactiveModal" aria-hidden="true">
+    <div class="tdoc-modal__backdrop"></div>
+    <div class="tdoc-modal__dialog tdoc-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="tdoc-modal__header"><h3>Registros inactivos</h3><button type="button" class="tdoc-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="tdoc-modal__body">
+            <div class="tdoc__search-group tdoc__search-group--modal">
+                <div class="tdoc__search"><i class="bi bi-search"></i><input type="text" id="tdocInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="tdoc__table-scroll tdoc__table-scroll--modal" id="tdocInactiveTableScroll">
+                <table class="tdoc__table" id="tdocInactiveTable">
+                    <thead><tr>
+                        <th>ID_DOCUMENT_TYPE</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th class="tdoc__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="tdocInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="tdoc__footer tdoc__footer--modal">
+                <div class="tdoc__page-size"><span>Mostrar</span><select id="tdocInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="tdoc__pagination">
+                    <span id="tdocInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="tdoc__btn tdoc__btn--ghost" id="tdocInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tdoc-modal" id="tdocConfirmModal" aria-hidden="true">
+    <div class="tdoc-modal__backdrop"></div>
+    <div class="tdoc-modal__dialog tdoc-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="tdoc-modal__header"><h3 id="tdocConfirmTitle">Confirmar</h3><button type="button" class="tdoc-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="tdoc-modal__body"><p id="tdocConfirmMessage"></p></div>
+        <div class="tdoc-modal__footer">
+            <button type="button" class="tdoc__btn tdoc__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="tdoc__btn tdoc__btn--danger" id="tdocConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/TiposDocumento/tipos-documento.js" asp-append-version="true"></script>
+    <script>
+        window.tdocUrls = {
+            list: '@Url.Action("List", "TiposDocumento")',
+            listInactive: '@Url.Action("ListInactive", "TiposDocumento")',
+            get: '@Url.Action("Get", "TiposDocumento")',
+            create: '@Url.Action("Create", "TiposDocumento")',
+            update: '@Url.Action("Update", "TiposDocumento")',
+            deleteLogic: '@Url.Action("DeleteLogic", "TiposDocumento")',
+            restore: '@Url.Action("Restore", "TiposDocumento")',
+            deletePhysical: '@Url.Action("DeletePhysical", "TiposDocumento")',
+
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/TiposDocumento/tipos-documento.js")" asp-append-version="true"></script>
 }

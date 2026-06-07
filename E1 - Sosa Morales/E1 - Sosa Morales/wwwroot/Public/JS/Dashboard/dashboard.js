@@ -73,7 +73,9 @@
 
             var pageLink = document.createElement('link');
             pageLink.rel = 'stylesheet';
-            pageLink.href = href;
+            pageLink.href = href.indexOf('://') === -1
+                ? new URL(href, window.location.origin).href
+                : href;
             pageLink.setAttribute('data-page-style', 'true');
             document.head.appendChild(pageLink);
         });
@@ -101,7 +103,9 @@
             newScript.setAttribute('data-page-script', 'true');
 
             if (src) {
-                newScript.src = src;
+                newScript.src = src.indexOf('://') === -1
+                    ? new URL(src, window.location.origin).href
+                    : src;
                 newScript.onload = function () { runNext(index + 1); };
                 newScript.onerror = function () { runNext(index + 1); };
                 document.body.appendChild(newScript);

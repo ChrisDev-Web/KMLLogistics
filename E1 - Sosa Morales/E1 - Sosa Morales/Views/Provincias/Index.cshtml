@@ -6,16 +6,141 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Provincias/provincias.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Provincias/provincias.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="prov" id="provRoot">
+    <div class="prov__panel">
+        <div class="prov__toolbar">
+            <div class="prov__search-group">
+                <div class="prov__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="provSearchInput" placeholder="Buscar en Provincias" autocomplete="off" />
+                </div>
+                <button type="button" class="prov__btn prov__btn--ghost" id="provClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="prov__actions">
+                <button type="button" class="prov__btn prov__btn--outline" id="provInactiveBtn">Ver inactivos</button>
+                <button type="button" class="prov__btn prov__btn--primary" id="provCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="provToast" class="prov__toast" role="status" aria-live="polite"></div>
+        <div class="prov__table-scroll" id="provTableScroll">
+            <table class="prov__table" id="provActiveTable">
+                <thead><tr>
+                        <th>ID_PROVINCE</th>
+                        <th>REGION</th>
+                        <th>NAME</th>
+                        <th class="prov__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="provActiveBody">
+                    <tr class="prov__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="prov__footer">
+            <div class="prov__page-size">
+                <span>Mostrar</span>
+                <select id="provPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="prov__pagination">
+                <span id="provPageInfo">Página 1 de 1</span>
+                <button type="button" class="prov__btn prov__btn--ghost" id="provPrevBtn" disabled>Anterior</button>
+                <button type="button" class="prov__btn prov__btn--ghost" id="provNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="prov-modal" id="provFormModal" aria-hidden="true">
+    <div class="prov-modal__backdrop"></div>
+    <div class="prov-modal__dialog" role="dialog" aria-modal="true">
+        <div class="prov-modal__header">
+            <h3 id="provFormModalTitle">Crear</h3>
+            <button type="button" class="prov-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="provForm" class="prov-modal__body" novalidate>
+            <input type="hidden" id="provFormId" value="" />
+            <div class="prov-field"><label for="provFkSelect">Región *</label><select id="provFkSelect" name="idRegion" required><option value="">Seleccione...</option></select></div>
+            <div class="prov-field"><label for="provName">Nombre *</label><input type="text" id="provName" name="name" required maxlength="100" /></div>
+        </form>
+        <div class="prov-modal__footer">
+            <button type="button" class="prov__btn prov__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="prov__btn prov__btn--primary" id="provFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="prov-modal" id="provDetailModal" aria-hidden="true">
+    <div class="prov-modal__backdrop"></div>
+    <div class="prov-modal__dialog prov-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="prov-modal__header"><h3>Detalle</h3><button type="button" class="prov-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="prov-modal__body" id="provDetailBody"></div>
+        <div class="prov-modal__footer"><button type="button" class="prov__btn prov__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="prov-modal" id="provInactiveModal" aria-hidden="true">
+    <div class="prov-modal__backdrop"></div>
+    <div class="prov-modal__dialog prov-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="prov-modal__header"><h3>Registros inactivos</h3><button type="button" class="prov-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="prov-modal__body">
+            <div class="prov__search-group prov__search-group--modal">
+                <div class="prov__search"><i class="bi bi-search"></i><input type="text" id="provInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="prov__btn prov__btn--ghost" id="provInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="prov__table-scroll prov__table-scroll--modal" id="provInactiveTableScroll">
+                <table class="prov__table" id="provInactiveTable">
+                    <thead><tr>
+                        <th>ID_PROVINCE</th>
+                        <th>REGION</th>
+                        <th>NAME</th>
+                        <th class="prov__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="provInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="prov__footer prov__footer--modal">
+                <div class="prov__page-size"><span>Mostrar</span><select id="provInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="prov__pagination">
+                    <span id="provInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="prov__btn prov__btn--ghost" id="provInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="prov__btn prov__btn--ghost" id="provInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="prov-modal" id="provConfirmModal" aria-hidden="true">
+    <div class="prov-modal__backdrop"></div>
+    <div class="prov-modal__dialog prov-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="prov-modal__header"><h3 id="provConfirmTitle">Confirmar</h3><button type="button" class="prov-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="prov-modal__body"><p id="provConfirmMessage"></p></div>
+        <div class="prov-modal__footer">
+            <button type="button" class="prov__btn prov__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="prov__btn prov__btn--danger" id="provConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Provincias/provincias.js" asp-append-version="true"></script>
+    <script>
+        window.provUrls = {
+            list: '@Url.Action("List", "Provincias")',
+            listInactive: '@Url.Action("ListInactive", "Provincias")',
+            get: '@Url.Action("Get", "Provincias")',
+            create: '@Url.Action("Create", "Provincias")',
+            update: '@Url.Action("Update", "Provincias")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Provincias")',
+            restore: '@Url.Action("Restore", "Provincias")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Provincias")',
+                fkOptions: '@Url.Action("FkOptions", "Provincias")',
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Provincias/provincias.js")" asp-append-version="true"></script>
 }

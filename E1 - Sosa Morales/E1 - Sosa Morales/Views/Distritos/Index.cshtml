@@ -6,16 +6,141 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Distritos/distritos.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Distritos/distritos.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dist" id="distRoot">
+    <div class="dist__panel">
+        <div class="dist__toolbar">
+            <div class="dist__search-group">
+                <div class="dist__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="distSearchInput" placeholder="Buscar en Distritos" autocomplete="off" />
+                </div>
+                <button type="button" class="dist__btn dist__btn--ghost" id="distClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dist__actions">
+                <button type="button" class="dist__btn dist__btn--outline" id="distInactiveBtn">Ver inactivos</button>
+                <button type="button" class="dist__btn dist__btn--primary" id="distCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="distToast" class="dist__toast" role="status" aria-live="polite"></div>
+        <div class="dist__table-scroll" id="distTableScroll">
+            <table class="dist__table" id="distActiveTable">
+                <thead><tr>
+                        <th>ID_DISTRICT</th>
+                        <th>PROVINCE</th>
+                        <th>NAME</th>
+                        <th class="dist__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="distActiveBody">
+                    <tr class="dist__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="dist__footer">
+            <div class="dist__page-size">
+                <span>Mostrar</span>
+                <select id="distPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="dist__pagination">
+                <span id="distPageInfo">Página 1 de 1</span>
+                <button type="button" class="dist__btn dist__btn--ghost" id="distPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dist__btn dist__btn--ghost" id="distNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dist-modal" id="distFormModal" aria-hidden="true">
+    <div class="dist-modal__backdrop"></div>
+    <div class="dist-modal__dialog" role="dialog" aria-modal="true">
+        <div class="dist-modal__header">
+            <h3 id="distFormModalTitle">Crear</h3>
+            <button type="button" class="dist-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="distForm" class="dist-modal__body" novalidate>
+            <input type="hidden" id="distFormId" value="" />
+            <div class="dist-field"><label for="distFkSelect">Provincia *</label><select id="distFkSelect" name="idProvince" required><option value="">Seleccione...</option></select></div>
+            <div class="dist-field"><label for="distName">Nombre *</label><input type="text" id="distName" name="name" required maxlength="100" /></div>
+        </form>
+        <div class="dist-modal__footer">
+            <button type="button" class="dist__btn dist__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="dist__btn dist__btn--primary" id="distFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="dist-modal" id="distDetailModal" aria-hidden="true">
+    <div class="dist-modal__backdrop"></div>
+    <div class="dist-modal__dialog dist-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dist-modal__header"><h3>Detalle</h3><button type="button" class="dist-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dist-modal__body" id="distDetailBody"></div>
+        <div class="dist-modal__footer"><button type="button" class="dist__btn dist__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="dist-modal" id="distInactiveModal" aria-hidden="true">
+    <div class="dist-modal__backdrop"></div>
+    <div class="dist-modal__dialog dist-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="dist-modal__header"><h3>Registros inactivos</h3><button type="button" class="dist-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dist-modal__body">
+            <div class="dist__search-group dist__search-group--modal">
+                <div class="dist__search"><i class="bi bi-search"></i><input type="text" id="distInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="dist__btn dist__btn--ghost" id="distInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="dist__table-scroll dist__table-scroll--modal" id="distInactiveTableScroll">
+                <table class="dist__table" id="distInactiveTable">
+                    <thead><tr>
+                        <th>ID_DISTRICT</th>
+                        <th>PROVINCE</th>
+                        <th>NAME</th>
+                        <th class="dist__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="distInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="dist__footer dist__footer--modal">
+                <div class="dist__page-size"><span>Mostrar</span><select id="distInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="dist__pagination">
+                    <span id="distInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="dist__btn dist__btn--ghost" id="distInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="dist__btn dist__btn--ghost" id="distInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dist-modal" id="distConfirmModal" aria-hidden="true">
+    <div class="dist-modal__backdrop"></div>
+    <div class="dist-modal__dialog dist-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="dist-modal__header"><h3 id="distConfirmTitle">Confirmar</h3><button type="button" class="dist-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dist-modal__body"><p id="distConfirmMessage"></p></div>
+        <div class="dist-modal__footer">
+            <button type="button" class="dist__btn dist__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="dist__btn dist__btn--danger" id="distConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Distritos/distritos.js" asp-append-version="true"></script>
+    <script>
+        window.distUrls = {
+            list: '@Url.Action("List", "Distritos")',
+            listInactive: '@Url.Action("ListInactive", "Distritos")',
+            get: '@Url.Action("Get", "Distritos")',
+            create: '@Url.Action("Create", "Distritos")',
+            update: '@Url.Action("Update", "Distritos")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Distritos")',
+            restore: '@Url.Action("Restore", "Distritos")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Distritos")',
+                fkOptions: '@Url.Action("FkOptions", "Distritos")',
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Distritos/distritos.js")" asp-append-version="true"></script>
 }
