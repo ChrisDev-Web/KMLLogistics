@@ -1,10 +1,13 @@
 using E1___Sosa_Morales.Models.AlertasStock;
+using E1___Sosa_Morales.Models.Clientes;
 using E1___Sosa_Morales.Models.Countries;
 using E1___Sosa_Morales.Models.Distritos;
 using E1___Sosa_Morales.Models.Perfil;
 using E1___Sosa_Morales.Models.Provincias;
+using E1___Sosa_Morales.Models.Proveedores;
 using E1___Sosa_Morales.Models.Regiones;
 using E1___Sosa_Morales.Models.Roles;
+using E1___Sosa_Morales.Models.Shared;
 using E1___Sosa_Morales.Models.TiposDocumento;
 using E1___Sosa_Morales.Models.Users;
 using E1___Sosa_Morales.Models.Usuarios;
@@ -53,5 +56,16 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<UsuarioSpResult>().HasNoKey();
         modelBuilder.Entity<UsuarioRoleOption>().HasNoKey();
         modelBuilder.Entity<UserProfileDetail>().HasNoKey();
+        modelBuilder.Entity<ClientListItem>().HasNoKey();
+        modelBuilder.Entity<ClientDetail>().HasNoKey();
+        modelBuilder.Entity<ClientDocumentTypeOption>().HasNoKey();
+        modelBuilder.Entity<ClientDistrictOption>().HasNoKey();
+        modelBuilder.Entity<ClientSpResult>().HasNoKey();
+        modelBuilder.Entity<SupplierListItem>().HasNoKey();
+        modelBuilder.Entity<SupplierDetail>().HasNoKey();
+        modelBuilder.Entity<SupplierDocumentTypeOption>().HasNoKey();
+        modelBuilder.Entity<SupplierDistrictOption>().HasNoKey();
+        modelBuilder.Entity<SupplierSpResult>().HasNoKey();
+        modelBuilder.Entity<GeographyInfo>().HasNoKey();
     }
 }

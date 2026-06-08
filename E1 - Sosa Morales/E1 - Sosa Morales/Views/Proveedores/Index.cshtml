@@ -6,16 +6,168 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Proveedores/proveedores.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Proveedores/proveedores.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="sup" id="supRoot">
+    <div class="sup__panel">
+        <div class="sup__toolbar">
+            <div class="sup__search-group">
+                <div class="sup__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="supSearchInput" placeholder="Buscar en Proveedores" autocomplete="off" />
+                </div>
+                <button type="button" class="sup__btn sup__btn--ghost" id="supClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="sup__filters">
+                <div class="sup__filter">
+                    <label for="supFilterDocType"><i class="bi bi-funnel"></i> Tipo documento</label>
+                    <select id="supFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="sup__filter">
+                    <label for="supFilterDistrict"><i class="bi bi-funnel"></i> Distrito</label>
+                    <select id="supFilterDistrict"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="sup__actions">
+                <button type="button" class="sup__btn sup__btn--outline" id="supInactiveBtn">Ver inactivos</button>
+                <button type="button" class="sup__btn sup__btn--primary" id="supCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="supToast" class="sup__toast" role="status" aria-live="polite"></div>
+        <div class="sup__table-scroll" id="supTableScroll">
+            <table class="sup__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>TIPO DOC.</th>
+                    <th>N° DOC.</th>
+                    <th>RAZÓN SOCIAL</th>
+                    <th>TELÉFONO</th>
+                    <th>EMAIL</th>
+                    <th>DISTRITO</th>
+                    <th class="sup__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="supActiveBody">
+                    <tr class="sup__loading-row"><td colspan="8">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="sup__footer">
+            <div class="sup__page-size">
+                <span>Mostrar</span>
+                <select id="supPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="sup__pagination">
+                <span id="supPageInfo">Página 1 de 1</span>
+                <button type="button" class="sup__btn sup__btn--ghost" id="supPrevBtn" disabled>Anterior</button>
+                <button type="button" class="sup__btn sup__btn--ghost" id="supNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sup-modal" id="supFormModal" aria-hidden="true">
+    <div class="sup-modal__backdrop"></div>
+    <div class="sup-modal__dialog sup-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="sup-modal__header">
+            <h3 id="supFormModalTitle">Crear</h3>
+            <button type="button" class="sup-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="supForm" class="sup-modal__body sup-form-grid" novalidate>
+            <input type="hidden" id="supFormId" value="" />
+            <div class="sup-field"><label for="supDocType">Tipo documento *</label><select id="supDocType" name="idDocumentType" required><option value="">Seleccione...</option></select></div>
+            <div class="sup-field"><label for="supDocNumber">N° documento *</label><input type="text" id="supDocNumber" name="documentNumber" required maxlength="20" /></div>
+            <div class="sup-field sup-field--full"><label for="supName">Razón social / Nombre *</label><input type="text" id="supName" name="name" required maxlength="150" /></div>
+            <div class="sup-field"><label for="supPhone">Teléfono</label><input type="text" id="supPhone" name="phone" maxlength="20" /></div>
+            <div class="sup-field"><label for="supEmail">Email</label><input type="email" id="supEmail" name="email" maxlength="100" /></div>
+            <div class="sup-field sup-field--full"><label for="supAddress">Dirección</label><input type="text" id="supAddress" name="address" maxlength="255" /></div>
+            <div class="sup-field sup-field--full"><label for="supDistrict">Distrito</label><select id="supDistrict" name="idDistrict"><option value="">Sin distrito</option></select></div>
+        </form>
+        <div class="sup-modal__footer">
+            <button type="button" class="sup__btn sup__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="sup__btn sup__btn--primary" id="supFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="sup-modal" id="supDetailModal" aria-hidden="true">
+    <div class="sup-modal__backdrop"></div>
+    <div class="sup-modal__dialog sup-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="sup-modal__header"><h3>Detalle</h3><button type="button" class="sup-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="sup-modal__body" id="supDetailBody"></div>
+        <div class="sup-modal__footer"><button type="button" class="sup__btn sup__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="sup-modal" id="supInactiveModal" aria-hidden="true">
+    <div class="sup-modal__backdrop"></div>
+    <div class="sup-modal__dialog sup-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="sup-modal__header"><h3>Registros inactivos</h3><button type="button" class="sup-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="sup-modal__body">
+            <div class="sup__search-group sup__search-group--modal">
+                <div class="sup__search"><i class="bi bi-search"></i><input type="text" id="supInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="sup__btn sup__btn--ghost" id="supInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="sup__filters sup__filters--modal">
+                <div class="sup__filter">
+                    <label for="supInactiveFilterDocType">Tipo documento</label>
+                    <select id="supInactiveFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="sup__filter">
+                    <label for="supInactiveFilterDistrict">Distrito</label>
+                    <select id="supInactiveFilterDistrict"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="sup__table-scroll sup__table-scroll--modal" id="supInactiveTableScroll">
+                <table class="sup__table">
+                    <thead><tr>
+                        <th>ID</th><th>TIPO DOC.</th><th>N° DOC.</th><th>RAZÓN SOCIAL</th><th>TELÉFONO</th><th>EMAIL</th><th>DISTRITO</th>
+                        <th class="sup__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="supInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="sup__footer sup__footer--modal">
+                <div class="sup__page-size"><span>Mostrar</span><select id="supInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="sup__pagination">
+                    <span id="supInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="sup__btn sup__btn--ghost" id="supInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="sup__btn sup__btn--ghost" id="supInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sup-modal" id="supConfirmModal" aria-hidden="true">
+    <div class="sup-modal__backdrop"></div>
+    <div class="sup-modal__dialog sup-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="sup-modal__header"><h3 id="supConfirmTitle">Confirmar</h3><button type="button" class="sup-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="sup-modal__body"><p id="supConfirmMessage"></p></div>
+        <div class="sup-modal__footer">
+            <button type="button" class="sup__btn sup__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="sup__btn sup__btn--danger" id="supConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Proveedores/proveedores.js" asp-append-version="true"></script>
+    <script>
+        window.supUrls = {
+            list: '@Url.Action("List", "Proveedores")',
+            listInactive: '@Url.Action("ListInactive", "Proveedores")',
+            get: '@Url.Action("Get", "Proveedores")',
+            filterOptions: '@Url.Action("FilterOptions", "Proveedores")',
+            create: '@Url.Action("Create", "Proveedores")',
+            update: '@Url.Action("Update", "Proveedores")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Proveedores")',
+            restore: '@Url.Action("Restore", "Proveedores")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Proveedores")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Proveedores/proveedores.js")" asp-append-version="true"></script>
 }

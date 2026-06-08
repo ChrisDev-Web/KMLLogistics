@@ -2,6 +2,8 @@ using E1___Sosa_Morales.Data;
 
 using E1___Sosa_Morales.Services.AlertasStock;
 
+using E1___Sosa_Morales.Services.Clientes;
+
 using E1___Sosa_Morales.Services.Countries;
 
 using E1___Sosa_Morales.Services.Distritos;
@@ -9,6 +11,8 @@ using E1___Sosa_Morales.Services.Distritos;
 using E1___Sosa_Morales.Services.Perfil;
 
 using E1___Sosa_Morales.Services.Provincias;
+
+using E1___Sosa_Morales.Services.Proveedores;
 
 using E1___Sosa_Morales.Services.Regiones;
 
@@ -47,6 +51,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStockAlertService, StockAlertService>();
 
 builder.Services.AddScoped<IDocumentTypeService, DocumentTypeService>();
+
+builder.Services.AddScoped<IClientService, ClientService>();
+
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 builder.Services.AddScoped<ICountryService, CountryService>();
 

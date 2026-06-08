@@ -6,16 +6,170 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Clientes/clientes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Clientes/clientes.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="clt" id="cltRoot">
+    <div class="clt__panel">
+        <div class="clt__toolbar">
+            <div class="clt__search-group">
+                <div class="clt__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="cltSearchInput" placeholder="Buscar en Clientes" autocomplete="off" />
+                </div>
+                <button type="button" class="clt__btn clt__btn--ghost" id="cltClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="clt__filters">
+                <div class="clt__filter">
+                    <label for="cltFilterDocType"><i class="bi bi-funnel"></i> Tipo documento</label>
+                    <select id="cltFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="clt__filter">
+                    <label for="cltFilterDistrict"><i class="bi bi-funnel"></i> Distrito</label>
+                    <select id="cltFilterDistrict"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="clt__actions">
+                <button type="button" class="clt__btn clt__btn--outline" id="cltInactiveBtn">Ver inactivos</button>
+                <button type="button" class="clt__btn clt__btn--primary" id="cltCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="cltToast" class="clt__toast" role="status" aria-live="polite"></div>
+        <div class="clt__table-scroll" id="cltTableScroll">
+            <table class="clt__table" id="cltActiveTable">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>TIPO DOC.</th>
+                    <th>N° DOC.</th>
+                    <th>CLIENTE</th>
+                    <th>TELÉFONO</th>
+                    <th>EMAIL</th>
+                    <th>DISTRITO</th>
+                    <th class="clt__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="cltActiveBody">
+                    <tr class="clt__loading-row"><td colspan="8">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="clt__footer">
+            <div class="clt__page-size">
+                <span>Mostrar</span>
+                <select id="cltPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="clt__pagination">
+                <span id="cltPageInfo">Página 1 de 1</span>
+                <button type="button" class="clt__btn clt__btn--ghost" id="cltPrevBtn" disabled>Anterior</button>
+                <button type="button" class="clt__btn clt__btn--ghost" id="cltNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clt-modal" id="cltFormModal" aria-hidden="true">
+    <div class="clt-modal__backdrop"></div>
+    <div class="clt-modal__dialog clt-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="clt-modal__header">
+            <h3 id="cltFormModalTitle">Crear</h3>
+            <button type="button" class="clt-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="cltForm" class="clt-modal__body clt-form-grid" novalidate>
+            <input type="hidden" id="cltFormId" value="" />
+            <div class="clt-field"><label for="cltDocType">Tipo documento *</label><select id="cltDocType" name="idDocumentType" required><option value="">Seleccione...</option></select></div>
+            <div class="clt-field"><label for="cltDocNumber">N° documento *</label><input type="text" id="cltDocNumber" name="documentNumber" required maxlength="20" /></div>
+            <div class="clt-field"><label for="cltName">Nombres *</label><input type="text" id="cltName" name="name" required maxlength="80" /></div>
+            <div class="clt-field"><label for="cltLastNamePaternal">Apellido paterno *</label><input type="text" id="cltLastNamePaternal" name="lastNamePaternal" required maxlength="80" /></div>
+            <div class="clt-field"><label for="cltLastNameMaternal">Apellido materno</label><input type="text" id="cltLastNameMaternal" name="lastNameMaternal" maxlength="80" /></div>
+            <div class="clt-field"><label for="cltPhone">Teléfono</label><input type="text" id="cltPhone" name="phone" maxlength="20" /></div>
+            <div class="clt-field"><label for="cltEmail">Email</label><input type="email" id="cltEmail" name="email" maxlength="100" /></div>
+            <div class="clt-field clt-field--full"><label for="cltAddress">Dirección</label><input type="text" id="cltAddress" name="address" maxlength="255" /></div>
+            <div class="clt-field clt-field--full"><label for="cltDistrict">Distrito</label><select id="cltDistrict" name="idDistrict"><option value="">Sin distrito</option></select></div>
+        </form>
+        <div class="clt-modal__footer">
+            <button type="button" class="clt__btn clt__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="clt__btn clt__btn--primary" id="cltFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="clt-modal" id="cltDetailModal" aria-hidden="true">
+    <div class="clt-modal__backdrop"></div>
+    <div class="clt-modal__dialog clt-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="clt-modal__header"><h3>Detalle</h3><button type="button" class="clt-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="clt-modal__body" id="cltDetailBody"></div>
+        <div class="clt-modal__footer"><button type="button" class="clt__btn clt__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="clt-modal" id="cltInactiveModal" aria-hidden="true">
+    <div class="clt-modal__backdrop"></div>
+    <div class="clt-modal__dialog clt-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="clt-modal__header"><h3>Registros inactivos</h3><button type="button" class="clt-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="clt-modal__body">
+            <div class="clt__search-group clt__search-group--modal">
+                <div class="clt__search"><i class="bi bi-search"></i><input type="text" id="cltInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="clt__btn clt__btn--ghost" id="cltInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="clt__filters clt__filters--modal">
+                <div class="clt__filter">
+                    <label for="cltInactiveFilterDocType">Tipo documento</label>
+                    <select id="cltInactiveFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="clt__filter">
+                    <label for="cltInactiveFilterDistrict">Distrito</label>
+                    <select id="cltInactiveFilterDistrict"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="clt__table-scroll clt__table-scroll--modal" id="cltInactiveTableScroll">
+                <table class="clt__table">
+                    <thead><tr>
+                        <th>ID</th><th>TIPO DOC.</th><th>N° DOC.</th><th>CLIENTE</th><th>TELÉFONO</th><th>EMAIL</th><th>DISTRITO</th>
+                        <th class="clt__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="cltInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="clt__footer clt__footer--modal">
+                <div class="clt__page-size"><span>Mostrar</span><select id="cltInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="clt__pagination">
+                    <span id="cltInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="clt__btn clt__btn--ghost" id="cltInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="clt__btn clt__btn--ghost" id="cltInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clt-modal" id="cltConfirmModal" aria-hidden="true">
+    <div class="clt-modal__backdrop"></div>
+    <div class="clt-modal__dialog clt-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="clt-modal__header"><h3 id="cltConfirmTitle">Confirmar</h3><button type="button" class="clt-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="clt-modal__body"><p id="cltConfirmMessage"></p></div>
+        <div class="clt-modal__footer">
+            <button type="button" class="clt__btn clt__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="clt__btn clt__btn--danger" id="cltConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Clientes/clientes.js" asp-append-version="true"></script>
+    <script>
+        window.cltUrls = {
+            list: '@Url.Action("List", "Clientes")',
+            listInactive: '@Url.Action("ListInactive", "Clientes")',
+            get: '@Url.Action("Get", "Clientes")',
+            filterOptions: '@Url.Action("FilterOptions", "Clientes")',
+            create: '@Url.Action("Create", "Clientes")',
+            update: '@Url.Action("Update", "Clientes")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Clientes")',
+            restore: '@Url.Action("Restore", "Clientes")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Clientes")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Clientes/clientes.js")" asp-append-version="true"></script>
 }
