@@ -6,6 +6,8 @@ using E1___Sosa_Morales.Services.Countries;
 
 using E1___Sosa_Morales.Services.Distritos;
 
+using E1___Sosa_Morales.Services.Perfil;
+
 using E1___Sosa_Morales.Services.Provincias;
 
 using E1___Sosa_Morales.Services.Regiones;
@@ -57,6 +59,8 @@ builder.Services.AddScoped<IDistrictService, DistrictService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+builder.Services.AddScoped<IPerfilService, PerfilService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 

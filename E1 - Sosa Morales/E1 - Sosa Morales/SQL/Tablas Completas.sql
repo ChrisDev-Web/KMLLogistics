@@ -217,6 +217,7 @@ CREATE TABLE Users (
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
+    photo VARCHAR(255) NULL,
     CONSTRAINT fk_user_role FOREIGN KEY (id_role) REFERENCES Roles(id_role)
 );
 

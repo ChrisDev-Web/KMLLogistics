@@ -1,10 +1,9 @@
 @{
     var pageTitle = ViewBag.PageTitle as string ?? "Dashboard";
     var username = User.Identity?.Name ?? "Usuario";
-    var initials = username.Length >= 2
-        ? username[..2].ToUpper()
-        : username.ToUpper();
-    var perfilUrl = Url.Action("Index", "Perfil") ?? "/Perfil";
+    var initials = username.Length >= 2 ? username[..2].ToUpperInvariant() : username.ToUpperInvariant();
+    var photoUrl = User.FindFirst("photo")?.Value;
+    var hasPhoto = !string.IsNullOrWhiteSpace(photoUrl);
 }
 
 <header class="dashboard-header">
@@ -13,13 +12,31 @@
         @await Component.InvokeAsync("StockAlertCount")
         <div class="header-user-dropdown">
             <button type="button" class="header-user__trigger" id="headerUserTrigger" aria-expanded="false" aria-haspopup="true">
-                <span class="header-user__avatar">@initials</span>
+                @if (hasPhoto)
+                {
+                    <span class="header-user__avatar header-user__avatar--photo">
+                        <img src="@Url.Content("~" + photoUrl)" alt="@username" />
+                    </span>
+                }
+                else
+                {
+                    <span class="header-user__avatar">@initials</span>
+                }
                 <span class="header-user__name">@username</span>
                 <i class="bi bi-chevron-down header-user__chevron"></i>
             </button>
             <div class="header-user__menu" id="headerUserMenu" role="menu">
                 <div class="header-user__menu-header">
-                    <span class="header-user__menu-avatar">@initials</span>
+                    @if (hasPhoto)
+                    {
+                        <span class="header-user__menu-avatar header-user__menu-avatar--photo">
+                            <img src="@Url.Content("~" + photoUrl)" alt="@username" />
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="header-user__menu-avatar">@initials</span>
+                    }
                     <div>
                         <p class="header-user__menu-name">@username</p>
                         <p class="header-user__menu-sub">Cuenta activa</p>

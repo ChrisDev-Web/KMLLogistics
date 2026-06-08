@@ -403,3 +403,109 @@ SELECT
     COL_LENGTH('dbo.WarehouseDetails', 'min_stock') AS min_stock_column_exists,
     OBJECT_ID('dbo.StockAlerts', 'U')              AS stock_alerts_table_exists;
 GO
+
+-- ############################################################
+-- PERFIL DE USUARIO (Users.photo)
+-- ############################################################
+
+IF OBJECT_ID('dbo.sp_user_get_by_username', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_user_get_by_username;
+GO
+CREATE PROCEDURE dbo.sp_user_get_by_username
+    @username VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        u.id_user,
+        u.id_role,
+        u.username,
+        u.password_hash,
+        u.photo,
+        u.created_at,
+        u.updated_at,
+        r.name AS role_name
+    FROM Users u
+    INNER JOIN Roles r ON r.id_role = u.id_role
+    WHERE u.username = @username
+      AND u.deleted_at IS NULL
+      AND r.deleted_at IS NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_profile_get_by_id', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_user_profile_get_by_id;
+GO
+CREATE PROCEDURE dbo.sp_user_profile_get_by_id
+    @id_user INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        u.id_user,
+        u.id_role,
+        u.username,
+        u.photo,
+        r.name AS role_name,
+        u.created_at,
+        u.updated_at
+    FROM Users u
+    INNER JOIN Roles r ON r.id_role = u.id_role
+    WHERE u.id_user = @id_user
+      AND u.deleted_at IS NULL
+      AND r.deleted_at IS NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_profile_update', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_user_profile_update;
+GO
+CREATE PROCEDURE dbo.sp_user_profile_update
+    @id_user       INT,
+    @username      VARCHAR(50),
+    @password_hash VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE id_user = @id_user AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS success, 'Registro no encontrado.' AS message;
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM Users WHERE username = @username AND id_user <> @id_user AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS success, 'Ya existe otro usuario con ese nombre.' AS message;
+        RETURN;
+    END
+
+    IF @password_hash IS NULL OR @password_hash = ''
+        UPDATE Users SET username = @username, updated_at = GETDATE() WHERE id_user = @id_user;
+    ELSE
+        UPDATE Users SET username = @username, password_hash = @password_hash, updated_at = GETDATE() WHERE id_user = @id_user;
+
+    SELECT 1 AS success, 'Perfil actualizado correctamente.' AS message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_user_profile_update_photo', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_user_profile_update_photo;
+GO
+CREATE PROCEDURE dbo.sp_user_profile_update_photo
+    @id_user INT,
+    @photo   VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE id_user = @id_user AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS success, 'Registro no encontrado.' AS message;
+        RETURN;
+    END
+
+    UPDATE Users SET photo = @photo, updated_at = GETDATE() WHERE id_user = @id_user;
+    SELECT 1 AS success, 'Foto de perfil actualizada correctamente.' AS message;
+END
+GO

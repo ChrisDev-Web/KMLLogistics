@@ -4,23 +4,63 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <partial name="_BrowserTab" />
-    <link rel="stylesheet" href="~/Public/CSS/LandingPage/landing.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/LandingPage/landing.css")" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="landing-body">
-    <nav class="landing-nav">
-        <a asp-controller="LandingPage" asp-action="Index" class="landing-nav__brand">
-            <img src="~/Public/Images/Logo - KMLLogistics.png" alt="KML Logistics" class="landing-nav__logo" />
-        </a>
-        <ul class="landing-nav__links">
-            <li><a href="#inicio">Inicio</a></li>
-            <li><a href="#sobre-nosotros">Sobre Nosotros</a></li>
-            <li><a href="#servicios">Servicios</a></li>
-        </ul>
-        <div class="landing-nav__actions">
-            <a asp-controller="Login" asp-action="Index" class="btn-outline-primary-custom">Login</a>
-            <a asp-controller="Register" asp-action="Index" class="btn-primary-custom">Register</a>
-        </div>
-    </nav>
-    @RenderBody()
+    <header class="landing-header">
+        <nav class="landing-nav">
+            <a asp-controller="LandingPage" asp-action="Index" class="landing-nav__brand">
+                <img src="@Url.Content("~/Public/Images/Logo - KMLLogistics.png")" alt="KML Logistic" class="landing-nav__logo" />
+                <span class="landing-nav__brand-text">KML Logistic S.A.C.</span>
+            </a>
+
+            <button type="button" class="landing-nav__toggle" id="landingNavToggle" aria-label="Abrir menú" aria-expanded="false">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <ul class="landing-nav__links">
+                <li><a href="#inicio" class="landing-nav__link is-active" data-section="inicio">Inicio</a></li>
+                <li><a href="#sobre-nosotros" class="landing-nav__link" data-section="sobre-nosotros">Sobre Nosotros</a></li>
+                <li><a href="#servicios" class="landing-nav__link" data-section="servicios">Servicios</a></li>
+            </ul>
+
+            <div class="landing-nav__actions">
+                <a asp-controller="Login" asp-action="Index" class="landing-btn landing-btn--outline">
+                    <i class="bi bi-person"></i> Login
+                </a>
+                <a asp-controller="Register" asp-action="Index" class="landing-btn landing-btn--primary">
+                    <i class="bi bi-person-plus"></i> Register
+                </a>
+            </div>
+
+            <div class="landing-nav__mobile" id="landingNavPanel">
+                <ul class="landing-nav__links landing-nav__links--mobile">
+                    <li><a href="#inicio" class="landing-nav__link is-active" data-section="inicio">Inicio</a></li>
+                    <li><a href="#sobre-nosotros" class="landing-nav__link" data-section="sobre-nosotros">Sobre Nosotros</a></li>
+                    <li><a href="#servicios" class="landing-nav__link" data-section="servicios">Servicios</a></li>
+                </ul>
+                <div class="landing-nav__actions landing-nav__actions--mobile">
+                    <a asp-controller="Login" asp-action="Index" class="landing-btn landing-btn--outline">
+                        <i class="bi bi-person"></i> Login
+                    </a>
+                    <a asp-controller="Register" asp-action="Index" class="landing-btn landing-btn--primary">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="landing-main">
+        @RenderBody()
+    </main>
+
+    <script src="@Url.Content("~/Public/JS/LandingPage/landing.js")" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

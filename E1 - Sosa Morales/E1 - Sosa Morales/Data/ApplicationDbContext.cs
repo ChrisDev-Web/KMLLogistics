@@ -1,6 +1,7 @@
 using E1___Sosa_Morales.Models.AlertasStock;
 using E1___Sosa_Morales.Models.Countries;
 using E1___Sosa_Morales.Models.Distritos;
+using E1___Sosa_Morales.Models.Perfil;
 using E1___Sosa_Morales.Models.Provincias;
 using E1___Sosa_Morales.Models.Regiones;
 using E1___Sosa_Morales.Models.Roles;
@@ -51,5 +52,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<UsuarioDetail>().HasNoKey();
         modelBuilder.Entity<UsuarioSpResult>().HasNoKey();
         modelBuilder.Entity<UsuarioRoleOption>().HasNoKey();
+        modelBuilder.Entity<UserProfileDetail>().HasNoKey();
     }
 }

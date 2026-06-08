@@ -3,14 +3,225 @@
     ViewData["Title"] = "Inicio";
 }
 
-<section id="inicio" class="landing-section">
-    <h1 class="landing-section__title">INICIO</h1>
+<section id="inicio" class="hero">
+    <div class="hero__bg" aria-hidden="true"></div>
+    <div class="hero__inner">
+        <div class="hero__content">
+            <h1 class="hero__title">
+                Impulsamos tu comercio internacional
+                <span class="hero__title-accent">con logística segura y eficiente.</span>
+            </h1>
+            <p class="hero__text">
+                Somos una empresa peruana con sede en Lima, especializada en soluciones logísticas integrales
+                para importación, exportación y transporte internacional. Acompañamos a nuestros clientes en
+                cada etapa del proceso con profesionalismo y compromiso.
+            </p>
+            <div class="hero__features">
+                <div class="hero__feature">
+                    <span class="hero__feature-icon"><i class="bi bi-box-seam"></i></span>
+                    <span>Importación y Exportación</span>
+                </div>
+                <div class="hero__feature">
+                    <span class="hero__feature-icon"><i class="bi bi-truck"></i></span>
+                    <span>Transporte Internacional</span>
+                </div>
+                <div class="hero__feature">
+                    <span class="hero__feature-icon"><i class="bi bi-building"></i></span>
+                    <span>Almacenamiento</span>
+                </div>
+                <div class="hero__feature">
+                    <span class="hero__feature-icon"><i class="bi bi-file-earmark-check"></i></span>
+                    <span>Gestión Aduanera</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero__media">
+            <img src="@Url.Content("~/Public/Images/Inicio.png")" alt="Logística internacional: camión, barco y avión de carga" class="hero__image" />
+        </div>
+    </div>
 </section>
 
-<section id="sobre-nosotros" class="landing-section">
-    <h1 class="landing-section__title">SOBRE NOSOTROS</h1>
+<section id="sobre-nosotros" class="about">
+    <div class="about__inner">
+        <h2 class="section-title">Sobre Nosotros</h2>
+        <div class="about__grid">
+            <div class="about__text">
+                <p>
+                    KML Logistic S.A.C. nació en Lima con la visión de facilitar el comercio exterior de
+                    empresas peruanas. Desde nuestros inicios, hemos crecido junto a nuestros clientes,
+                    ampliando nuestra red de aliados y fortaleciendo cada eslabón de la cadena logística.
+                </p>
+                <p>
+                    Hoy operamos con procesos estandarizados, tecnología de seguimiento y un equipo
+                    especializado que entiende las exigencias del mercado internacional. Nuestro objetivo
+                    es ser el socio estratégico que impulse el crecimiento sostenible de tu negocio en el Perú
+                    y en el mundo.
+                </p>
+                <div class="about__cards">
+                    <article class="about-card">
+                        <div class="about-card__icon"><i class="bi bi-bullseye"></i></div>
+                        <h3 class="about-card__title">Misión</h3>
+                        <p class="about-card__text">
+                            Brindar soluciones logísticas integrales de alta calidad que impulsen el comercio
+                            internacional de nuestros clientes, garantizando eficiencia, seguridad y cumplimiento
+                            en cada operación.
+                        </p>
+                    </article>
+                    <article class="about-card">
+                        <div class="about-card__icon"><i class="bi bi-eye"></i></div>
+                        <h3 class="about-card__title">Visión</h3>
+                        <p class="about-card__text">
+                            Ser la empresa líder en servicios logísticos del Perú, reconocida por nuestra
+                            excelencia operativa, innovación y compromiso con el desarrollo sostenible del
+                            comercio exterior.
+                        </p>
+                    </article>
+                </div>
+            </div>
+            <div class="about__media">
+                <img src="@Url.Content("~/Public/Images/Nosotros.png")" alt="Equipo profesional de KML Logistic frente a contenedores" class="about__image" />
+            </div>
+        </div>
+
+        <div class="values">
+            <h3 class="values__title">Valores</h3>
+            <div class="values__grid">
+                <button type="button" class="value-card" data-value-title="Compromiso con la excelencia" data-value-desc="Nos esforzamos por brindar servicios logísticos de alta calidad, superando las expectativas de nuestros clientes en cada operación.">
+                    <span class="value-card__icon"><i class="bi bi-award"></i></span>
+                    <span class="value-card__label">Compromiso con la excelencia</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Orientación al cliente" data-value-desc="Colocamos al cliente en el centro de nuestras decisiones, ofreciendo soluciones adaptadas a sus necesidades.">
+                    <span class="value-card__icon"><i class="bi bi-people"></i></span>
+                    <span class="value-card__label">Orientación al cliente</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Eficiencia operativa" data-value-desc="Optimizamos cada proceso logístico para garantizar rapidez, precisión y reducción de costos.">
+                    <span class="value-card__icon"><i class="bi bi-speedometer2"></i></span>
+                    <span class="value-card__label">Eficiencia operativa</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Responsabilidad y seguridad" data-value-desc="Cuidamos cada envío como propio, asegurando su integridad desde el origen hasta el destino.">
+                    <span class="value-card__icon"><i class="bi bi-shield-check"></i></span>
+                    <span class="value-card__label">Responsabilidad y seguridad</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Transparencia" data-value-desc="Mantenemos una comunicación clara y constante con nuestros clientes durante todo el proceso logístico.">
+                    <span class="value-card__icon"><i class="bi bi-chat-left-text"></i></span>
+                    <span class="value-card__label">Transparencia</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Innovación continua" data-value-desc="Buscamos mejorar constantemente mediante el uso de tecnología y nuevas estrategias en logística.">
+                    <span class="value-card__icon"><i class="bi bi-lightbulb"></i></span>
+                    <span class="value-card__label">Innovación continua</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Profesionalismo" data-value-desc="Actuamos con ética, respeto y alto nivel técnico en cada servicio que brindamos.">
+                    <span class="value-card__icon"><i class="bi bi-briefcase"></i></span>
+                    <span class="value-card__label">Profesionalismo</span>
+                </button>
+                <button type="button" class="value-card" data-value-title="Sostenibilidad" data-value-desc="Promovemos prácticas responsables que contribuyan al cuidado del medio ambiente.">
+                    <span class="value-card__icon"><i class="bi bi-globe-americas"></i></span>
+                    <span class="value-card__label">Sostenibilidad</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </section>
 
-<section id="servicios" class="landing-section">
-    <h1 class="landing-section__title">SERVICIOS</h1>
+<div class="value-modal" id="valueModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="valueModalTitle">
+    <div class="value-modal__backdrop" data-dismiss="value-modal"></div>
+    <div class="value-modal__dialog">
+        <div class="value-modal__header">
+            <div class="value-modal__header-icon" id="valueModalIcon"><i class="bi bi-award"></i></div>
+            <h3 class="value-modal__title" id="valueModalTitle"></h3>
+            <button type="button" class="value-modal__close" data-dismiss="value-modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="value-modal__body">
+            <p class="value-modal__text" id="valueModalText"></p>
+        </div>
+    </div>
+</div>
+
+<section id="servicios" class="services">
+    <div class="services__inner">
+        <h2 class="section-title section-title--center">Servicios</h2>
+        <div class="services__grid">
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-box-arrow-in-down"></i></div>
+                <h3 class="service-card__title">Importación</h3>
+                <p class="service-card__text">
+                    Gestión integral de importaciones: documentación, coordinación con proveedores,
+                    trámites aduaneros y entrega en destino.
+                </p>
+            </article>
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-box-arrow-up"></i></div>
+                <h3 class="service-card__title">Exportación</h3>
+                <p class="service-card__text">
+                    Acompañamiento completo para llevar tus productos al mercado internacional con
+                    cumplimiento normativo y tiempos optimizados.
+                </p>
+            </article>
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-truck-front"></i></div>
+                <h3 class="service-card__title">Transporte Internacional</h3>
+                <p class="service-card__text">
+                    Soluciones multimodales por mar, aire y tierra con seguimiento en tiempo real
+                    y cobertura en los principales corredores comerciales.
+                </p>
+            </article>
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-house-door"></i></div>
+                <h3 class="service-card__title">Almacenamiento</h3>
+                <p class="service-card__text">
+                    Instalaciones seguras para depósito, consolidación y distribución de mercancías
+                    con control de inventario y trazabilidad.
+                </p>
+            </article>
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-file-earmark-text"></i></div>
+                <h3 class="service-card__title">Gestión Aduanera</h3>
+                <p class="service-card__text">
+                    Asesoría y tramitación aduanera especializada para agilizar despachos y garantizar
+                    el cumplimiento de la normativa vigente.
+                </p>
+            </article>
+            <article class="service-card">
+                <div class="service-card__icon"><i class="bi bi-diagram-3"></i></div>
+                <h3 class="service-card__title">Soluciones Logísticas Integrales</h3>
+                <p class="service-card__text">
+                    Diseño de cadenas logísticas a medida que integran transporte, almacén, aduana
+                    y distribución en un solo punto de contacto.
+                </p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="highlights" aria-label="Ventajas competitivas">
+    <div class="highlights__inner">
+        <article class="highlights__item">
+            <span class="highlights__icon"><i class="bi bi-globe2"></i></span>
+            <div class="highlights__content">
+                <h3 class="highlights__title">Red Internacional</h3>
+                <p class="highlights__text">Alianzas estratégicas en los principales mercados del mundo.</p>
+            </div>
+        </article>
+        <article class="highlights__item">
+            <span class="highlights__icon"><i class="bi bi-headset"></i></span>
+            <div class="highlights__content">
+                <h3 class="highlights__title">Atención Personalizada</h3>
+                <p class="highlights__text">Acompañamiento cercano y soluciones adaptadas a tu negocio.</p>
+            </div>
+        </article>
+        <article class="highlights__item">
+            <span class="highlights__icon"><i class="bi bi-gear-wide-connected"></i></span>
+            <div class="highlights__content">
+                <h3 class="highlights__title">Procesos Eficientes</h3>
+                <p class="highlights__text">Optimizamos cada etapa para ahorrar tiempo y recursos.</p>
+            </div>
+        </article>
+        <article class="highlights__item">
+            <span class="highlights__icon"><i class="bi bi-shield-lock"></i></span>
+            <div class="highlights__content">
+                <h3 class="highlights__title">Operaciones Seguras</h3>
+                <p class="highlights__text">Seguridad y cumplimiento en cada operación, de origen a destino.</p>
+            </div>
+        </article>
+    </div>
 </section>

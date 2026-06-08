@@ -3,37 +3,142 @@
     Layout = "_DashboardLayout";
     ViewBag.PageTitle = "Mi perfil";
     ViewBag.SidebarActive = "dashboard";
+    var hasPhoto = !string.IsNullOrWhiteSpace(Model.PhotoUrl);
 }
 
-<div class="profile-card">
-    <div class="profile-card__header">
-        <div class="profile-card__avatar">
-            @(Model.Username.Length >= 2 ? Model.Username[..2].ToUpper() : Model.Username.ToUpper())
-        </div>
-        <div>
-            <h2 class="profile-card__name">@Model.Username</h2>
-            <p class="profile-card__role">@Model.RoleName</p>
-        </div>
-    </div>
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Perfil/perfil.css")" asp-append-version="true" />
+}
 
-    <div class="profile-card__body">
-        <div class="profile-field">
-            <span class="profile-field__label">Usuario</span>
-            <span class="profile-field__value">@Model.Username</span>
-        </div>
-        <div class="profile-field">
-            <span class="profile-field__label">Rol</span>
-            <span class="profile-field__value">@Model.RoleName</span>
-        </div>
-    </div>
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="perf-alert perf-alert--success" role="status">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="perf-alert perf-alert--error" role="alert">@Model.ErrorMessage</div>
+}
 
-    <div class="module-placeholder" style="margin-top:1.5rem">
-        <h2>EN DESARROLLO</h2>
-        <p>Edición de perfil — próximamente disponible.</p>
+<div class="module-topbar">
+    <div></div>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn-back-dashboard">
+        <i class="bi bi-arrow-left"></i>
+        Volver a Dashboard
+    </a>
+</div>
+
+<div class="perf">
+    <div class="perf__layout">
+        <aside class="perf-photo-panel">
+            <div class="perf-photo">
+                <div class="perf-photo__preview" id="perfPhotoPreview">
+                    @if (hasPhoto)
+                    {
+                        <img src="@Url.Content("~" + Model.PhotoUrl)" alt="Foto de @Model.Username" class="perf-photo__img" id="perfPhotoImg" />
+                    }
+                    else
+                    {
+                        <span class="perf-photo__initials" id="perfPhotoInitials">@Model.Initials</span>
+                    }
+                </div>
+                <p class="perf-photo__hint">JPG, PNG o WEBP. Máximo 2 MB.</p>
+                <form asp-action="UpdatePhoto" method="post" enctype="multipart/form-data" class="perf-photo__form" id="perfPhotoForm">
+                    @Html.AntiForgeryToken()
+                    <label class="perf-btn perf-btn--outline perf-btn--block" for="perfPhotoInput">
+                        <i class="bi bi-camera"></i> Cambiar foto
+                    </label>
+                    <input type="file" id="perfPhotoInput" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="perf-photo__input" />
+                </form>
+                @if (hasPhoto)
+                {
+                    <form asp-action="RemovePhoto" method="post" class="perf-photo__remove-form" id="perfRemovePhotoForm">
+                        @Html.AntiForgeryToken()
+                        <button type="button" class="perf-btn perf-btn--ghost perf-btn--block" id="perfRemovePhotoBtn">
+                            <i class="bi bi-trash"></i> Quitar foto
+                        </button>
+                    </form>
+                }
+            </div>
+        </aside>
+
+        <div class="perf-main">
+            <div class="perf-card">
+                <div class="perf-card__header">
+                    <h2 class="perf-card__title">Datos de la cuenta</h2>
+                    <p class="perf-card__subtitle">Personaliza tu usuario y contraseña.</p>
+                </div>
+
+                <form asp-action="UpdateAccount" method="post" class="perf-form" id="perfAccountForm">
+                    @Html.AntiForgeryToken()
+                    <div class="perf-field">
+                        <label for="perfUsername">Usuario</label>
+                        <input type="text" id="perfUsername" name="username" value="@Model.Username" required maxlength="50" autocomplete="username" />
+                    </div>
+                    <div class="perf-field">
+                        <label for="perfNewPassword">Nueva contraseña</label>
+                        <input type="password" id="perfNewPassword" name="newPassword" maxlength="100" autocomplete="new-password" placeholder="Dejar vacío para no cambiar" />
+                    </div>
+                    <div class="perf-field">
+                        <label for="perfConfirmPassword">Confirmar contraseña</label>
+                        <input type="password" id="perfConfirmPassword" name="confirmPassword" maxlength="100" autocomplete="new-password" placeholder="Repita la nueva contraseña" />
+                    </div>
+                    <div class="perf-form__actions">
+                        <button type="submit" class="perf-btn perf-btn--primary">
+                            <i class="bi bi-check-lg"></i> Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="perf-card perf-card--info">
+                <h3 class="perf-info__title">Información</h3>
+                <div class="perf-info__grid">
+                    <div class="perf-info__item">
+                        <span class="perf-info__label">Rol</span>
+                        <span class="perf-info__value">@Model.RoleName</span>
+                    </div>
+                    <div class="perf-info__item">
+                        <span class="perf-info__label">Cuenta creada</span>
+                        <span class="perf-info__value">@Model.CreatedAt</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.UpdatedAt))
+                    {
+                        <div class="perf-info__item">
+                            <span class="perf-info__label">Última actualización</span>
+                            <span class="perf-info__value">@Model.UpdatedAt</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<a asp-controller="Dashboard" asp-action="Index" class="btn-back-dashboard" style="margin-top:1.5rem">
-    <i class="bi bi-arrow-left"></i>
-    Volver a Dashboard
-</a>
+<div class="perf-modal" id="perfConfirmModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="perfConfirmTitle">
+    <div class="perf-modal__backdrop" data-dismiss="perf-modal"></div>
+    <div class="perf-modal__dialog">
+        <div class="perf-modal__header">
+            <span class="perf-modal__icon"><i class="bi bi-trash"></i></span>
+            <h3 class="perf-modal__title" id="perfConfirmTitle">Quitar foto de perfil</h3>
+            <button type="button" class="perf-modal__close" data-dismiss="perf-modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="perf-modal__body">
+            <p class="perf-modal__message" id="perfConfirmMessage">
+                ¿Desea eliminar su foto de perfil? Se mostrarán nuevamente sus iniciales en el encabezado del sistema.
+            </p>
+        </div>
+        <div class="perf-modal__footer">
+            <button type="button" class="perf-btn perf-btn--ghost" data-dismiss="perf-modal">Cancelar</button>
+            <button type="button" class="perf-btn perf-btn--danger" id="perfConfirmBtn">
+                <i class="bi bi-trash"></i> Eliminar foto
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.perfInitials = '@Model.Initials';
+    </script>
+    <script src="@Url.Content("~/Public/JS/Perfil/perfil.js")" asp-append-version="true"></script>
+}

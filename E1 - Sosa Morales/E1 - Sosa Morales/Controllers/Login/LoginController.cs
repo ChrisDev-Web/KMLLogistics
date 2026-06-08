@@ -55,6 +55,8 @@ public class LoginController : Controller
             new(ClaimTypes.Role, user.RoleName),
             new("id_role", user.IdRole.ToString())
         };
+        if (!string.IsNullOrWhiteSpace(user.Photo))
+            claims.Add(new Claim("photo", user.Photo));
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);

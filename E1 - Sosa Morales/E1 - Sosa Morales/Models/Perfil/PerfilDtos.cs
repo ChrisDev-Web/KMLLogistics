@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace E1___Sosa_Morales.Models.Users;
+namespace E1___Sosa_Morales.Models.Perfil;
 
-public class User
+public class UserProfileDetail
 {
     [Column("id_user")]
     public int IdUser { get; set; }
@@ -13,18 +13,15 @@ public class User
     [Column("username")]
     public string Username { get; set; } = string.Empty;
 
-    [Column("password_hash")]
-    public string PasswordHash { get; set; } = string.Empty;
-
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
-
-    [Column("updated_at")]
-    public DateTime? UpdatedAt { get; set; }
-
     [Column("photo")]
     public string? Photo { get; set; }
 
     [Column("role_name")]
     public string RoleName { get; set; } = string.Empty;
+
+    [Column("created_at")]
+    public DateTime? CreatedAt { get; set; }
+
+    [Column("updated_at")]
+    public DateTime? UpdatedAt { get; set; }
 }
