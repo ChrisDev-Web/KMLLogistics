@@ -12,6 +12,12 @@ using E1___Sosa_Morales.Services.Distritos;
 
 using E1___Sosa_Morales.Services.Empleados;
 
+using E1___Sosa_Morales.Services.EstadosTransferencia;
+
+using E1___Sosa_Morales.Services.ListaTransferencias;
+
+using E1___Sosa_Morales.Services.DetalleTransferencia;
+
 using E1___Sosa_Morales.Services.Perfil;
 
 using E1___Sosa_Morales.Services.Provincias;
@@ -63,6 +69,12 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IJobPositionService, JobPositionService>();
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+builder.Services.AddScoped<IStatusTransferService, StatusTransferService>();
+
+builder.Services.AddScoped<ITransferService, TransferService>();
+
+builder.Services.AddScoped<ITransferDetailService, TransferDetailService>();
 
 builder.Services.AddScoped<ICountryService, CountryService>();
 

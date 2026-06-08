@@ -6,16 +6,134 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/ListaTransferencias/lista-transferencias.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/ListaTransferencias/lista-transferencias.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="ltrf" id="ltrfRoot">
+    <div class="ltrf__panel">
+        <div class="ltrf__toolbar">
+            <div class="ltrf__search-group">
+                <div class="ltrf__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="ltrfSearchInput" placeholder="Buscar transferencias..." autocomplete="off" />
+                </div>
+                <button type="button" class="ltrf__btn ltrf__btn--ghost" id="ltrfClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="ltrf__filters">
+                <div class="ltrf__filter">
+                    <label for="ltrfFilterOrigin">Almacen origen</label>
+                    <select id="ltrfFilterOrigin"><option value="">Todos</option></select>
+                </div>
+                <div class="ltrf__filter">
+                    <label for="ltrfFilterDestination">Almacen destino</label>
+                    <select id="ltrfFilterDestination"><option value="">Todos</option></select>
+                </div>
+                <div class="ltrf__filter">
+                    <label for="ltrfFilterStatus">Estado</label>
+                    <select id="ltrfFilterStatus"><option value="">Todos</option></select>
+                </div>
+                <div class="ltrf__filter">
+                    <label for="ltrfFilterEmployee">Empleado</label>
+                    <select id="ltrfFilterEmployee"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="ltrf__actions">
+                <button type="button" class="ltrf__btn ltrf__btn--primary" id="ltrfCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="ltrfToast" class="ltrf__toast" role="status" aria-live="polite"></div>
+        <div class="ltrf__table-scroll" id="ltrfTableScroll">
+            <table class="ltrf__table">
+                <thead><tr>
+                    <th>ID</th><th>FECHA</th><th>ORIGEN</th><th>DESTINO</th><th>ESTADO</th><th>EMPLEADO</th>
+                    <th class="ltrf__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="ltrfActiveBody">
+                    <tr class="ltrf__loading-row"><td colspan="7">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="ltrf__footer">
+            <div class="ltrf__page-size">
+                <span>Mostrar</span>
+                <select id="ltrfPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="ltrf__pagination">
+                <span id="ltrfPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="ltrf__btn ltrf__btn--ghost" id="ltrfPrevBtn" disabled>Anterior</button>
+                <button type="button" class="ltrf__btn ltrf__btn--ghost" id="ltrfNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ltrf-modal" id="ltrfFormModal" aria-hidden="true">
+    <div class="ltrf-modal__backdrop"></div>
+    <div class="ltrf-modal__dialog ltrf-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ltrf-modal__header">
+            <h3>Nueva transferencia</h3>
+            <button type="button" class="ltrf-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="ltrfForm" class="ltrf-modal__body ltrf-form-grid" novalidate>
+            <div class="ltrf-field"><label for="ltrfOrigin">Almacen origen *</label><select id="ltrfOrigin" required><option value="">Seleccione...</option></select></div>
+            <div class="ltrf-field"><label for="ltrfDestination">Almacen destino *</label><select id="ltrfDestination" required><option value="">Seleccione...</option></select></div>
+            <div class="ltrf-field"><label for="ltrfEmployee">Empleado *</label><select id="ltrfEmployee" required><option value="">Seleccione...</option></select></div>
+            <div class="ltrf-field"><label for="ltrfDate">Fecha *</label><input type="datetime-local" id="ltrfDate" required /></div>
+            <div class="ltrf-field ltrf-field--full">
+                <div class="ltrf-lines-header">
+                    <label>Productos *</label>
+                    <button type="button" class="ltrf__btn ltrf__btn--outline ltrf__btn--sm" id="ltrfAddLineBtn"><i class="bi bi-plus-lg"></i> Agregar producto</button>
+                </div>
+                <div class="ltrf__table-scroll ltrf__table-scroll--inner" id="ltrfLinesScroll">
+                    <table class="ltrf__table ltrf__table--lines">
+                        <thead><tr><th>PRODUCTO</th><th>STOCK DISP.</th><th>CANTIDAD</th><th></th></tr></thead>
+                        <tbody id="ltrfLinesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+        <div class="ltrf-modal__footer">
+            <button type="button" class="ltrf__btn ltrf__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ltrf__btn ltrf__btn--primary" id="ltrfFormSaveBtn">Registrar transferencia</button>
+        </div>
+    </div>
+</div>
+
+<div class="ltrf-modal" id="ltrfDetailModal" aria-hidden="true">
+    <div class="ltrf-modal__backdrop"></div>
+    <div class="ltrf-modal__dialog ltrf-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ltrf-modal__header"><h3>Detalle de transferencia</h3><button type="button" class="ltrf-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ltrf-modal__body" id="ltrfDetailBody"></div>
+        <div class="ltrf-modal__footer"><button type="button" class="ltrf__btn ltrf__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="ltrf-modal" id="ltrfConfirmModal" aria-hidden="true">
+    <div class="ltrf-modal__backdrop"></div>
+    <div class="ltrf-modal__dialog ltrf-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="ltrf-modal__header"><h3 id="ltrfConfirmTitle">Confirmar</h3><button type="button" class="ltrf-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ltrf-modal__body"><p id="ltrfConfirmMessage"></p></div>
+        <div class="ltrf-modal__footer">
+            <button type="button" class="ltrf__btn ltrf__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ltrf__btn ltrf__btn--danger" id="ltrfConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/ListaTransferencias/lista-transferencias.js" asp-append-version="true"></script>
+    <script>
+        window.ltrfUrls = {
+            list: '@Url.Action("List", "ListaTransferencias")',
+            get: '@Url.Action("Get", "ListaTransferencias")',
+            filterOptions: '@Url.Action("FilterOptions", "ListaTransferencias")',
+            productOptions: '@Url.Action("ProductOptions", "ListaTransferencias")',
+            create: '@Url.Action("Create", "ListaTransferencias")',
+            cancel: '@Url.Action("Cancel", "ListaTransferencias")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/ListaTransferencias/lista-transferencias.js")" asp-append-version="true"></script>
 }

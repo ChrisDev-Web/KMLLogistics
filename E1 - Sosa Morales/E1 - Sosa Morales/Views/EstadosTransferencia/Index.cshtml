@@ -6,16 +6,133 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/EstadosTransferencia/estados-transferencia.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/EstadosTransferencia/estados-transferencia.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="estr" id="estrRoot">
+    <div class="estr__panel">
+        <div class="estr__toolbar">
+            <div class="estr__search-group">
+                <div class="estr__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="estrSearchInput" placeholder="Buscar estados..." autocomplete="off" />
+                </div>
+                <button type="button" class="estr__btn estr__btn--ghost" id="estrClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="estr__actions">
+                <button type="button" class="estr__btn estr__btn--outline" id="estrInactiveBtn">Ver inactivos</button>
+                <button type="button" class="estr__btn estr__btn--primary" id="estrCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="estrToast" class="estr__toast" role="status" aria-live="polite"></div>
+        <div class="estr__table-scroll" id="estrTableScroll">
+            <table class="estr__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>NOMBRE</th>
+                    <th class="estr__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="estrActiveBody">
+                    <tr class="estr__loading-row"><td colspan="3">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estr__footer">
+            <div class="estr__page-size">
+                <span>Mostrar</span>
+                <select id="estrPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="estr__pagination">
+                <span id="estrPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="estr__btn estr__btn--ghost" id="estrPrevBtn" disabled>Anterior</button>
+                <button type="button" class="estr__btn estr__btn--ghost" id="estrNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="estr-modal" id="estrFormModal" aria-hidden="true">
+    <div class="estr-modal__backdrop"></div>
+    <div class="estr-modal__dialog" role="dialog" aria-modal="true">
+        <div class="estr-modal__header">
+            <h3 id="estrFormModalTitle">Crear</h3>
+            <button type="button" class="estr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="estrForm" class="estr-modal__body" novalidate>
+            <input type="hidden" id="estrFormId" value="" />
+            <div class="estr-field"><label for="estrName">Nombre *</label><input type="text" id="estrName" name="name" required maxlength="50" /></div>
+        </form>
+        <div class="estr-modal__footer">
+            <button type="button" class="estr__btn estr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="estr__btn estr__btn--primary" id="estrFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="estr-modal" id="estrDetailModal" aria-hidden="true">
+    <div class="estr-modal__backdrop"></div>
+    <div class="estr-modal__dialog estr-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="estr-modal__header"><h3>Detalle</h3><button type="button" class="estr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="estr-modal__body" id="estrDetailBody"></div>
+        <div class="estr-modal__footer"><button type="button" class="estr__btn estr__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="estr-modal" id="estrInactiveModal" aria-hidden="true">
+    <div class="estr-modal__backdrop"></div>
+    <div class="estr-modal__dialog estr-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="estr-modal__header"><h3>Registros inactivos</h3><button type="button" class="estr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="estr-modal__body">
+            <div class="estr__search-group estr__search-group--modal">
+                <div class="estr__search"><i class="bi bi-search"></i><input type="text" id="estrInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="estr__btn estr__btn--ghost" id="estrInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="estr__table-scroll estr__table-scroll--modal" id="estrInactiveTableScroll">
+                <table class="estr__table">
+                    <thead><tr><th>ID</th><th>NOMBRE</th><th class="estr__th-actions">ACCIONES</th></tr></thead>
+                    <tbody id="estrInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="estr__footer estr__footer--modal">
+                <div class="estr__page-size"><span>Mostrar</span><select id="estrInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="estr__pagination">
+                    <span id="estrInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="estr__btn estr__btn--ghost" id="estrInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="estr__btn estr__btn--ghost" id="estrInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="estr-modal" id="estrConfirmModal" aria-hidden="true">
+    <div class="estr-modal__backdrop"></div>
+    <div class="estr-modal__dialog estr-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="estr-modal__header"><h3 id="estrConfirmTitle">Confirmar</h3><button type="button" class="estr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="estr-modal__body"><p id="estrConfirmMessage"></p></div>
+        <div class="estr-modal__footer">
+            <button type="button" class="estr__btn estr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="estr__btn estr__btn--danger" id="estrConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/EstadosTransferencia/estados-transferencia.js" asp-append-version="true"></script>
+    <script>
+        window.estrUrls = {
+            list: '@Url.Action("List", "EstadosTransferencia")',
+            listInactive: '@Url.Action("ListInactive", "EstadosTransferencia")',
+            get: '@Url.Action("Get", "EstadosTransferencia")',
+            create: '@Url.Action("Create", "EstadosTransferencia")',
+            update: '@Url.Action("Update", "EstadosTransferencia")',
+            deleteLogic: '@Url.Action("DeleteLogic", "EstadosTransferencia")',
+            restore: '@Url.Action("Restore", "EstadosTransferencia")',
+            deletePhysical: '@Url.Action("DeletePhysical", "EstadosTransferencia")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/EstadosTransferencia/estados-transferencia.js")" asp-append-version="true"></script>
 }

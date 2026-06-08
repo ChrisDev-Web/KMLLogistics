@@ -6,16 +6,94 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleTransferencia/detalle-transferencia.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleTransferencia/detalle-transferencia.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dtrf" id="dtrfRoot">
+    <div class="dtrf__panel">
+        <div class="dtrf__toolbar">
+            <div class="dtrf__search-group">
+                <div class="dtrf__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="dtrfSearchInput" placeholder="Buscar detalle..." autocomplete="off" />
+                </div>
+                <button type="button" class="dtrf__btn dtrf__btn--ghost" id="dtrfClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dtrf__filters">
+                <div class="dtrf__filter dtrf__filter--transfer">
+                    <label for="dtrfFilterTransfer">N° transferencia</label>
+                    <div class="dtrf__filter-input">
+                        <i class="bi bi-hash" aria-hidden="true"></i>
+                        <input type="number" id="dtrfFilterTransfer" min="1" placeholder="Todos" inputmode="numeric" />
+                        <button type="button" class="dtrf__filter-clear" id="dtrfClearTransferBtn" title="Limpiar filtro" aria-label="Limpiar filtro de transferencia">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dtrf__filter">
+                    <label for="dtrfFilterProduct">Producto</label>
+                    <select id="dtrfFilterProduct"><option value="">Todos</option></select>
+                </div>
+                <div class="dtrf__filter">
+                    <label for="dtrfFilterOrigin">Almacen origen</label>
+                    <select id="dtrfFilterOrigin"><option value="">Todos</option></select>
+                </div>
+                <div class="dtrf__filter">
+                    <label for="dtrfFilterDestination">Almacen destino</label>
+                    <select id="dtrfFilterDestination"><option value="">Todos</option></select>
+                </div>
+                <div class="dtrf__filter">
+                    <label for="dtrfFilterStatus">Estado</label>
+                    <select id="dtrfFilterStatus"><option value="">Todos</option></select>
+                </div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dtrfToast" class="dtrf__toast" role="status" aria-live="polite"></div>
+        <div class="dtrf__table-scroll" id="dtrfTableScroll">
+            <table class="dtrf__table">
+                <thead><tr>
+                    <th>ID</th><th>TRANSF.</th><th>PRODUCTO</th><th>CANT.</th><th>ORIGEN</th><th>DESTINO</th><th>ESTADO</th><th>FECHA</th>
+                    <th class="dtrf__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="dtrfActiveBody">
+                    <tr class="dtrf__loading-row"><td colspan="9">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="dtrf__footer">
+            <div class="dtrf__page-size">
+                <span>Mostrar</span>
+                <select id="dtrfPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="dtrf__pagination">
+                <span id="dtrfPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dtrf__btn dtrf__btn--ghost" id="dtrfPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dtrf__btn dtrf__btn--ghost" id="dtrfNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dtrf-modal" id="dtrfDetailModal" aria-hidden="true">
+    <div class="dtrf-modal__backdrop"></div>
+    <div class="dtrf-modal__dialog dtrf-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dtrf-modal__header"><h3>Detalle</h3><button type="button" class="dtrf-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dtrf-modal__body" id="dtrfDetailBody"></div>
+        <div class="dtrf-modal__footer"><button type="button" class="dtrf__btn dtrf__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleTransferencia/detalle-transferencia.js" asp-append-version="true"></script>
+    <script>
+        window.dtrfUrls = {
+            list: '@Url.Action("List", "DetalleTransferencia")',
+            get: '@Url.Action("Get", "DetalleTransferencia")',
+            filterOptions: '@Url.Action("FilterOptions", "DetalleTransferencia")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleTransferencia/detalle-transferencia.js")" asp-append-version="true"></script>
 }

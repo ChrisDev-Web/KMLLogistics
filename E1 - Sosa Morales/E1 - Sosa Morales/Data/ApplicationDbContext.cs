@@ -2,8 +2,11 @@ using E1___Sosa_Morales.Models.AlertasStock;
 using E1___Sosa_Morales.Models.Cargos;
 using E1___Sosa_Morales.Models.Clientes;
 using E1___Sosa_Morales.Models.Countries;
+using E1___Sosa_Morales.Models.DetalleTransferencia;
 using E1___Sosa_Morales.Models.Distritos;
 using E1___Sosa_Morales.Models.Empleados;
+using E1___Sosa_Morales.Models.EstadosTransferencia;
+using E1___Sosa_Morales.Models.ListaTransferencias;
 using E1___Sosa_Morales.Models.Perfil;
 using E1___Sosa_Morales.Models.Provincias;
 using E1___Sosa_Morales.Models.Proveedores;
@@ -79,5 +82,18 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<EmployeeJobPositionOption>().HasNoKey();
         modelBuilder.Entity<EmployeeUserOption>().HasNoKey();
         modelBuilder.Entity<EmployeeSpResult>().HasNoKey();
+        modelBuilder.Entity<StatusTransferListItem>().HasNoKey();
+        modelBuilder.Entity<StatusTransferDetail>().HasNoKey();
+        modelBuilder.Entity<StatusTransferSpResult>().HasNoKey();
+        modelBuilder.Entity<TransferListItem>().HasNoKey();
+        modelBuilder.Entity<TransferDetailRecord>().HasNoKey();
+        modelBuilder.Entity<TransferLineItem>().HasNoKey();
+        modelBuilder.Entity<TransferOption>().HasNoKey();
+        modelBuilder.Entity<TransferEmployeeOption>().HasNoKey();
+        modelBuilder.Entity<TransferStatusOption>().HasNoKey();
+        modelBuilder.Entity<TransferProductOption>().HasNoKey();
+        modelBuilder.Entity<TransferSpResult>().HasNoKey();
+        modelBuilder.Entity<TransferDetailListItem>().HasNoKey();
+        modelBuilder.Entity<TransferDetailItem>().HasNoKey();
     }
 }
