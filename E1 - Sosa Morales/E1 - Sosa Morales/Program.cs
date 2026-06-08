@@ -2,11 +2,15 @@ using E1___Sosa_Morales.Data;
 
 using E1___Sosa_Morales.Services.AlertasStock;
 
+using E1___Sosa_Morales.Services.Cargos;
+
 using E1___Sosa_Morales.Services.Clientes;
 
 using E1___Sosa_Morales.Services.Countries;
 
 using E1___Sosa_Morales.Services.Distritos;
+
+using E1___Sosa_Morales.Services.Empleados;
 
 using E1___Sosa_Morales.Services.Perfil;
 
@@ -55,6 +59,10 @@ builder.Services.AddScoped<IDocumentTypeService, DocumentTypeService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+
+builder.Services.AddScoped<IJobPositionService, JobPositionService>();
+
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddScoped<ICountryService, CountryService>();
 

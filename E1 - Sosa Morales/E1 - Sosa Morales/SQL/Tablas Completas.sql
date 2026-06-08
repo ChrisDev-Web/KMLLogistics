@@ -251,9 +251,13 @@ CREATE TABLE Employees (
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
     status TINYINT NOT NULL DEFAULT (1),
+    id_document_type INT NOT NULL,
+    document_number VARCHAR(20) NOT NULL,
     CONSTRAINT fk_employee_user FOREIGN KEY (id_user) REFERENCES Users(id_user),
     CONSTRAINT fk_employee_job_position FOREIGN KEY (id_job_position) REFERENCES JobPositions(id_job_position),
-    CONSTRAINT fk_employee_district FOREIGN KEY (id_district) REFERENCES Districts(id_district)
+    CONSTRAINT fk_employee_district FOREIGN KEY (id_district) REFERENCES Districts(id_district),
+    CONSTRAINT fk_employee_document_type FOREIGN KEY (id_document_type) REFERENCES DocumentTypes(id_document_type),
+    CONSTRAINT uq_employee_document_number UNIQUE (document_number)
 );
 
 -- ==========================================

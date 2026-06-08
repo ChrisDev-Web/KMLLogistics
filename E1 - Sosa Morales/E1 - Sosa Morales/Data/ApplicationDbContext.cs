@@ -1,7 +1,9 @@
 using E1___Sosa_Morales.Models.AlertasStock;
+using E1___Sosa_Morales.Models.Cargos;
 using E1___Sosa_Morales.Models.Clientes;
 using E1___Sosa_Morales.Models.Countries;
 using E1___Sosa_Morales.Models.Distritos;
+using E1___Sosa_Morales.Models.Empleados;
 using E1___Sosa_Morales.Models.Perfil;
 using E1___Sosa_Morales.Models.Provincias;
 using E1___Sosa_Morales.Models.Proveedores;
@@ -67,5 +69,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SupplierDistrictOption>().HasNoKey();
         modelBuilder.Entity<SupplierSpResult>().HasNoKey();
         modelBuilder.Entity<GeographyInfo>().HasNoKey();
+        modelBuilder.Entity<JobPositionListItem>().HasNoKey();
+        modelBuilder.Entity<JobPositionDetail>().HasNoKey();
+        modelBuilder.Entity<JobPositionSpResult>().HasNoKey();
+        modelBuilder.Entity<EmployeeListItem>().HasNoKey();
+        modelBuilder.Entity<EmployeeDetailRecord>().HasNoKey();
+        modelBuilder.Entity<EmployeeDocumentTypeOption>().HasNoKey();
+        modelBuilder.Entity<EmployeeDistrictOption>().HasNoKey();
+        modelBuilder.Entity<EmployeeJobPositionOption>().HasNoKey();
+        modelBuilder.Entity<EmployeeUserOption>().HasNoKey();
+        modelBuilder.Entity<EmployeeSpResult>().HasNoKey();
     }
 }

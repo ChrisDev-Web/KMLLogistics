@@ -6,16 +6,138 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Cargos/cargos.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Cargos/cargos.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="cgo" id="cgoRoot">
+    <div class="cgo__panel">
+        <div class="cgo__toolbar">
+            <div class="cgo__search-group">
+                <div class="cgo__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="cgoSearchInput" placeholder="Buscar en Cargos" autocomplete="off" />
+                </div>
+                <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="cgo__actions">
+                <button type="button" class="cgo__btn cgo__btn--outline" id="cgoInactiveBtn">Ver inactivos</button>
+                <button type="button" class="cgo__btn cgo__btn--primary" id="cgoCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="cgoToast" class="cgo__toast" role="status" aria-live="polite"></div>
+        <div class="cgo__table-scroll" id="cgoTableScroll">
+            <table class="cgo__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>NOMBRE</th>
+                    <th>DESCRIPCIÓN</th>
+                    <th class="cgo__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="cgoActiveBody">
+                    <tr class="cgo__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="cgo__footer">
+            <div class="cgo__page-size">
+                <span>Mostrar</span>
+                <select id="cgoPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="cgo__pagination">
+                <span id="cgoPageInfo">Página 1 de 1</span>
+                <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoPrevBtn" disabled>Anterior</button>
+                <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cgo-modal" id="cgoFormModal" aria-hidden="true">
+    <div class="cgo-modal__backdrop"></div>
+    <div class="cgo-modal__dialog" role="dialog" aria-modal="true">
+        <div class="cgo-modal__header">
+            <h3 id="cgoFormModalTitle">Crear</h3>
+            <button type="button" class="cgo-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="cgoForm" class="cgo-modal__body" novalidate>
+            <input type="hidden" id="cgoFormId" value="" />
+            <div class="cgo-field"><label for="cgoName">Nombre *</label><input type="text" id="cgoName" name="name" required maxlength="100" /></div>
+            <div class="cgo-field"><label for="cgoDescription">Descripción</label><textarea id="cgoDescription" name="description" rows="3" maxlength="255"></textarea></div>
+        </form>
+        <div class="cgo-modal__footer">
+            <button type="button" class="cgo__btn cgo__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="cgo__btn cgo__btn--primary" id="cgoFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="cgo-modal" id="cgoDetailModal" aria-hidden="true">
+    <div class="cgo-modal__backdrop"></div>
+    <div class="cgo-modal__dialog cgo-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="cgo-modal__header"><h3>Detalle</h3><button type="button" class="cgo-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="cgo-modal__body" id="cgoDetailBody"></div>
+        <div class="cgo-modal__footer"><button type="button" class="cgo__btn cgo__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="cgo-modal" id="cgoInactiveModal" aria-hidden="true">
+    <div class="cgo-modal__backdrop"></div>
+    <div class="cgo-modal__dialog cgo-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="cgo-modal__header"><h3>Registros inactivos</h3><button type="button" class="cgo-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="cgo-modal__body">
+            <div class="cgo__search-group cgo__search-group--modal">
+                <div class="cgo__search"><i class="bi bi-search"></i><input type="text" id="cgoInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="cgo__table-scroll cgo__table-scroll--modal" id="cgoInactiveTableScroll">
+                <table class="cgo__table">
+                    <thead><tr>
+                        <th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th>
+                        <th class="cgo__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="cgoInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="cgo__footer cgo__footer--modal">
+                <div class="cgo__page-size"><span>Mostrar</span><select id="cgoInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="cgo__pagination">
+                    <span id="cgoInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="cgo__btn cgo__btn--ghost" id="cgoInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cgo-modal" id="cgoConfirmModal" aria-hidden="true">
+    <div class="cgo-modal__backdrop"></div>
+    <div class="cgo-modal__dialog cgo-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="cgo-modal__header"><h3 id="cgoConfirmTitle">Confirmar</h3><button type="button" class="cgo-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="cgo-modal__body"><p id="cgoConfirmMessage"></p></div>
+        <div class="cgo-modal__footer">
+            <button type="button" class="cgo__btn cgo__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="cgo__btn cgo__btn--danger" id="cgoConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Cargos/cargos.js" asp-append-version="true"></script>
+    <script>
+        window.cgoUrls = {
+            list: '@Url.Action("List", "Cargos")',
+            listInactive: '@Url.Action("ListInactive", "Cargos")',
+            get: '@Url.Action("Get", "Cargos")',
+            create: '@Url.Action("Create", "Cargos")',
+            update: '@Url.Action("Update", "Cargos")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Cargos")',
+            restore: '@Url.Action("Restore", "Cargos")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Cargos")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Cargos/cargos.js")" asp-append-version="true"></script>
 }

@@ -6,16 +6,179 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Empleados/empleados.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Empleados/empleados.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="emp" id="empRoot">
+    <div class="emp__panel">
+        <div class="emp__toolbar">
+            <div class="emp__search-group">
+                <div class="emp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="empSearchInput" placeholder="Buscar en Empleados" autocomplete="off" />
+                </div>
+                <button type="button" class="emp__btn emp__btn--ghost" id="empClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="emp__filters">
+                <div class="emp__filter">
+                    <label for="empFilterDocType"><i class="bi bi-funnel"></i> Tipo documento</label>
+                    <select id="empFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="emp__filter">
+                    <label for="empFilterDistrict"><i class="bi bi-funnel"></i> Distrito</label>
+                    <select id="empFilterDistrict"><option value="">Todos</option></select>
+                </div>
+                <div class="emp__filter">
+                    <label for="empFilterJobPosition"><i class="bi bi-funnel"></i> Cargo</label>
+                    <select id="empFilterJobPosition"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="emp__actions">
+                <button type="button" class="emp__btn emp__btn--outline" id="empInactiveBtn">Ver inactivos</button>
+                <button type="button" class="emp__btn emp__btn--primary" id="empCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="empToast" class="emp__toast" role="status" aria-live="polite"></div>
+        <div class="emp__table-scroll" id="empTableScroll">
+            <table class="emp__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>USUARIO</th>
+                    <th>TIPO DOC.</th>
+                    <th>EMPLEADO</th>
+                    <th>CARGO</th>
+                    <th>DISTRITO</th>
+                    <th class="emp__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="empActiveBody">
+                    <tr class="emp__loading-row"><td colspan="7">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="emp__footer">
+            <div class="emp__page-size">
+                <span>Mostrar</span>
+                <select id="empPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="emp__pagination">
+                <span id="empPageInfo">Página 1 de 1</span>
+                <button type="button" class="emp__btn emp__btn--ghost" id="empPrevBtn" disabled>Anterior</button>
+                <button type="button" class="emp__btn emp__btn--ghost" id="empNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="emp-modal" id="empFormModal" aria-hidden="true">
+    <div class="emp-modal__backdrop"></div>
+    <div class="emp-modal__dialog emp-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="emp-modal__header">
+            <h3 id="empFormModalTitle">Crear</h3>
+            <button type="button" class="emp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="empForm" class="emp-modal__body emp-form-grid" novalidate>
+            <input type="hidden" id="empFormId" value="" />
+            <div class="emp-field emp-field--full"><label for="empUser">Usuario *</label><select id="empUser" name="idUser" required><option value="">Seleccione...</option></select></div>
+            <div class="emp-field"><label for="empDocType">Tipo documento *</label><select id="empDocType" name="idDocumentType" required><option value="">Seleccione...</option></select></div>
+            <div class="emp-field"><label for="empDocNumber">N° documento *</label><input type="text" id="empDocNumber" name="documentNumber" required maxlength="20" /></div>
+            <div class="emp-field"><label for="empName">Nombres *</label><input type="text" id="empName" name="name" required maxlength="80" /></div>
+            <div class="emp-field"><label for="empLastNamePaternal">Apellido paterno *</label><input type="text" id="empLastNamePaternal" name="lastNamePaternal" required maxlength="80" /></div>
+            <div class="emp-field"><label for="empLastNameMaternal">Apellido materno</label><input type="text" id="empLastNameMaternal" name="lastNameMaternal" maxlength="80" /></div>
+            <div class="emp-field"><label for="empJobPosition">Cargo *</label><select id="empJobPosition" name="idJobPosition" required><option value="">Seleccione...</option></select></div>
+            <div class="emp-field"><label for="empPhone">Teléfono</label><input type="text" id="empPhone" name="phone" maxlength="20" /></div>
+            <div class="emp-field"><label for="empEmail">Email</label><input type="email" id="empEmail" name="email" maxlength="100" /></div>
+            <div class="emp-field emp-field--full"><label for="empDistrict">Distrito</label><select id="empDistrict" name="idDistrict"><option value="">Sin distrito</option></select></div>
+        </form>
+        <div class="emp-modal__footer">
+            <button type="button" class="emp__btn emp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="emp__btn emp__btn--primary" id="empFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="emp-modal" id="empDetailModal" aria-hidden="true">
+    <div class="emp-modal__backdrop"></div>
+    <div class="emp-modal__dialog emp-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="emp-modal__header"><h3>Detalle</h3><button type="button" class="emp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="emp-modal__body" id="empDetailBody"></div>
+        <div class="emp-modal__footer"><button type="button" class="emp__btn emp__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="emp-modal" id="empInactiveModal" aria-hidden="true">
+    <div class="emp-modal__backdrop"></div>
+    <div class="emp-modal__dialog emp-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="emp-modal__header"><h3>Registros inactivos</h3><button type="button" class="emp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="emp-modal__body">
+            <div class="emp__search-group emp__search-group--modal">
+                <div class="emp__search"><i class="bi bi-search"></i><input type="text" id="empInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="emp__btn emp__btn--ghost" id="empInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="emp__filters emp__filters--modal">
+                <div class="emp__filter">
+                    <label for="empInactiveFilterDocType">Tipo documento</label>
+                    <select id="empInactiveFilterDocType"><option value="">Todos</option></select>
+                </div>
+                <div class="emp__filter">
+                    <label for="empInactiveFilterDistrict">Distrito</label>
+                    <select id="empInactiveFilterDistrict"><option value="">Todos</option></select>
+                </div>
+                <div class="emp__filter">
+                    <label for="empInactiveFilterJobPosition">Cargo</label>
+                    <select id="empInactiveFilterJobPosition"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="emp__table-scroll emp__table-scroll--modal" id="empInactiveTableScroll">
+                <table class="emp__table">
+                    <thead><tr>
+                        <th>ID</th><th>USUARIO</th><th>EMPLEADO</th><th>CARGO</th>
+                        <th class="emp__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="empInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="emp__footer emp__footer--modal">
+                <div class="emp__page-size"><span>Mostrar</span><select id="empInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="emp__pagination">
+                    <span id="empInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="emp__btn emp__btn--ghost" id="empInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="emp__btn emp__btn--ghost" id="empInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="emp-modal" id="empConfirmModal" aria-hidden="true">
+    <div class="emp-modal__backdrop"></div>
+    <div class="emp-modal__dialog emp-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="emp-modal__header"><h3 id="empConfirmTitle">Confirmar</h3><button type="button" class="emp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="emp-modal__body"><p id="empConfirmMessage"></p></div>
+        <div class="emp-modal__footer">
+            <button type="button" class="emp__btn emp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="emp__btn emp__btn--danger" id="empConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Empleados/empleados.js" asp-append-version="true"></script>
+    <script>
+        window.empUrls = {
+            list: '@Url.Action("List", "Empleados")',
+            listInactive: '@Url.Action("ListInactive", "Empleados")',
+            get: '@Url.Action("Get", "Empleados")',
+            filterOptions: '@Url.Action("FilterOptions", "Empleados")',
+            userOptions: '@Url.Action("UserOptions", "Empleados")',
+            create: '@Url.Action("Create", "Empleados")',
+            update: '@Url.Action("Update", "Empleados")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Empleados")',
+            restore: '@Url.Action("Restore", "Empleados")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Empleados")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Empleados/empleados.js")" asp-append-version="true"></script>
 }
