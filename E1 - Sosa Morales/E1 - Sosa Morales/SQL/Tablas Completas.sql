@@ -382,32 +382,32 @@ CREATE TABLE TransferDetails (
 -- ==========================================
 -- Movement Types and Inventory Movements
 -- ==========================================
-CREATE TABLE MovementTypes (
-    id_movement_type INT IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    created_at DATETIME NOT NULL DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
-    status TINYINT NOT NULL DEFAULT (1)
-);
+    CREATE TABLE MovementTypes (
+        id_movement_type INT IDENTITY(1,1) PRIMARY KEY,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        created_at DATETIME NOT NULL DEFAULT GETDATE(),
+        updated_at DATETIME NULL,
+        deleted_at DATETIME NULL,
+        status TINYINT NOT NULL DEFAULT (1)
+    );
 
-CREATE TABLE InventoryMovements (
-    id_inventory_movement INT IDENTITY(1,1) PRIMARY KEY,
-    id_product INT NOT NULL,
-    id_warehouse INT NOT NULL,
-    id_movement_type INT NOT NULL,
-    id_employee INT NOT NULL,
-    quantity INT NOT NULL,
-    reference VARCHAR(100) NULL,
-    fec_movement DATETIME NOT NULL DEFAULT GETDATE(),
-    created_at DATETIME NOT NULL DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
-    CONSTRAINT fk_inventory_movement_product FOREIGN KEY (id_product) REFERENCES Products(id_product),
-    CONSTRAINT fk_inventory_movement_warehouse FOREIGN KEY (id_warehouse) REFERENCES Warehouses(id_warehouse),
-    CONSTRAINT fk_inventory_movement_type FOREIGN KEY (id_movement_type) REFERENCES MovementTypes(id_movement_type),
-    CONSTRAINT fk_inventory_movement_employee FOREIGN KEY (id_employee) REFERENCES Employees(id_employee)
-);
+    CREATE TABLE InventoryMovements (
+        id_inventory_movement INT IDENTITY(1,1) PRIMARY KEY,
+        id_product INT NOT NULL,
+        id_warehouse INT NOT NULL,
+        id_movement_type INT NOT NULL,
+        id_employee INT NOT NULL,
+        quantity INT NOT NULL,
+        reference VARCHAR(100) NULL,
+        fec_movement DATETIME NOT NULL DEFAULT GETDATE(),
+        created_at DATETIME NOT NULL DEFAULT GETDATE(),
+        updated_at DATETIME NULL,
+        deleted_at DATETIME NULL,
+        CONSTRAINT fk_inventory_movement_product FOREIGN KEY (id_product) REFERENCES Products(id_product),
+        CONSTRAINT fk_inventory_movement_warehouse FOREIGN KEY (id_warehouse) REFERENCES Warehouses(id_warehouse),
+        CONSTRAINT fk_inventory_movement_type FOREIGN KEY (id_movement_type) REFERENCES MovementTypes(id_movement_type),
+        CONSTRAINT fk_inventory_movement_employee FOREIGN KEY (id_employee) REFERENCES Employees(id_employee)
+    );
 
 -- ==========================================
 -- SaleStatuses

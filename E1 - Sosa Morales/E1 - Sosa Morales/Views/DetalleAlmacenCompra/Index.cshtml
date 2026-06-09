@@ -6,16 +6,90 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleAlmacenCompra/detalle-almacen-compra.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleAlmacenCompra/detalle-almacen-compra.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dacmp" id="dacmpRoot">
+    <div class="dacmp__panel">
+        <div class="dacmp__toolbar">
+            <div class="dacmp__search-group">
+                <div class="dacmp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="dacmpSearchInput" placeholder="Buscar detalle almacen..." autocomplete="off" />
+                </div>
+                <button type="button" class="dacmp__btn dacmp__btn--ghost" id="dacmpClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dacmp__filters">
+                <div class="dacmp__filter dacmp__filter--purchase">
+                    <label for="dacmpFilterPurchase">N° compra</label>
+                    <div class="dacmp__filter-input">
+                        <i class="bi bi-hash" aria-hidden="true"></i>
+                        <input type="number" id="dacmpFilterPurchase" min="1" placeholder="Todos" inputmode="numeric" />
+                        <button type="button" class="dacmp__filter-clear" id="dacmpClearPurchaseBtn" title="Limpiar filtro" aria-label="Limpiar filtro de compra">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dacmp__filter">
+                    <label for="dacmpFilterProduct">Producto</label>
+                    <select id="dacmpFilterProduct"><option value="">Todos</option></select>
+                </div>
+                <div class="dacmp__filter">
+                    <label for="dacmpFilterWarehouse">Almacen</label>
+                    <select id="dacmpFilterWarehouse"><option value="">Todos</option></select>
+                </div>
+                <div class="dacmp__filter">
+                    <label for="dacmpFilterSupplier">Proveedor</label>
+                    <select id="dacmpFilterSupplier"><option value="">Todos</option></select>
+                </div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dacmpToast" class="dacmp__toast" role="status" aria-live="polite"></div>
+        <div class="dacmp__table-scroll" id="dacmpTableScroll">
+            <table class="dacmp__table">
+                <thead><tr>
+                    <th>ID</th><th>N° COMPRA</th><th>PRODUCTO</th><th>ALMACEN</th><th>CANT.</th><th>PROVEEDOR</th><th>FECHA</th>
+                    <th class="dacmp__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="dacmpActiveBody">
+                    <tr class="dacmp__loading-row"><td colspan="8">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="dacmp__footer">
+            <div class="dacmp__page-size">
+                <span>Mostrar</span>
+                <select id="dacmpPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="dacmp__pagination">
+                <span id="dacmpPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dacmp__btn dacmp__btn--ghost" id="dacmpPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dacmp__btn dacmp__btn--ghost" id="dacmpNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dacmp-modal" id="dacmpDetailModal" aria-hidden="true">
+    <div class="dacmp-modal__backdrop"></div>
+    <div class="dacmp-modal__dialog dacmp-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dacmp-modal__header"><h3>Detalle</h3><button type="button" class="dacmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dacmp-modal__body" id="dacmpDetailBody"></div>
+        <div class="dacmp-modal__footer"><button type="button" class="dacmp__btn dacmp__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleAlmacenCompra/detalle-almacen-compra.js" asp-append-version="true"></script>
+    <script>
+        window.dacmpUrls = {
+            list: '@Url.Action("List", "DetalleAlmacenCompra")',
+            get: '@Url.Action("Get", "DetalleAlmacenCompra")',
+            filterOptions: '@Url.Action("FilterOptions", "DetalleAlmacenCompra")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleAlmacenCompra/detalle-almacen-compra.js")" asp-append-version="true"></script>
 }

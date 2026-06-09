@@ -6,16 +6,133 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/EstadosCompra/estados-compra.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/EstadosCompra/estados-compra.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="ecmp" id="ecmpRoot">
+    <div class="ecmp__panel">
+        <div class="ecmp__toolbar">
+            <div class="ecmp__search-group">
+                <div class="ecmp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="ecmpSearchInput" placeholder="Buscar estados..." autocomplete="off" />
+                </div>
+                <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="ecmp__actions">
+                <button type="button" class="ecmp__btn ecmp__btn--outline" id="ecmpInactiveBtn">Ver inactivos</button>
+                <button type="button" class="ecmp__btn ecmp__btn--primary" id="ecmpCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="ecmpToast" class="ecmp__toast" role="status" aria-live="polite"></div>
+        <div class="ecmp__table-scroll" id="ecmpTableScroll">
+            <table class="ecmp__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>NOMBRE</th>
+                    <th class="ecmp__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="ecmpActiveBody">
+                    <tr class="ecmp__loading-row"><td colspan="3">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="ecmp__footer">
+            <div class="ecmp__page-size">
+                <span>Mostrar</span>
+                <select id="ecmpPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="ecmp__pagination">
+                <span id="ecmpPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpPrevBtn" disabled>Anterior</button>
+                <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ecmp-modal" id="ecmpFormModal" aria-hidden="true">
+    <div class="ecmp-modal__backdrop"></div>
+    <div class="ecmp-modal__dialog" role="dialog" aria-modal="true">
+        <div class="ecmp-modal__header">
+            <h3 id="ecmpFormModalTitle">Crear</h3>
+            <button type="button" class="ecmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="ecmpForm" class="ecmp-modal__body" novalidate>
+            <input type="hidden" id="ecmpFormId" value="" />
+            <div class="ecmp-field"><label for="ecmpName">Nombre *</label><input type="text" id="ecmpName" name="name" required maxlength="50" /></div>
+        </form>
+        <div class="ecmp-modal__footer">
+            <button type="button" class="ecmp__btn ecmp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ecmp__btn ecmp__btn--primary" id="ecmpFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="ecmp-modal" id="ecmpDetailModal" aria-hidden="true">
+    <div class="ecmp-modal__backdrop"></div>
+    <div class="ecmp-modal__dialog ecmp-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="ecmp-modal__header"><h3>Detalle</h3><button type="button" class="ecmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ecmp-modal__body" id="ecmpDetailBody"></div>
+        <div class="ecmp-modal__footer"><button type="button" class="ecmp__btn ecmp__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="ecmp-modal" id="ecmpInactiveModal" aria-hidden="true">
+    <div class="ecmp-modal__backdrop"></div>
+    <div class="ecmp-modal__dialog ecmp-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ecmp-modal__header"><h3>Registros inactivos</h3><button type="button" class="ecmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ecmp-modal__body">
+            <div class="ecmp__search-group ecmp__search-group--modal">
+                <div class="ecmp__search"><i class="bi bi-search"></i><input type="text" id="ecmpInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="ecmp__table-scroll ecmp__table-scroll--modal" id="ecmpInactiveTableScroll">
+                <table class="ecmp__table">
+                    <thead><tr><th>ID</th><th>NOMBRE</th><th class="ecmp__th-actions">ACCIONES</th></tr></thead>
+                    <tbody id="ecmpInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="ecmp__footer ecmp__footer--modal">
+                <div class="ecmp__page-size"><span>Mostrar</span><select id="ecmpInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="ecmp__pagination">
+                    <span id="ecmpInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="ecmp__btn ecmp__btn--ghost" id="ecmpInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ecmp-modal" id="ecmpConfirmModal" aria-hidden="true">
+    <div class="ecmp-modal__backdrop"></div>
+    <div class="ecmp-modal__dialog ecmp-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="ecmp-modal__header"><h3 id="ecmpConfirmTitle">Confirmar</h3><button type="button" class="ecmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ecmp-modal__body"><p id="ecmpConfirmMessage"></p></div>
+        <div class="ecmp-modal__footer">
+            <button type="button" class="ecmp__btn ecmp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ecmp__btn ecmp__btn--danger" id="ecmpConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/EstadosCompra/estados-compra.js" asp-append-version="true"></script>
+    <script>
+        window.ecmpUrls = {
+            list: '@Url.Action("List", "EstadosCompra")',
+            listInactive: '@Url.Action("ListInactive", "EstadosCompra")',
+            get: '@Url.Action("Get", "EstadosCompra")',
+            create: '@Url.Action("Create", "EstadosCompra")',
+            update: '@Url.Action("Update", "EstadosCompra")',
+            deleteLogic: '@Url.Action("DeleteLogic", "EstadosCompra")',
+            restore: '@Url.Action("Restore", "EstadosCompra")',
+            deletePhysical: '@Url.Action("DeletePhysical", "EstadosCompra")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/EstadosCompra/estados-compra.js")" asp-append-version="true"></script>
 }

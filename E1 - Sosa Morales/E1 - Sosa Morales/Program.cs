@@ -26,6 +26,14 @@ using E1___Sosa_Morales.Services.ListaTransferencias;
 
 using E1___Sosa_Morales.Services.DetalleTransferencia;
 
+using E1___Sosa_Morales.Services.EstadosCompra;
+
+using E1___Sosa_Morales.Services.OrdenesCompra;
+
+using E1___Sosa_Morales.Services.DetalleCompra;
+
+using E1___Sosa_Morales.Services.DetalleAlmacenCompra;
+
 using E1___Sosa_Morales.Services.Perfil;
 
 using E1___Sosa_Morales.Services.Provincias;
@@ -83,6 +91,14 @@ builder.Services.AddScoped<IStatusTransferService, StatusTransferService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
 
 builder.Services.AddScoped<ITransferDetailService, TransferDetailService>();
+
+builder.Services.AddScoped<IPurchaseStatusService, PurchaseStatusService>();
+
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+
+builder.Services.AddScoped<IPurchaseDetailService, PurchaseDetailService>();
+
+builder.Services.AddScoped<IPurchaseWarehouseDetailService, PurchaseWarehouseDetailService>();
 
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 

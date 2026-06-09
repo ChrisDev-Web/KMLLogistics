@@ -6,16 +6,141 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/OrdenesCompra/ordenes-compra.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/OrdenesCompra/ordenes-compra.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="ocmp" id="ocmpRoot">
+    <div class="ocmp__panel">
+        <div class="ocmp__toolbar">
+            <div class="ocmp__search-group">
+                <div class="ocmp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="ocmpSearchInput" placeholder="Buscar compras..." autocomplete="off" />
+                </div>
+                <button type="button" class="ocmp__btn ocmp__btn--ghost" id="ocmpClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="ocmp__filters">
+                <div class="ocmp__filter ocmp__filter--purchase">
+                    <label for="ocmpFilterPurchase">N° compra</label>
+                    <div class="ocmp__filter-input">
+                        <i class="bi bi-hash" aria-hidden="true"></i>
+                        <input type="number" id="ocmpFilterPurchase" min="1" placeholder="Todos" inputmode="numeric" />
+                        <button type="button" class="ocmp__filter-clear" id="ocmpClearPurchaseBtn" title="Limpiar filtro" aria-label="Limpiar filtro de compra">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="ocmp__filter">
+                    <label for="ocmpFilterSupplier">Proveedor</label>
+                    <select id="ocmpFilterSupplier"><option value="">Todos</option></select>
+                </div>
+                <div class="ocmp__filter">
+                    <label for="ocmpFilterEmployee">Empleado</label>
+                    <select id="ocmpFilterEmployee"><option value="">Todos</option></select>
+                </div>
+                <div class="ocmp__filter">
+                    <label for="ocmpFilterStatus">Estado</label>
+                    <select id="ocmpFilterStatus"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div class="ocmp__actions">
+                <button type="button" class="ocmp__btn ocmp__btn--primary" id="ocmpCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="ocmpToast" class="ocmp__toast" role="status" aria-live="polite"></div>
+        <div class="ocmp__table-scroll" id="ocmpTableScroll">
+            <table class="ocmp__table">
+                <thead><tr>
+                    <th>ID</th><th>FECHA</th><th>PROVEEDOR</th><th>EMPLEADO</th><th>ESTADO</th>
+                    <th class="ocmp__col-money">SUBTOTAL</th><th class="ocmp__col-money">IGV</th><th class="ocmp__col-money">TOTAL</th>
+                    <th class="ocmp__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="ocmpActiveBody">
+                    <tr class="ocmp__loading-row"><td colspan="9">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="ocmp__footer">
+            <div class="ocmp__page-size">
+                <span>Mostrar</span>
+                <select id="ocmpPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="ocmp__pagination">
+                <span id="ocmpPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="ocmp__btn ocmp__btn--ghost" id="ocmpPrevBtn" disabled>Anterior</button>
+                <button type="button" class="ocmp__btn ocmp__btn--ghost" id="ocmpNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ocmp-modal" id="ocmpFormModal" aria-hidden="true">
+    <div class="ocmp-modal__backdrop"></div>
+    <div class="ocmp-modal__dialog ocmp-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ocmp-modal__header">
+            <h3>Nueva compra</h3>
+            <button type="button" class="ocmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="ocmpForm" class="ocmp-modal__body ocmp-form-grid" novalidate>
+            <div class="ocmp-field"><label for="ocmpSupplier">Proveedor *</label><select id="ocmpSupplier" required><option value="">Seleccione...</option></select></div>
+            <div class="ocmp-field"><label for="ocmpEmployee">Empleado *</label><select id="ocmpEmployee" required><option value="">Seleccione...</option></select></div>
+            <div class="ocmp-field"><label for="ocmpDate">Fecha *</label><input type="datetime-local" id="ocmpDate" required /></div>
+            <div class="ocmp-field ocmp-field--full">
+                <div class="ocmp-lines-header">
+                    <label>Productos *</label>
+                    <button type="button" class="ocmp__btn ocmp__btn--outline ocmp__btn--sm" id="ocmpAddLineBtn"><i class="bi bi-plus-lg"></i> Agregar producto</button>
+                </div>
+                <div class="ocmp__table-scroll ocmp__table-scroll--inner" id="ocmpLinesScroll">
+                    <table class="ocmp__table ocmp__table--lines">
+                        <thead><tr><th>PRODUCTO</th><th>CANT.</th><th>COSTO UNIT.</th><th>ALMACEN</th><th></th></tr></thead>
+                        <tbody id="ocmpLinesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+        <div class="ocmp-modal__footer">
+            <button type="button" class="ocmp__btn ocmp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ocmp__btn ocmp__btn--primary" id="ocmpFormSaveBtn">Registrar compra</button>
+        </div>
+    </div>
+</div>
+
+<div class="ocmp-modal" id="ocmpDetailModal" aria-hidden="true">
+    <div class="ocmp-modal__backdrop"></div>
+    <div class="ocmp-modal__dialog ocmp-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="ocmp-modal__header"><h3>Detalle de compra</h3><button type="button" class="ocmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ocmp-modal__body" id="ocmpDetailBody"></div>
+        <div class="ocmp-modal__footer"><button type="button" class="ocmp__btn ocmp__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="ocmp-modal" id="ocmpConfirmModal" aria-hidden="true">
+    <div class="ocmp-modal__backdrop"></div>
+    <div class="ocmp-modal__dialog ocmp-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="ocmp-modal__header"><h3 id="ocmpConfirmTitle">Confirmar</h3><button type="button" class="ocmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="ocmp-modal__body"><p id="ocmpConfirmMessage"></p></div>
+        <div class="ocmp-modal__footer">
+            <button type="button" class="ocmp__btn ocmp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="ocmp__btn ocmp__btn--danger" id="ocmpConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/OrdenesCompra/ordenes-compra.js" asp-append-version="true"></script>
+    <script>
+        window.ocmpUrls = {
+            list: '@Url.Action("List", "OrdenesCompra")',
+            get: '@Url.Action("Get", "OrdenesCompra")',
+            filterOptions: '@Url.Action("FilterOptions", "OrdenesCompra")',
+            productSupplierOptions: '@Url.Action("ProductSupplierOptions", "OrdenesCompra")',
+            create: '@Url.Action("Create", "OrdenesCompra")',
+            cancel: '@Url.Action("Cancel", "OrdenesCompra")',
+            complete: '@Url.Action("Complete", "OrdenesCompra")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/OrdenesCompra/ordenes-compra.js")" asp-append-version="true"></script>
 }

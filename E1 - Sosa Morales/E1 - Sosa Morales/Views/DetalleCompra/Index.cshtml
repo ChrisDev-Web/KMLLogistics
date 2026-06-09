@@ -6,16 +6,91 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleCompra/detalle-compra.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleCompra/detalle-compra.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dcmp" id="dcmpRoot">
+    <div class="dcmp__panel">
+        <div class="dcmp__toolbar">
+            <div class="dcmp__search-group">
+                <div class="dcmp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="dcmpSearchInput" placeholder="Buscar detalle..." autocomplete="off" />
+                </div>
+                <button type="button" class="dcmp__btn dcmp__btn--ghost" id="dcmpClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dcmp__filters">
+                <div class="dcmp__filter dcmp__filter--purchase">
+                    <label for="dcmpFilterPurchase">N° compra</label>
+                    <div class="dcmp__filter-input">
+                        <i class="bi bi-hash" aria-hidden="true"></i>
+                        <input type="number" id="dcmpFilterPurchase" min="1" placeholder="Todos" inputmode="numeric" />
+                        <button type="button" class="dcmp__filter-clear" id="dcmpClearPurchaseBtn" title="Limpiar filtro" aria-label="Limpiar filtro de compra">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dcmp__filter">
+                    <label for="dcmpFilterProduct">Producto</label>
+                    <select id="dcmpFilterProduct"><option value="">Todos</option></select>
+                </div>
+                <div class="dcmp__filter">
+                    <label for="dcmpFilterSupplier">Proveedor</label>
+                    <select id="dcmpFilterSupplier"><option value="">Todos</option></select>
+                </div>
+                <div class="dcmp__filter">
+                    <label for="dcmpFilterStatus">Estado</label>
+                    <select id="dcmpFilterStatus"><option value="">Todos</option></select>
+                </div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dcmpToast" class="dcmp__toast" role="status" aria-live="polite"></div>
+        <div class="dcmp__table-scroll" id="dcmpTableScroll">
+            <table class="dcmp__table">
+                <thead><tr>
+                    <th>ID</th><th>N° COMPRA</th><th>PRODUCTO</th><th>PROVEEDOR</th><th>CANT.</th>
+                    <th class="dcmp__col-money">COSTO UNIT.</th><th class="dcmp__col-money">SUBTOTAL</th><th>ESTADO</th><th>FECHA</th>
+                    <th class="dcmp__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="dcmpActiveBody">
+                    <tr class="dcmp__loading-row"><td colspan="10">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="dcmp__footer">
+            <div class="dcmp__page-size">
+                <span>Mostrar</span>
+                <select id="dcmpPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="dcmp__pagination">
+                <span id="dcmpPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dcmp__btn dcmp__btn--ghost" id="dcmpPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dcmp__btn dcmp__btn--ghost" id="dcmpNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dcmp-modal" id="dcmpDetailModal" aria-hidden="true">
+    <div class="dcmp-modal__backdrop"></div>
+    <div class="dcmp-modal__dialog dcmp-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dcmp-modal__header"><h3>Detalle</h3><button type="button" class="dcmp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dcmp-modal__body" id="dcmpDetailBody"></div>
+        <div class="dcmp-modal__footer"><button type="button" class="dcmp__btn dcmp__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleCompra/detalle-compra.js" asp-append-version="true"></script>
+    <script>
+        window.dcmpUrls = {
+            list: '@Url.Action("List", "DetalleCompra")',
+            get: '@Url.Action("Get", "DetalleCompra")',
+            filterOptions: '@Url.Action("FilterOptions", "DetalleCompra")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleCompra/detalle-compra.js")" asp-append-version="true"></script>
 }
