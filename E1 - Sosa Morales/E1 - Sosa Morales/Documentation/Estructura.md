@@ -12,6 +12,20 @@ E1 - Sosa Morales/
 ├── Controllers/            # Controladores (una carpeta por módulo)
 ├── Data/                   # DbContext y acceso a datos
 ├── Documentation/          # Documentación del equipo
+│   ├── Estructura.md
+│   ├── Nomenclatura.md
+│   ├── Database.md
+│   ├── Tarjeta Configuracion.md
+│   ├── Tarjeta Seguridad.md
+│   ├── Tarjeta Personas y Terceros.md
+│   ├── Tarjeta Recursos Humanos.md
+│   ├── Tarjeta Productos.md
+│   ├── Tarjeta Inventario.md
+│   ├── Tarjeta Compras.md
+│   ├── Tarjeta Transferencias.md
+│   ├── Tarjeta Logistica.md
+│   ├── Tarjeta Ventas.md
+│   └── Tarjeta Estadisticas.md
 ├── Models/                 # ViewModels y entidades (una carpeta por dominio)
 ├── Services/               # Lógica de negocio / llamadas a SP
 ├── SQL/                    # Scripts de base de datos
@@ -246,14 +260,22 @@ Views/
 SQL/
 ├── Tablas Completas.sql       # DDL de todas las tablas
 ├── Login and Register - SP.sql
-└── Alertas.sql                # StockAlerts, min_stock, SPs de alertas
+├── Espinoza.sql               # Configuración y Seguridad
+├── Neil.sql                   # Clientes, RRHH, Transferencias
+├── Sergio.sql                 # Inventario y Compras
+├── Alertas.sql                # StockAlerts, min_stock, SPs de alertas
+└── insert-productos-nuevos.sql # Datos de prueba de catálogo
 ```
 
 Orden sugerido de ejecución:
 
 1. `Tablas Completas.sql`
 2. `Login and Register - SP.sql`
-3. `Alertas.sql`
+3. `Espinoza.sql`
+4. `Neil.sql`
+5. `Sergio.sql`
+6. `Alertas.sql`
+7. `insert-productos-nuevos.sql` (opcional, datos de prueba)
 
 ---
 
