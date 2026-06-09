@@ -146,7 +146,9 @@
     function loadActiveList() {
         var u = urls();
         var tbody = qs('supActiveBody');
-        if (tbody) tbody.innerHTML = '<tr class="sup__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class="sup__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.list, {
             search: state.search,
             idDocumentType: state.idDocumentType,
@@ -160,13 +162,15 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class="sup__empty-row"><td colspan="' + (colCount + 1) + '">Error al cargar los registros.</td></tr>';
             showToast(err.message || 'Error al cargar los registros.', false);
-        });
+        }).finally(function () { if (window.KmlTableList) KmlTableList.end(scrollEl); });
     }
 
     function loadInactiveList() {
         var u = urls();
         var tbody = qs('supInactiveBody');
-        if (tbody) tbody.innerHTML = '<tr class="sup__loading-row"><td colspan="' + (colCount + 1) + '">Cargando...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class="sup__loading-row"><td colspan="' + (colCount + 1) + '">Cargando...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.listInactive, {
             search: state.inactiveSearch,
             idDocumentType: state.inactiveIdDocumentType,
@@ -180,7 +184,7 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class="sup__empty-row"><td colspan="' + (colCount + 1) + '">Error al cargar inactivos.</td></tr>';
             showToast(err.message || 'Error al cargar inactivos.', false);
-        });
+        }).finally(function () { if (window.KmlTableList) KmlTableList.end(scrollEl); });
     }
 
     function resetForm() { var form = qs('supForm'); if (form) form.reset(); qs('supFormId').value = ''; }

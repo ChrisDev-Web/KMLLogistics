@@ -6,16 +6,117 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/TiposMovimiento/tipos-movimiento.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/TiposMovimiento/tipos-movimiento.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="tmov" id="tmovRoot">
+    <div class="tmov__panel">
+        <div class="tmov__toolbar">
+            <div class="tmov__search-group">
+                <div class="tmov__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="tmovSearchInput" placeholder="Buscar tipos de movimiento..." autocomplete="off" />
+                </div>
+                <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="tmov__actions">
+                <button type="button" class="tmov__btn tmov__btn--outline" id="tmovInactiveBtn">Ver inactivos</button>
+                <button type="button" class="tmov__btn tmov__btn--primary" id="tmovCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="tmovToast" class="tmov__toast" role="status" aria-live="polite"></div>
+        <div class="tmov__table-scroll" id="tmovTableScroll">
+            <table class="tmov__table">
+                <thead><tr><th>ID</th><th>NOMBRE</th><th class="tmov__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="tmovActiveBody"><tr class="tmov__loading-row"><td colspan="3">Cargando registros...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="tmov__footer">
+            <div class="tmov__page-size"><span>Mostrar</span><select id="tmovPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+            <div class="tmov__pagination">
+                <span id="tmovPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovPrevBtn" disabled>Anterior</button>
+                <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tmov-modal" id="tmovFormModal" aria-hidden="true">
+    <div class="tmov-modal__backdrop"></div>
+    <div class="tmov-modal__dialog" role="dialog" aria-modal="true">
+        <div class="tmov-modal__header"><h3 id="tmovFormModalTitle">Crear</h3><button type="button" class="tmov-modal__close" data-dismiss="modal">&times;</button></div>
+        <form id="tmovForm" class="tmov-modal__body" novalidate>
+            <input type="hidden" id="tmovFormId" value="" />
+            <div class="tmov-field"><label for="tmovName">Nombre *</label><input type="text" id="tmovName" required maxlength="50" /></div>
+        </form>
+        <div class="tmov-modal__footer">
+            <button type="button" class="tmov__btn tmov__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="tmov__btn tmov__btn--primary" id="tmovFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="tmov-modal" id="tmovDetailModal" aria-hidden="true">
+    <div class="tmov-modal__backdrop"></div>
+    <div class="tmov-modal__dialog tmov-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="tmov-modal__header"><h3>Detalle</h3><button type="button" class="tmov-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="tmov-modal__body" id="tmovDetailBody"></div>
+        <div class="tmov-modal__footer"><button type="button" class="tmov__btn tmov__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="tmov-modal" id="tmovInactiveModal" aria-hidden="true">
+    <div class="tmov-modal__backdrop"></div>
+    <div class="tmov-modal__dialog tmov-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="tmov-modal__header"><h3>Registros inactivos</h3><button type="button" class="tmov-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="tmov-modal__body">
+            <div class="tmov__search-group tmov__search-group--modal">
+                <div class="tmov__search"><i class="bi bi-search"></i><input type="text" id="tmovInactiveSearchInput" placeholder="Buscar inactivos..." /></div>
+                <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="tmov__table-scroll tmov__table-scroll--modal" id="tmovInactiveTableScroll">
+                <table class="tmov__table"><thead><tr><th>ID</th><th>NOMBRE</th><th class="tmov__th-actions">ACCIONES</th></tr></thead><tbody id="tmovInactiveBody"></tbody></table>
+            </div>
+            <div class="tmov__footer tmov__footer--modal">
+                <div class="tmov__page-size"><span>Mostrar</span><select id="tmovInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="tmov__pagination">
+                    <span id="tmovInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="tmov__btn tmov__btn--ghost" id="tmovInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tmov-modal" id="tmovConfirmModal" aria-hidden="true">
+    <div class="tmov-modal__backdrop"></div>
+    <div class="tmov-modal__dialog tmov-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="tmov-modal__header"><h3 id="tmovConfirmTitle">Confirmar</h3><button type="button" class="tmov-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="tmov-modal__body"><p id="tmovConfirmMessage"></p></div>
+        <div class="tmov-modal__footer">
+            <button type="button" class="tmov__btn tmov__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="tmov__btn tmov__btn--danger" id="tmovConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/TiposMovimiento/tipos-movimiento.js" asp-append-version="true"></script>
+    <script>
+        window.tmovUrls = {
+            list: '@Url.Action("List", "TiposMovimiento")',
+            listInactive: '@Url.Action("ListInactive", "TiposMovimiento")',
+            get: '@Url.Action("Get", "TiposMovimiento")',
+            create: '@Url.Action("Create", "TiposMovimiento")',
+            update: '@Url.Action("Update", "TiposMovimiento")',
+            deleteLogic: '@Url.Action("DeleteLogic", "TiposMovimiento")',
+            restore: '@Url.Action("Restore", "TiposMovimiento")',
+            deletePhysical: '@Url.Action("DeletePhysical", "TiposMovimiento")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/TiposMovimiento/tipos-movimiento.js")" asp-append-version="true"></script>
 }

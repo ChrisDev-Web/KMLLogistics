@@ -1,5 +1,13 @@
 using E1___Sosa_Morales.Data;
 
+using E1___Sosa_Morales.Services.Almacenes;
+
+using E1___Sosa_Morales.Services.DetalleAlmacen;
+
+using E1___Sosa_Morales.Services.MovimientosInventario;
+
+using E1___Sosa_Morales.Services.TiposMovimiento;
+
 using E1___Sosa_Morales.Services.AlertasStock;
 
 using E1___Sosa_Morales.Services.Cargos;
@@ -75,6 +83,14 @@ builder.Services.AddScoped<IStatusTransferService, StatusTransferService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
 
 builder.Services.AddScoped<ITransferDetailService, TransferDetailService>();
+
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+
+builder.Services.AddScoped<IWarehouseDetailService, WarehouseDetailService>();
+
+builder.Services.AddScoped<IMovementTypeService, MovementTypeService>();
+
+builder.Services.AddScoped<IInventoryMovementService, InventoryMovementService>();
 
 builder.Services.AddScoped<ICountryService, CountryService>();
 

@@ -1,4 +1,8 @@
 using E1___Sosa_Morales.Models.AlertasStock;
+using E1___Sosa_Morales.Models.Almacenes;
+using E1___Sosa_Morales.Models.DetalleAlmacen;
+using E1___Sosa_Morales.Models.MovimientosInventario;
+using E1___Sosa_Morales.Models.TiposMovimiento;
 using E1___Sosa_Morales.Models.Cargos;
 using E1___Sosa_Morales.Models.Clientes;
 using E1___Sosa_Morales.Models.Countries;
@@ -95,5 +99,21 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TransferSpResult>().HasNoKey();
         modelBuilder.Entity<TransferDetailListItem>().HasNoKey();
         modelBuilder.Entity<TransferDetailItem>().HasNoKey();
+        modelBuilder.Entity<WarehouseListItem>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetail>().HasNoKey();
+        modelBuilder.Entity<WarehouseDistrictOption>().HasNoKey();
+        modelBuilder.Entity<WarehouseSpResult>().HasNoKey();
+        modelBuilder.Entity<MovementTypeListItem>().HasNoKey();
+        modelBuilder.Entity<MovementTypeDetail>().HasNoKey();
+        modelBuilder.Entity<MovementTypeSpResult>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailMetrics>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailSummaryItem>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailProductItem>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailHeader>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailRecord>().HasNoKey();
+        modelBuilder.Entity<WarehouseDetailOption>().HasNoKey();
+        modelBuilder.Entity<InventoryMovementListItem>().HasNoKey();
+        modelBuilder.Entity<InventoryMovementDetail>().HasNoKey();
+        modelBuilder.Entity<InventoryMovementFilterOption>().HasNoKey();
     }
 }

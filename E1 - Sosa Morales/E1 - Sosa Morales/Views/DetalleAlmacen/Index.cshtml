@@ -6,16 +6,101 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleAlmacen/detalle-almacen.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleAlmacen/detalle-almacen.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dtalm" id="dtalmRoot">
+    <div class="dtalm__panel">
+        <div class="dtalm__metrics" id="dtalmMetrics">
+            <div class="dtalm-metric"><span class="dtalm-metric__label">Almacenes</span><strong class="dtalm-metric__value" id="dtalmMetricWarehouses">—</strong></div>
+            <div class="dtalm-metric"><span class="dtalm-metric__label">Productos</span><strong class="dtalm-metric__value" id="dtalmMetricProducts">—</strong></div>
+            <div class="dtalm-metric"><span class="dtalm-metric__label">Stock total</span><strong class="dtalm-metric__value" id="dtalmMetricStock">—</strong></div>
+            <div class="dtalm-metric dtalm-metric--cost"><span class="dtalm-metric__label">Valor costo</span><strong class="dtalm-metric__value" id="dtalmMetricCost">—</strong></div>
+            <div class="dtalm-metric dtalm-metric--sale"><span class="dtalm-metric__label">Valor venta</span><strong class="dtalm-metric__value" id="dtalmMetricSale">—</strong></div>
+        </div>
+        <div class="dtalm__toolbar">
+            <div class="dtalm__search-group">
+                <div class="dtalm__search"><i class="bi bi-search"></i><input type="text" id="dtalmSearchInput" placeholder="Buscar almacenes..." autocomplete="off" /></div>
+                <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dtalm__filters">
+                <div class="dtalm__filter">
+                    <label for="dtalmFilterWarehouse">Almacén</label>
+                    <select id="dtalmFilterWarehouse"><option value="">Todos los almacenes</option></select>
+                </div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dtalmToast" class="dtalm__toast" role="status" aria-live="polite"></div>
+        <div class="dtalm__table-scroll" id="dtalmTableScroll">
+            <table class="dtalm__table">
+                <thead id="dtalmTableHead">
+                    <tr><th class="dtalm__col-num">ID</th><th>ALMACÉN</th><th class="dtalm__col-num">PRODUCTOS</th><th class="dtalm__col-num">STOCK</th><th class="dtalm__col-money">VALOR COSTO</th><th class="dtalm__col-money">VALOR VENTA</th><th class="dtalm__th-actions">ACCIONES</th></tr>
+                </thead>
+                <tbody id="dtalmActiveBody"><tr class="dtalm__loading-row"><td colspan="7">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="dtalm__footer">
+            <div class="dtalm__page-size"><span>Mostrar</span><select id="dtalmPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+            <div class="dtalm__pagination">
+                <span id="dtalmPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dtalm-modal" id="dtalmWarehouseModal" aria-hidden="true">
+    <div class="dtalm-modal__backdrop"></div>
+    <div class="dtalm-modal__dialog dtalm-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="dtalm-modal__header"><h3 id="dtalmWarehouseModalTitle">Detalle de almacén</h3><button type="button" class="dtalm-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="dtalm-modal__body">
+            <div id="dtalmWarehouseInfo" class="dtalm-warehouse-info"></div>
+            <div class="dtalm__search-group dtalm__search-group--modal">
+                <div class="dtalm__search"><i class="bi bi-search"></i><input type="text" id="dtalmProductSearchInput" placeholder="Buscar productos..." /></div>
+                <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmProductClearBtn">Limpiar</button>
+            </div>
+            <div class="dtalm__table-scroll dtalm__table-scroll--inner">
+                <table class="dtalm__table">
+                    <thead><tr><th>PRODUCTO</th><th>MARCA</th><th>CATEGORÍA</th><th class="dtalm__col-num">STOCK</th><th>UBICACIÓN</th><th class="dtalm__col-money">COSTO</th><th class="dtalm__col-money">P. VENTA</th><th class="dtalm__th-actions">ACCIONES</th></tr></thead>
+                    <tbody id="dtalmProductBody"></tbody>
+                </table>
+            </div>
+            <div class="dtalm__footer dtalm__footer--modal">
+                <div class="dtalm__page-size"><span>Mostrar</span><select id="dtalmProductPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select></div>
+                <div class="dtalm__pagination">
+                    <span id="dtalmProductPageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmProductPrevBtn" disabled>Anterior</button>
+                    <button type="button" class="dtalm__btn dtalm__btn--ghost" id="dtalmProductNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+        <div class="dtalm-modal__footer"><button type="button" class="dtalm__btn dtalm__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="dtalm-modal" id="dtalmDetailModal" aria-hidden="true">
+    <div class="dtalm-modal__backdrop"></div>
+    <div class="dtalm-modal__dialog dtalm-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dtalm-modal__header"><h3>Detalle producto</h3><button type="button" class="dtalm-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="dtalm-modal__body" id="dtalmDetailBody"></div>
+        <div class="dtalm-modal__footer"><button type="button" class="dtalm__btn dtalm__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleAlmacen/detalle-almacen.js" asp-append-version="true"></script>
+    <script>
+        window.dtalmUrls = {
+            list: '@Url.Action("List", "DetalleAlmacen")',
+            listProducts: '@Url.Action("ListProducts", "DetalleAlmacen")',
+            metrics: '@Url.Action("Metrics", "DetalleAlmacen")',
+            getWarehouse: '@Url.Action("GetWarehouse", "DetalleAlmacen")',
+            get: '@Url.Action("Get", "DetalleAlmacen")',
+            warehouseOptions: '@Url.Action("WarehouseOptions", "DetalleAlmacen")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleAlmacen/detalle-almacen.js")" asp-append-version="true"></script>
 }

@@ -635,3 +635,14 @@ body.dashboard-body {
     margin-top: 0.5rem;
     font-size: 0.95rem;
 }
+
+/* Carga AJAX de tablas: mantiene filas visibles al paginar */
+[class*="__table-scroll"].is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+[class*="__table-scroll"].is-loading .kml-table-loading-bar {
+    opacity: 1;
+}

@@ -96,7 +96,9 @@
 
     function loadList() {
         var tbody = qs('dtrfActiveBody');
-        if (tbody) tbody.innerHTML = '<tr class="dtrf__loading-row"><td colspan="' + (colCount + 1) + '">Cargando...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class="dtrf__loading-row"><td colspan="' + (colCount + 1) + '">Cargando...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(urls().list, {
             search: state.search,
             idTransfer: state.idTransfer,
@@ -112,7 +114,7 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class="dtrf__empty-row"><td colspan="' + (colCount + 1) + '">Error al cargar.</td></tr>';
             showToast(err.message || 'Error al cargar.', false);
-        });
+        }).finally(function () { if (window.KmlTableList) KmlTableList.end(scrollEl); });
     }
 
     function openDetailModal(id) {

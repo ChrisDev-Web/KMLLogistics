@@ -6,16 +6,120 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Almacenes/almacenes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Almacenes/almacenes.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="alm" id="almRoot">
+    <div class="alm__panel">
+        <div class="alm__toolbar">
+            <div class="alm__search-group">
+                <div class="alm__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="almSearchInput" placeholder="Buscar almacenes..." autocomplete="off" />
+                </div>
+                <button type="button" class="alm__btn alm__btn--ghost" id="almClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="alm__actions">
+                <button type="button" class="alm__btn alm__btn--outline" id="almInactiveBtn">Ver inactivos</button>
+                <button type="button" class="alm__btn alm__btn--primary" id="almCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="almToast" class="alm__toast" role="status" aria-live="polite"></div>
+        <div class="alm__table-scroll" id="almTableScroll">
+            <table class="alm__table">
+                <thead><tr><th>ID</th><th>NOMBRE</th><th>DIRECCIÓN</th><th>DISTRITO</th><th class="alm__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="almActiveBody"><tr class="alm__loading-row"><td colspan="5">Cargando registros...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="alm__footer">
+            <div class="alm__page-size"><span>Mostrar</span><select id="almPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+            <div class="alm__pagination">
+                <span id="almPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="alm__btn alm__btn--ghost" id="almPrevBtn" disabled>Anterior</button>
+                <button type="button" class="alm__btn alm__btn--ghost" id="almNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alm-modal" id="almFormModal" aria-hidden="true">
+    <div class="alm-modal__backdrop"></div>
+    <div class="alm-modal__dialog alm-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="alm-modal__header"><h3 id="almFormModalTitle">Crear</h3><button type="button" class="alm-modal__close" data-dismiss="modal">&times;</button></div>
+        <form id="almForm" class="alm-modal__body" novalidate>
+            <input type="hidden" id="almFormId" value="" />
+            <div class="alm-field"><label for="almName">Nombre *</label><input type="text" id="almName" required maxlength="100" /></div>
+            <div class="alm-field"><label for="almAddress">Dirección *</label><input type="text" id="almAddress" required maxlength="255" /></div>
+            <div class="alm-field"><label for="almDistrict">Distrito</label><select id="almDistrict"><option value="">Sin distrito</option></select></div>
+        </form>
+        <div class="alm-modal__footer">
+            <button type="button" class="alm__btn alm__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="alm__btn alm__btn--primary" id="almFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="alm-modal" id="almDetailModal" aria-hidden="true">
+    <div class="alm-modal__backdrop"></div>
+    <div class="alm-modal__dialog alm-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="alm-modal__header"><h3>Detalle</h3><button type="button" class="alm-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="alm-modal__body" id="almDetailBody"></div>
+        <div class="alm-modal__footer"><button type="button" class="alm__btn alm__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="alm-modal" id="almInactiveModal" aria-hidden="true">
+    <div class="alm-modal__backdrop"></div>
+    <div class="alm-modal__dialog alm-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="alm-modal__header"><h3>Registros inactivos</h3><button type="button" class="alm-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="alm-modal__body">
+            <div class="alm__search-group alm__search-group--modal">
+                <div class="alm__search"><i class="bi bi-search"></i><input type="text" id="almInactiveSearchInput" placeholder="Buscar inactivos..." /></div>
+                <button type="button" class="alm__btn alm__btn--ghost" id="almInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="alm__table-scroll alm__table-scroll--modal" id="almInactiveTableScroll">
+                <table class="alm__table"><thead><tr><th>ID</th><th>NOMBRE</th><th>DIRECCIÓN</th><th>DISTRITO</th><th class="alm__th-actions">ACCIONES</th></tr></thead><tbody id="almInactiveBody"></tbody></table>
+            </div>
+            <div class="alm__footer alm__footer--modal">
+                <div class="alm__page-size"><span>Mostrar</span><select id="almInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="alm__pagination">
+                    <span id="almInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="alm__btn alm__btn--ghost" id="almInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="alm__btn alm__btn--ghost" id="almInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alm-modal" id="almConfirmModal" aria-hidden="true">
+    <div class="alm-modal__backdrop"></div>
+    <div class="alm-modal__dialog alm-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="alm-modal__header"><h3 id="almConfirmTitle">Confirmar</h3><button type="button" class="alm-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="alm-modal__body"><p id="almConfirmMessage"></p></div>
+        <div class="alm-modal__footer">
+            <button type="button" class="alm__btn alm__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="alm__btn alm__btn--danger" id="almConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Almacenes/almacenes.js" asp-append-version="true"></script>
+    <script>
+        window.almUrls = {
+            list: '@Url.Action("List", "Almacenes")',
+            listInactive: '@Url.Action("ListInactive", "Almacenes")',
+            get: '@Url.Action("Get", "Almacenes")',
+            create: '@Url.Action("Create", "Almacenes")',
+            update: '@Url.Action("Update", "Almacenes")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Almacenes")',
+            restore: '@Url.Action("Restore", "Almacenes")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Almacenes")',
+            districtOptions: '@Url.Action("DistrictOptions", "Almacenes")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Almacenes/almacenes.js")" asp-append-version="true"></script>
 }

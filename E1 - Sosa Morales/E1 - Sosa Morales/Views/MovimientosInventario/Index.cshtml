@@ -6,16 +6,60 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/MovimientosInventario/movimientos-inventario.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/MovimientosInventario/movimientos-inventario.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="movinv" id="movinvRoot">
+    <div class="movinv__panel">
+        <div class="movinv__toolbar">
+            <div class="movinv__search-group">
+                <div class="movinv__search"><i class="bi bi-search"></i><input type="text" id="movinvSearchInput" placeholder="Buscar movimientos..." autocomplete="off" /></div>
+                <button type="button" class="movinv__btn movinv__btn--ghost" id="movinvClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="movinv__filters">
+                <div class="movinv__filter"><label for="movinvFilterWarehouse">Almacén</label><select id="movinvFilterWarehouse"><option value="">Todos</option></select></div>
+                <div class="movinv__filter"><label for="movinvFilterProduct">Producto</label><select id="movinvFilterProduct"><option value="">Todos</option></select></div>
+                <div class="movinv__filter"><label for="movinvFilterType">Tipo</label><select id="movinvFilterType"><option value="">Todos</option></select></div>
+                <div class="movinv__filter"><label for="movinvFilterDirection">Dirección</label><select id="movinvFilterDirection"><option value="">Todos</option><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="movinvToast" class="movinv__toast" role="status" aria-live="polite"></div>
+        <div class="movinv__table-scroll" id="movinvTableScroll">
+            <table class="movinv__table">
+                <thead><tr><th>ID</th><th>PRODUCTO</th><th>ALMACÉN</th><th>TIPO</th><th>DIRECCIÓN</th><th>CANT.</th><th>REFERENCIA</th><th>FECHA</th><th>EMPLEADO</th><th class="movinv__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="movinvActiveBody"><tr class="movinv__loading-row"><td colspan="10">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="movinv__footer">
+            <div class="movinv__page-size"><span>Mostrar</span><select id="movinvPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+            <div class="movinv__pagination">
+                <span id="movinvPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="movinv__btn movinv__btn--ghost" id="movinvPrevBtn" disabled>Anterior</button>
+                <button type="button" class="movinv__btn movinv__btn--ghost" id="movinvNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="movinv-modal" id="movinvDetailModal" aria-hidden="true">
+    <div class="movinv-modal__backdrop"></div>
+    <div class="movinv-modal__dialog movinv-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="movinv-modal__header"><h3>Detalle movimiento</h3><button type="button" class="movinv-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="movinv-modal__body" id="movinvDetailBody"></div>
+        <div class="movinv-modal__footer"><button type="button" class="movinv__btn movinv__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/MovimientosInventario/movimientos-inventario.js" asp-append-version="true"></script>
+    <script>
+        window.movinvUrls = {
+            list: '@Url.Action("List", "MovimientosInventario")',
+            get: '@Url.Action("Get", "MovimientosInventario")',
+            filterOptions: '@Url.Action("FilterOptions", "MovimientosInventario")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/MovimientosInventario/movimientos-inventario.js")" asp-append-version="true"></script>
 }

@@ -174,17 +174,16 @@
 .ltrf__table-scroll {
     border: 1px solid var(--border, #e2e8f0);
     border-radius: 8px;
-    overflow: hidden;
-}
-
-.ltrf__table-scroll.is-scrollable {
     max-height: 520px;
     overflow-y: auto;
 }
 
-.ltrf__table-scroll--modal.is-scrollable {
+.ltrf__table-scroll--modal {
     max-height: 400px;
+    overflow-y: auto;
 }
+
+
 
 .ltrf__table {
     width: 100%;

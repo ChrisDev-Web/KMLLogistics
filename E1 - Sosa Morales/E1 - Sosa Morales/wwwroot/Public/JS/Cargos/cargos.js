@@ -67,7 +67,7 @@
     }
 
     function updatePagination(infoEl, prevBtn, nextBtn, page, totalPages) {
-        if (infoEl) infoEl.textContent = 'Página ' + page + ' de ' + (totalPages || 1);
+        if (infoEl) infoEl.textContent = 'Pï¿½gina ' + page + ' de ' + (totalPages || 1);
         if (prevBtn) prevBtn.disabled = page <= 1;
         if (nextBtn) nextBtn.disabled = page >= totalPages || totalPages === 0;
     }
@@ -80,7 +80,9 @@
     function loadActiveList() {
         var u = urls();
         var tbody = qs('cgoActiveBody');
-        if (tbody) tbody.innerHTML = '<tr class=\"cgo__loading-row\"><td colspan=\"' + (colCount + 1) + '\">Cargando registros...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class=\"cgo__loading-row\"><td colspan=\"' + (colCount + 1) + '\">Cargando registros...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.list, { search: state.search, page: state.page, pageSize: state.pageSize })).then(function (data) {
             renderRows(tbody, data.items, 'active');
             updatePagination(qs('cgoPageInfo'), qs('cgoPrevBtn'), qs('cgoNextBtn'), data.page, data.totalPages || 1);
@@ -88,13 +90,17 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class=\"cgo__empty-row\"><td colspan=\"' + (colCount + 1) + '\">Error al cargar los registros.</td></tr>';
             showToast(err.message || 'Error al cargar los registros.', false);
+        }).finally(function () {
+            if (window.KmlTableList) KmlTableList.end(scrollEl);
         });
     }
 
     function loadInactiveList() {
         var u = urls();
         var tbody = qs('cgoInactiveBody');
-        if (tbody) tbody.innerHTML = '<tr class=\"cgo__loading-row\"><td colspan=\"' + (colCount + 1) + '\">Cargando...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class=\"cgo__loading-row\"><td colspan=\"' + (colCount + 1) + '\">Cargando...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.listInactive, { search: state.inactiveSearch, page: state.inactivePage, pageSize: state.inactivePageSize })).then(function (data) {
             renderRows(tbody, data.items, 'inactive');
             updatePagination(qs('cgoInactivePageInfo'), qs('cgoInactivePrevBtn'), qs('cgoInactiveNextBtn'), data.page, data.totalPages || 1);
@@ -102,6 +108,8 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class=\"cgo__empty-row\"><td colspan=\"' + (colCount + 1) + '\">Error al cargar inactivos.</td></tr>';
             showToast(err.message || 'Error al cargar inactivos.', false);
+        }).finally(function () {
+            if (window.KmlTableList) KmlTableList.end(scrollEl);
         });
     }
 
@@ -129,7 +137,7 @@
             if (!res.success) { showToast(res.message || 'Registro no encontrado.', false); return; }
             var d = res.data;
             var rows = [{ label: 'ID', value: d.id }, { label: 'Nombre', value: d.name }];
-            if (d.description !== undefined && d.description !== '') rows.push({ label: 'Descripción', value: d.description });
+            if (d.description !== undefined && d.description !== '') rows.push({ label: 'Descripciï¿½n', value: d.description });
             
             rows.push({ label: 'Estado', value: d.status === 1 ? 'Activo' : 'Inactivo' });
             rows.push({ label: 'Creado', value: d.createdAt });
@@ -163,19 +171,21 @@
     }
 
     function handleDeleteLogic(id) {
-        confirmAction('Desactivar registro', '¿Desea desactivar este registro? Aparecerá en Ver inactivos.', function () {
+        confirmAction('Desactivar registro', 'ï¿½Desea desactivar este registro? Aparecerï¿½ en Ver inactivos.', function () {
             postAction(urls().deleteLogic, { id: id }).then(function (res) { showToast(res.message, res.success); if (res.success) loadActiveList(); });
+        }).finally(function () {
+            if (window.KmlTableList) KmlTableList.end(scrollEl);
         });
     }
 
     function handleRestore(id) {
-        confirmAction('Restaurar registro', '¿Desea restaurar este registro?', function () {
+        confirmAction('Restaurar registro', 'ï¿½Desea restaurar este registro?', function () {
             postAction(urls().restore, { id: id }).then(function (res) { showToast(res.message, res.success); if (res.success) { loadInactiveList(); loadActiveList(); } });
         });
     }
 
     function handlePurge(id) {
-        confirmAction('Eliminar permanentemente', 'Esta acción no se puede deshacer. ¿Eliminar de la base de datos?', function () {
+        confirmAction('Eliminar permanentemente', 'Esta acciï¿½n no se puede deshacer. ï¿½Eliminar de la base de datos?', function () {
             postAction(urls().deletePhysical, { id: id }).then(function (res) { showToast(res.message, res.success); if (res.success) loadInactiveList(); });
         });
     }

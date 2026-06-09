@@ -79,7 +79,9 @@
     function loadActiveList() {
         var u = urls();
         var tbody = qs('usrActiveBody');
-        if (tbody) tbody.innerHTML = '<tr class="usr__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class="usr__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.list, { search: state.search, page: state.page, pageSize: state.pageSize })).then(function (data) {
             renderRows(tbody, data.items);
             updatePagination(qs('usrPageInfo'), qs('usrPrevBtn'), qs('usrNextBtn'), data.page, data.totalPages || 1);
@@ -87,7 +89,7 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class="usr__empty-row"><td colspan="' + (colCount + 1) + '">Error al cargar los registros.</td></tr>';
             showToast(err.message || 'Error al cargar los registros.', false);
-        });
+        }).finally(function () { if (window.KmlTableList) KmlTableList.end(scrollEl); });
     }
 
     function loadFkOptions() {

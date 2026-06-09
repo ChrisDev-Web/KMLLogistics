@@ -1,4 +1,4 @@
-﻿/* ConfiguraciÃ³n CRUD â€” estilos compartidos */
+/* ConfiguraciÃ³n CRUD â€” estilos compartidos */
 .clt {
     margin-top: 1rem;
 }
@@ -174,17 +174,16 @@
 .clt__table-scroll {
     border: 1px solid var(--border, #e2e8f0);
     border-radius: 8px;
-    overflow: hidden;
-}
-
-.clt__table-scroll.is-scrollable {
     max-height: 520px;
     overflow-y: auto;
 }
 
-.clt__table-scroll--modal.is-scrollable {
+.clt__table-scroll--modal {
     max-height: 400px;
+    overflow-y: auto;
 }
+
+
 
 .clt__table {
     width: 100%;

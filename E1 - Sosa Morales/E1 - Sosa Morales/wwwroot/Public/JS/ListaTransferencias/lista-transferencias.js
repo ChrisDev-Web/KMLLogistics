@@ -143,7 +143,9 @@
     function loadList() {
         var u = urls();
         var tbody = qs('ltrfActiveBody');
-        if (tbody) tbody.innerHTML = '<tr class="ltrf__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        var scrollEl = tbody && tbody.closest('[class*="__table-scroll"]');
+        var loadHtml = '<tr class="ltrf__loading-row"><td colspan="' + (colCount + 1) + '">Cargando registros...</td></tr>';
+        if (window.KmlTableList) KmlTableList.begin(scrollEl, tbody, loadHtml); else if (tbody) tbody.innerHTML = loadHtml;
         fetchJson(buildQuery(u.list, {
             search: state.search,
             idWarehouseOrigin: state.idWarehouseOrigin,
@@ -158,7 +160,7 @@
         }).catch(function (err) {
             if (tbody) tbody.innerHTML = '<tr class="ltrf__empty-row"><td colspan="' + (colCount + 1) + '">Error al cargar.</td></tr>';
             showToast(err.message || 'Error al cargar.', false);
-        });
+        }).finally(function () { if (window.KmlTableList) KmlTableList.end(scrollEl); });
     }
 
     function getProductStock(productId) {

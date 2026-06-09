@@ -1,4 +1,4 @@
-﻿/* ConfiguraciÃ³n CRUD â€” estilos compartidos */
+/* ConfiguraciÃ³n CRUD â€” estilos compartidos */
 .reg {
     margin-top: 1rem;
 }
@@ -131,17 +131,16 @@
 .reg__table-scroll {
     border: 1px solid var(--border, #e2e8f0);
     border-radius: 8px;
-    overflow: hidden;
-}
-
-.reg__table-scroll.is-scrollable {
     max-height: 520px;
     overflow-y: auto;
 }
 
-.reg__table-scroll--modal.is-scrollable {
+.reg__table-scroll--modal {
     max-height: 400px;
+    overflow-y: auto;
 }
+
+
 
 .reg__table {
     width: 100%;
