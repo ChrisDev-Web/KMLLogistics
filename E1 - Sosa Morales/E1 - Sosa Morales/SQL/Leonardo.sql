@@ -113,6 +113,149 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID('dbo.sp_vehicle_type_create', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_type_create;
+GO
+CREATE PROCEDURE dbo.sp_vehicle_type_create
+    @name VARCHAR(100),
+    @description VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SET @name = LTRIM(RTRIM(@name));
+
+    IF @name = ''
+    BEGIN
+        SELECT 0 AS Success, N'Ingrese el nombre del tipo de vehiculo.' AS Message, NULL AS IdVehicleType;
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM VehicleTypes WHERE name = @name AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS Success, N'Ya existe un tipo de vehiculo con ese nombre.' AS Message, NULL AS IdVehicleType;
+        RETURN;
+    END
+
+    INSERT INTO VehicleTypes (name, description)
+    VALUES (@name, @description);
+
+    SELECT 1 AS Success, N'Tipo de vehiculo creado correctamente.' AS Message, CAST(SCOPE_IDENTITY() AS INT) AS IdVehicleType;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_vehicle_type_update', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_type_update;
+GO
+CREATE PROCEDURE dbo.sp_vehicle_type_update
+    @id_vehicle_type INT,
+    @name VARCHAR(100),
+    @description VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SET @name = LTRIM(RTRIM(@name));
+
+    IF NOT EXISTS (SELECT 1 FROM VehicleTypes WHERE id_vehicle_type = @id_vehicle_type AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
+        RETURN;
+    END
+
+    IF @name = ''
+    BEGIN
+        SELECT 0 AS Success, N'Ingrese el nombre del tipo de vehiculo.' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM VehicleTypes WHERE name = @name AND id_vehicle_type <> @id_vehicle_type AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS Success, N'Ya existe otro tipo de vehiculo con ese nombre.' AS Message;
+        RETURN;
+    END
+
+    UPDATE VehicleTypes
+    SET name = @name,
+        description = @description,
+        updated_at = GETDATE()
+    WHERE id_vehicle_type = @id_vehicle_type
+      AND deleted_at IS NULL;
+
+    SELECT 1 AS Success, N'Tipo de vehiculo actualizado correctamente.' AS Message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_vehicle_type_delete_logic', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_type_delete_logic;
+GO
+CREATE PROCEDURE dbo.sp_vehicle_type_delete_logic
+    @id_vehicle_type INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Vehicles WHERE id_vehicle_type = @id_vehicle_type AND deleted_at IS NULL)
+    BEGIN
+        SELECT 0 AS Success, N'No se puede desactivar: existen vehiculos asociados.' AS Message;
+        RETURN;
+    END
+
+    UPDATE VehicleTypes
+    SET status = 0,
+        updated_at = GETDATE()
+    WHERE id_vehicle_type = @id_vehicle_type
+      AND deleted_at IS NULL;
+
+    IF @@ROWCOUNT = 0
+        SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
+    ELSE
+        SELECT 1 AS Success, N'Tipo de vehiculo desactivado correctamente.' AS Message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_vehicle_type_restore', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_type_restore;
+GO
+CREATE PROCEDURE dbo.sp_vehicle_type_restore
+    @id_vehicle_type INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE VehicleTypes
+    SET status = 1,
+        updated_at = GETDATE()
+    WHERE id_vehicle_type = @id_vehicle_type
+      AND deleted_at IS NULL;
+
+    IF @@ROWCOUNT = 0
+        SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
+    ELSE
+        SELECT 1 AS Success, N'Tipo de vehiculo restaurado correctamente.' AS Message;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_vehicle_type_delete_physical', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_type_delete_physical;
+GO
+CREATE PROCEDURE dbo.sp_vehicle_type_delete_physical
+    @id_vehicle_type INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Vehicles WHERE id_vehicle_type = @id_vehicle_type)
+    BEGIN
+        SELECT 0 AS Success, N'No se puede eliminar: existen vehiculos asociados.' AS Message;
+        RETURN;
+    END
+
+    DELETE FROM VehicleTypes
+    WHERE id_vehicle_type = @id_vehicle_type;
+
+    IF @@ROWCOUNT = 0
+        SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
+    ELSE
+        SELECT 1 AS Success, N'Tipo de vehiculo eliminado permanentemente.' AS Message;
+END
+GO
+
 /* =========================
    VEHICULOS
 ========================= */
@@ -433,7 +576,6 @@ BEGIN
 
     SELECT
         id_box AS IdBox,
-        code AS Code,
         weight AS Weight,
         height AS Height,
         width AS Width,
@@ -444,7 +586,7 @@ BEGIN
     FROM Boxes
     WHERE deleted_at IS NULL
       AND status = 1
-      AND (@search IS NULL OR @search = '' OR code LIKE '%' + @search + '%')
+      AND (@search IS NULL OR @search = '' OR CAST(id_box AS VARCHAR(20)) LIKE '%' + @search + '%')
     ORDER BY id_box DESC
     OFFSET (@page - 1) * @page_size ROWS
     FETCH NEXT @page_size ROWS ONLY;
@@ -461,7 +603,6 @@ BEGIN
 
     SELECT
         id_box AS IdBox,
-        code AS Code,
         weight AS Weight,
         height AS Height,
         width AS Width,
@@ -472,7 +613,7 @@ BEGIN
     FROM Boxes
     WHERE deleted_at IS NULL
       AND status = 0
-      AND (@search IS NULL OR @search = '' OR code LIKE '%' + @search + '%')
+      AND (@search IS NULL OR @search = '' OR CAST(id_box AS VARCHAR(20)) LIKE '%' + @search + '%')
     ORDER BY id_box DESC
     OFFSET (@page - 1) * @page_size ROWS
     FETCH NEXT @page_size ROWS ONLY;
@@ -487,7 +628,6 @@ BEGIN
 
     SELECT
         id_box AS IdBox,
-        code AS Code,
         weight AS Weight,
         height AS Height,
         width AS Width,
@@ -502,8 +642,11 @@ BEGIN
 END
 GO
 
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+GO
+
 CREATE OR ALTER PROCEDURE dbo.sp_box_create
-    @code VARCHAR(50),
     @weight DECIMAL(10,2) = NULL,
     @height DECIMAL(10,2) = NULL,
     @width DECIMAL(10,2) = NULL,
@@ -512,24 +655,15 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SET @code = UPPER(LTRIM(RTRIM(@code)));
+    INSERT INTO Boxes (weight, height, width, length)
+    VALUES (@weight, @height, @width, @length);
 
-    IF EXISTS (SELECT 1 FROM Boxes WHERE code = @code AND deleted_at IS NULL)
-    BEGIN
-        SELECT 0 AS Success, 'Ya existe una caja con ese codigo.' AS Message, NULL AS IdBox;
-        RETURN;
-    END
-
-    INSERT INTO Boxes (code, weight, height, width, length)
-    VALUES (@code, @weight, @height, @width, @length);
-
-    SELECT 1 AS Success, 'Caja creada correctamente.' AS Message, CAST(SCOPE_IDENTITY() AS INT) AS IdBox;
+    SELECT 1 AS Success, N'Caja creada correctamente.' AS Message, CAST(SCOPE_IDENTITY() AS INT) AS IdBox;
 END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_box_update
     @id_box INT,
-    @code VARCHAR(50),
     @weight DECIMAL(10,2) = NULL,
     @height DECIMAL(10,2) = NULL,
     @width DECIMAL(10,2) = NULL,
@@ -538,17 +672,11 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SET @code = UPPER(LTRIM(RTRIM(@code)));
-
     IF NOT EXISTS (SELECT 1 FROM Boxes WHERE id_box = @id_box AND deleted_at IS NULL)
-    BEGIN SELECT 0 AS Success, 'Registro no encontrado.' AS Message; RETURN; END
-
-    IF EXISTS (SELECT 1 FROM Boxes WHERE code = @code AND id_box <> @id_box AND deleted_at IS NULL)
-    BEGIN SELECT 0 AS Success, 'Ya existe otra caja con ese codigo.' AS Message; RETURN; END
+    BEGIN SELECT 0 AS Success, N'Registro no encontrado.' AS Message; RETURN; END
 
     UPDATE Boxes
-    SET code = @code,
-        weight = @weight,
+    SET weight = @weight,
         height = @height,
         width = @width,
         length = @length,
@@ -556,7 +684,7 @@ BEGIN
     WHERE id_box = @id_box
       AND deleted_at IS NULL;
 
-    SELECT 1 AS Success, 'Caja actualizada correctamente.' AS Message;
+    SELECT 1 AS Success, N'Caja actualizada correctamente.' AS Message;
 END
 GO
 
@@ -621,10 +749,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT id_box AS IdBox, code AS Code
+    SELECT id_box AS IdBox, CONCAT(N'Caja #', id_box) AS Name
     FROM Boxes
     WHERE deleted_at IS NULL AND status = 1
-    ORDER BY code;
+    ORDER BY id_box;
 END
 GO
 
@@ -645,7 +773,6 @@ BEGIN
     SELECT
         bd.id_box_detail AS IdBoxDetail,
         bd.id_box AS IdBox,
-        b.code AS BoxCode,
         bd.id_sale_detail AS IdSaleDetail,
         sd.id_sale AS IdSale,
         p.name AS ProductName,
@@ -658,11 +785,11 @@ BEGIN
     WHERE (@id_box IS NULL OR bd.id_box = @id_box)
       AND (
             @search IS NULL OR @search = ''
-         OR b.code LIKE '%' + @search + '%'
+         OR CAST(b.id_box AS VARCHAR(20)) LIKE '%' + @search + '%'
          OR p.name LIKE '%' + @search + '%'
          OR CAST(sd.id_sale AS VARCHAR(20)) LIKE '%' + @search + '%'
       )
-    ORDER BY bd.id_box_detail DESC
+    ORDER BY sd.id_sale DESC, bd.id_box_detail DESC
     OFFSET (@page - 1) * @page_size ROWS
     FETCH NEXT @page_size ROWS ONLY;
 END
@@ -677,7 +804,6 @@ BEGIN
     SELECT
         bd.id_box_detail AS IdBoxDetail,
         bd.id_box AS IdBox,
-        b.code AS BoxCode,
         bd.id_sale_detail AS IdSaleDetail,
         sd.id_sale AS IdSale,
         p.name AS ProductName,
@@ -690,58 +816,119 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_box_detail_create
-    @id_box INT,
-    @id_sale_detail INT,
-    @quantity INT
+CREATE OR ALTER PROCEDURE dbo.sp_sale_detail_options_for_box
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @quantity <= 0
-    BEGIN SELECT 0 AS Success, 'La cantidad debe ser mayor que cero.' AS Message, NULL AS IdBoxDetail; RETURN; END
-
-    IF NOT EXISTS (SELECT 1 FROM Boxes WHERE id_box = @id_box AND deleted_at IS NULL AND status = 1)
-    BEGIN SELECT 0 AS Success, 'Seleccione una caja activa.' AS Message, NULL AS IdBoxDetail; RETURN; END
-
-    IF NOT EXISTS (SELECT 1 FROM SaleDetails WHERE id_sale_detail = @id_sale_detail)
-    BEGIN SELECT 0 AS Success, 'Seleccione un detalle de venta valido.' AS Message, NULL AS IdBoxDetail; RETURN; END
-
-    INSERT INTO BoxDetails (id_box, id_sale_detail, quantity)
-    VALUES (@id_box, @id_sale_detail, @quantity);
-
-    SELECT 1 AS Success, 'Detalle de caja creado correctamente.' AS Message, CAST(SCOPE_IDENTITY() AS INT) AS IdBoxDetail;
+    SELECT
+        MIN(sd.id_sale_detail) AS IdSaleDetail,
+        sd.id_sale AS IdSale,
+        CONCAT(N'Venta #', sd.id_sale, N' (', COUNT(*), N' productos)') AS Name
+    FROM SaleDetails sd
+    INNER JOIN Sales s ON s.id_sale = sd.id_sale AND s.deleted_at IS NULL
+    GROUP BY sd.id_sale
+    ORDER BY sd.id_sale DESC;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_box_detail_update
-    @id_box_detail INT,
-    @id_box INT,
-    @id_sale_detail INT,
-    @quantity INT
+CREATE OR ALTER PROCEDURE dbo.sp_sale_pack_preview
+    @id_sale_detail INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @quantity <= 0
-    BEGIN SELECT 0 AS Success, 'La cantidad debe ser mayor que cero.' AS Message; RETURN; END
+    DECLARE @id_sale INT;
+    SELECT @id_sale = id_sale FROM SaleDetails WHERE id_sale_detail = @id_sale_detail;
+    IF @id_sale IS NULL RETURN;
 
-    IF NOT EXISTS (SELECT 1 FROM BoxDetails WHERE id_box_detail = @id_box_detail)
-    BEGIN SELECT 0 AS Success, 'Registro no encontrado.' AS Message; RETURN; END
+    DECLARE @total_weight DECIMAL(18,4) = 0;
+    DECLARE @total_volume DECIMAL(18,4) = 0;
+
+    SELECT
+        @total_weight = SUM(CAST(sd.quantity AS DECIMAL(18,4)) * ISNULL(p.weight, 0.1)),
+        @total_volume = SUM(CAST(sd.quantity AS DECIMAL(18,4)) * ISNULL(p.volume, ISNULL(p.height, 1) * ISNULL(p.width, 1) * ISNULL(p.length, 1)))
+    FROM SaleDetails sd
+    INNER JOIN Products p ON p.id_product = sd.id_product
+    WHERE sd.id_sale = @id_sale;
+
+    DECLARE @suggested_box INT = NULL;
+    SELECT TOP 1 @suggested_box = b.id_box
+    FROM Boxes b
+    WHERE b.deleted_at IS NULL AND b.status = 1
+      AND ISNULL(b.volume, 0) >= @total_volume
+      AND (b.weight IS NULL OR b.weight >= @total_weight)
+    ORDER BY b.volume ASC, b.id_box ASC;
+
+    SELECT
+        sd.id_sale_detail AS IdSaleDetail,
+        sd.id_sale AS IdSale,
+        sd.id_product AS IdProduct,
+        p.name AS ProductName,
+        sd.quantity AS SoldQuantity,
+        ISNULL(packed.qty, 0) AS PackedQuantity,
+        sd.quantity - ISNULL(packed.qty, 0) AS PendingQuantity,
+        ISNULL(p.weight, 0.1) AS UnitWeight,
+        ISNULL(p.height, 1) AS UnitHeight,
+        ISNULL(p.width, 1) AS UnitWidth,
+        ISNULL(p.length, 1) AS UnitLength,
+        ISNULL(p.volume, ISNULL(p.height, 1) * ISNULL(p.width, 1) * ISNULL(p.length, 1)) AS UnitVolume,
+        CAST(@total_weight AS DECIMAL(18,2)) AS TotalWeight,
+        CAST(@total_volume AS DECIMAL(18,2)) AS TotalVolume,
+        @suggested_box AS SuggestedIdBox
+    FROM SaleDetails sd
+    INNER JOIN Products p ON p.id_product = sd.id_product
+    OUTER APPLY (
+        SELECT SUM(bd.quantity) AS qty
+        FROM BoxDetails bd
+        WHERE bd.id_sale_detail = sd.id_sale_detail
+    ) packed
+    WHERE sd.id_sale = @id_sale
+    ORDER BY sd.id_sale_detail;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_box_detail_create_by_sale
+    @id_box INT,
+    @id_sale INT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
     IF NOT EXISTS (SELECT 1 FROM Boxes WHERE id_box = @id_box AND deleted_at IS NULL AND status = 1)
-    BEGIN SELECT 0 AS Success, 'Seleccione una caja activa.' AS Message; RETURN; END
+    BEGIN SELECT 0 AS Success, N'Seleccione una caja activa.' AS Message, 0 AS CreatedCount; RETURN; END
 
-    IF NOT EXISTS (SELECT 1 FROM SaleDetails WHERE id_sale_detail = @id_sale_detail)
-    BEGIN SELECT 0 AS Success, 'Seleccione un detalle de venta valido.' AS Message; RETURN; END
+    IF NOT EXISTS (SELECT 1 FROM Sales WHERE id_sale = @id_sale AND deleted_at IS NULL)
+    BEGIN SELECT 0 AS Success, N'Venta no valida.' AS Message, 0 AS CreatedCount; RETURN; END
 
-    UPDATE BoxDetails
-    SET id_box = @id_box,
-        id_sale_detail = @id_sale_detail,
-        quantity = @quantity
-    WHERE id_box_detail = @id_box_detail;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    SELECT 1 AS Success, 'Detalle de caja actualizado correctamente.' AS Message;
+        INSERT INTO BoxDetails (id_box, id_sale_detail, quantity)
+        SELECT @id_box, sd.id_sale_detail, sd.quantity - ISNULL(packed.qty, 0)
+        FROM SaleDetails sd
+        OUTER APPLY (
+            SELECT SUM(bd.quantity) AS qty FROM BoxDetails bd WHERE bd.id_sale_detail = sd.id_sale_detail
+        ) packed
+        WHERE sd.id_sale = @id_sale
+          AND sd.quantity - ISNULL(packed.qty, 0) > 0;
+
+        DECLARE @created INT = @@ROWCOUNT;
+
+        IF @created = 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS Success, N'No hay productos pendientes de empaquetar en esta venta.' AS Message, 0 AS CreatedCount;
+            RETURN;
+        END
+
+        COMMIT TRANSACTION;
+        SELECT 1 AS Success, N'Productos de la venta empaquetados correctamente.' AS Message, @created AS CreatedCount;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SELECT 0 AS Success, N'Error al empaquetar: ' + ERROR_MESSAGE() AS Message, 0 AS CreatedCount;
+    END CATCH
 END
 GO
 
@@ -753,23 +940,25 @@ BEGIN
 
     DELETE FROM BoxDetails WHERE id_box_detail = @id_box_detail;
 
-    IF @@ROWCOUNT = 0 SELECT 0 AS Success, 'Registro no encontrado.' AS Message;
-    ELSE SELECT 1 AS Success, 'Detalle de caja eliminado correctamente.' AS Message;
+    IF @@ROWCOUNT = 0 SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
+    ELSE SELECT 1 AS Success, N'Detalle de caja eliminado correctamente.' AS Message;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_sale_detail_options_for_box
+CREATE OR ALTER PROCEDURE dbo.sp_box_detail_delete_by_sale
+    @id_box INT,
+    @id_sale INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT
-        sd.id_sale_detail AS IdSaleDetail,
-        CONCAT('Venta #', sd.id_sale, ' - ', p.name) AS Name,
-        sd.quantity AS Quantity
-    FROM SaleDetails sd
-    INNER JOIN Products p ON p.id_product = sd.id_product
-    ORDER BY sd.id_sale_detail DESC;
+    DELETE bd
+    FROM BoxDetails bd
+    INNER JOIN SaleDetails sd ON sd.id_sale_detail = bd.id_sale_detail
+    WHERE bd.id_box = @id_box AND sd.id_sale = @id_sale;
+
+    IF @@ROWCOUNT = 0 SELECT 0 AS Success, N'No se encontraron detalles para esta venta y caja.' AS Message;
+    ELSE SELECT 1 AS Success, N'Detalles de la venta eliminados de la caja.' AS Message;
 END
 GO
 
@@ -1144,7 +1333,6 @@ BEGIN
         sb.id_shipment_box AS IdShipmentBox,
         sb.id_shipment AS IdShipment,
         sb.id_box AS IdBox,
-        b.code AS BoxCode,
         b.weight AS Weight,
         b.volume AS Volume,
         v.plate AS VehiclePlate,
@@ -1155,7 +1343,7 @@ BEGIN
     INNER JOIN Boxes b ON b.id_box = sb.id_box
     WHERE s.deleted_at IS NULL
       AND (@id_shipment IS NULL OR sb.id_shipment = @id_shipment)
-      AND (@search IS NULL OR @search = '' OR b.code LIKE '%' + @search + '%' OR v.plate LIKE '%' + @search + '%')
+      AND (@search IS NULL OR @search = '' OR CAST(b.id_box AS VARCHAR(20)) LIKE '%' + @search + '%' OR v.plate LIKE '%' + @search + '%')
     ORDER BY sb.id_shipment_box DESC
     OFFSET (@page - 1) * @page_size ROWS
     FETCH NEXT @page_size ROWS ONLY;

@@ -4,7 +4,11 @@ const pageSize = 10;
 let confirmCallback = null;
 let typeOptions = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
+async function initVehiculosPage() {
+    const card = document.querySelector(".crud-card");
+    if (!card || card.dataset.initialized === "true") return;
+    card.dataset.initialized = "true";
+
     await loadTypeOptions();
     loadData(1);
 
@@ -15,7 +19,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("selectStatus").addEventListener("change", () => loadData(1));
     document.getElementById("selectType").addEventListener("change", () => loadData(1));
     document.getElementById("btnBuscar").addEventListener("click", () => loadData(1));
-});
+}
+
+document.addEventListener("DOMContentLoaded", initVehiculosPage);
+document.addEventListener("dashboard:contentLoaded", initVehiculosPage);
 
 function token() {
     const input = document.querySelector('input[name="__RequestVerificationToken"]');

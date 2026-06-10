@@ -5,7 +5,11 @@ const pageSize = 10;
 let confirmCallback = null;
 let currentDetailVehicleTypeId = null;
 
-document.addEventListener("DOMContentLoaded", () => {
+function initTiposVehiculoPage() {
+    const card = document.querySelector(".crud-card");
+    if (!card || card.dataset.initialized === "true") return;
+    card.dataset.initialized = "true";
+
     loadData(1);
 
     document.getElementById("txtSearch").addEventListener("keyup", e => {
@@ -21,7 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnBuscar) {
         btnBuscar.addEventListener("click", () => loadData(1));
     }
-});
+}
+
+document.addEventListener("DOMContentLoaded", initTiposVehiculoPage);
+document.addEventListener("dashboard:contentLoaded", initTiposVehiculoPage);
 
 function token() {
     return document.querySelector('input[name="__RequestVerificationToken"]').value;

@@ -33,33 +33,43 @@ public class DetalleCajaController : Controller
         return item is null ? Json(new { success = false, message = "Registro no encontrado." }) : Json(new { success = true, data = item });
     }
 
-    [HttpGet] public async Task<IActionResult> Options() => Json(new { boxes = await _context.Database.SqlQueryRaw<BoxOption>("EXEC dbo.sp_box_options").ToListAsync(), saleDetails = await _context.Database.SqlQueryRaw<SaleDetailOptionForBox>("EXEC dbo.sp_sale_detail_options_for_box").ToListAsync() });
-
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(int boxId, int saleDetailId, int quantity)
+    [HttpGet]
+    public async Task<IActionResult> Options() => Json(new
     {
-        var validationMessage = await ValidateQuantityAsync(saleDetailId, quantity);
-        if (!string.IsNullOrWhiteSpace(validationMessage))
-        {
-            return Json(new { success = false, message = validationMessage });
-        }
+        boxes = await _context.Database.SqlQueryRaw<BoxOption>("EXEC dbo.sp_box_options").ToListAsync(),
+        saleDetails = await _context.Database.SqlQueryRaw<SaleDetailOptionForBox>("EXEC dbo.sp_sale_detail_options_for_box").ToListAsync()
+    });
 
-        var row = await ExecuteAsync("EXEC dbo.sp_box_detail_create @id_box, @id_sale_detail, @quantity", boxId, saleDetailId, quantity);
-        return Json(new { success = row.Success == 1, message = row.Message, id = row.IdBoxDetail });
+    [HttpGet]
+    public async Task<IActionResult> Preview(int saleDetailId)
+    {
+        var rows = await _context.Database.SqlQueryRaw<SalePackPreviewLine>(
+            "EXEC dbo.sp_sale_pack_preview @id_sale_detail",
+            new SqlParameter("@id_sale_detail", saleDetailId)).ToListAsync();
+        if (rows.Count == 0)
+            return Json(new { success = false, message = "Venta no encontrada." });
+
+        var first = rows[0];
+        return Json(new
+        {
+            success = true,
+            idSale = first.IdSale,
+            totalWeight = first.TotalWeight,
+            totalVolume = first.TotalVolume,
+            suggestedIdBox = first.SuggestedIdBox,
+            lines = rows
+        });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(int id, int boxId, int saleDetailId, int quantity)
+    public async Task<IActionResult> CreateBySale(int boxId, int saleId)
     {
-        var validationMessage = await ValidateQuantityAsync(saleDetailId, quantity, id);
-        if (!string.IsNullOrWhiteSpace(validationMessage))
-        {
-            return Json(new { success = false, message = validationMessage });
-        }
-
-        var rows = await _context.Database.SqlQueryRaw<BoxDetailActionResult>("EXEC dbo.sp_box_detail_update @id_box_detail, @id_box, @id_sale_detail, @quantity", new SqlParameter("@id_box_detail", id), new SqlParameter("@id_box", boxId), new SqlParameter("@id_sale_detail", saleDetailId), new SqlParameter("@quantity", quantity)).ToListAsync();
-        var row = rows.FirstOrDefault() ?? new BoxDetailActionResult { Message = "No se pudo actualizar." };
-        return Json(new { success = row.Success == 1, message = row.Message });
+        var rows = await _context.Database.SqlQueryRaw<BoxDetailCreateBySaleResult>(
+            "EXEC dbo.sp_box_detail_create_by_sale @id_box, @id_sale",
+            new SqlParameter("@id_box", boxId),
+            new SqlParameter("@id_sale", saleId)).ToListAsync();
+        var row = rows.FirstOrDefault() ?? new BoxDetailCreateBySaleResult { Message = "No se pudo empaquetar." };
+        return Json(new { success = row.Success == 1, message = row.Message, createdCount = row.CreatedCount });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -68,48 +78,6 @@ public class DetalleCajaController : Controller
         var rows = await _context.Database.SqlQueryRaw<BoxDetailActionResult>("EXEC dbo.sp_box_detail_delete @id_box_detail", new SqlParameter("@id_box_detail", id)).ToListAsync();
         var row = rows.FirstOrDefault() ?? new BoxDetailActionResult { Message = "No se pudo eliminar." };
         return Json(new { success = row.Success == 1, message = row.Message });
-    }
-
-    private async Task<BoxDetailSpResult> ExecuteAsync(string sql, int boxId, int saleDetailId, int quantity)
-    {
-        var rows = await _context.Database.SqlQueryRaw<BoxDetailSpResult>(sql, new SqlParameter("@id_box", boxId), new SqlParameter("@id_sale_detail", saleDetailId), new SqlParameter("@quantity", quantity)).ToListAsync();
-        return rows.FirstOrDefault() ?? new BoxDetailSpResult { Message = "No se pudo guardar." };
-    }
-
-    private async Task<string?> ValidateQuantityAsync(int saleDetailId, int quantity, int? currentBoxDetailId = null)
-    {
-        if (quantity <= 0)
-        {
-            return "La cantidad debe ser mayor a cero.";
-        }
-
-        var rows = await _context.Database.SqlQueryRaw<SaleDetailQuantityCheck>(
-            """
-            SELECT
-                sd.quantity AS SoldQuantity,
-                ISNULL(SUM(bd.quantity), 0) AS PackedQuantity
-            FROM SaleDetails sd
-            LEFT JOIN BoxDetails bd ON bd.id_sale_detail = sd.id_sale_detail
-                AND (@id_box_detail IS NULL OR bd.id_box_detail <> @id_box_detail)
-            WHERE sd.id_sale_detail = @id_sale_detail
-            GROUP BY sd.quantity
-            """,
-            new SqlParameter("@id_sale_detail", saleDetailId),
-            Param("@id_box_detail", currentBoxDetailId)).ToListAsync();
-
-        var check = rows.FirstOrDefault();
-        if (check is null)
-        {
-            return "No se encontro el detalle de venta.";
-        }
-
-        var total = check.PackedQuantity + quantity;
-        if (total > check.SoldQuantity)
-        {
-            return $"La cantidad supera lo vendido ({total}/{check.SoldQuantity}).";
-        }
-
-        return null;
     }
 
     private static SqlParameter Param(string name, object? value) => new(name, value ?? DBNull.Value);

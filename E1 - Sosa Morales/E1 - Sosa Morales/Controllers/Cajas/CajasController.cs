@@ -41,23 +41,23 @@ public class CajasController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(string code, string? weight, string? height, string? width, string? length)
+    public async Task<IActionResult> Create(string? weight, string? height, string? width, string? length)
     {
-        var parsed = ParseBox(code, weight, height, width, length);
+        var parsed = ParseBox(weight, height, width, length);
         if (!parsed.Success) return Json(new { success = false, message = parsed.Message });
-        var row = await ExecuteSaveAsync("EXEC dbo.sp_box_create @code, @weight, @height, @width, @length", parsed.Code, parsed.Weight, parsed.Height, parsed.Width, parsed.Length);
+        var row = await ExecuteSaveAsync("EXEC dbo.sp_box_create @weight, @height, @width, @length", parsed.Weight, parsed.Height, parsed.Width, parsed.Length);
         return Json(new { success = row.Success == 1, message = row.Message, id = row.IdBox });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(int id, string code, string? weight, string? height, string? width, string? length)
+    public async Task<IActionResult> Update(int id, string? weight, string? height, string? width, string? length)
     {
-        var parsed = ParseBox(code, weight, height, width, length);
+        var parsed = ParseBox(weight, height, width, length);
         if (!parsed.Success) return Json(new { success = false, message = parsed.Message });
         var rows = await _context.Database.SqlQueryRaw<BoxActionResult>(
-            "EXEC dbo.sp_box_update @id_box, @code, @weight, @height, @width, @length",
-            new SqlParameter("@id_box", id), Param("@code", parsed.Code), Param("@weight", parsed.Weight),
+            "EXEC dbo.sp_box_update @id_box, @weight, @height, @width, @length",
+            new SqlParameter("@id_box", id), Param("@weight", parsed.Weight),
             Param("@height", parsed.Height), Param("@width", parsed.Width), Param("@length", parsed.Length)).ToListAsync();
         var row = rows.FirstOrDefault() ?? new BoxActionResult { Message = "No se pudo actualizar." };
         return Json(new { success = row.Success == 1, message = row.Message });
@@ -76,9 +76,9 @@ public class CajasController : Controller
         return new { items = rows, totalCount = total, page, pageSize, totalPages = pageSize > 0 ? (int)Math.Ceiling(total / (double)pageSize) : 0 };
     }
 
-    private async Task<BoxSpResult> ExecuteSaveAsync(string sql, string code, decimal? weight, decimal? height, decimal? width, decimal? length)
+    private async Task<BoxSpResult> ExecuteSaveAsync(string sql, decimal? weight, decimal? height, decimal? width, decimal? length)
     {
-        var rows = await _context.Database.SqlQueryRaw<BoxSpResult>(sql, Param("@code", code), Param("@weight", weight), Param("@height", height), Param("@width", width), Param("@length", length)).ToListAsync();
+        var rows = await _context.Database.SqlQueryRaw<BoxSpResult>(sql, Param("@weight", weight), Param("@height", height), Param("@width", width), Param("@length", length)).ToListAsync();
         return rows.FirstOrDefault() ?? new BoxSpResult { Message = "No se pudo guardar." };
     }
 
@@ -89,14 +89,13 @@ public class CajasController : Controller
         return new { success = row.Success == 1, message = row.Message };
     }
 
-    private static (bool Success, string Message, string Code, decimal? Weight, decimal? Height, decimal? Width, decimal? Length) ParseBox(string? code, string? weight, string? height, string? width, string? length)
+    private static (bool Success, string Message, decimal? Weight, decimal? Height, decimal? Width, decimal? Length) ParseBox(string? weight, string? height, string? width, string? length)
     {
-        if (string.IsNullOrWhiteSpace(code)) return (false, "Ingrese el codigo de la caja.", "", null, null, null, null);
-        var w = ParseDecimal(weight, "peso"); if (!w.Success) return (false, w.Message, "", null, null, null, null);
-        var h = ParseDecimal(height, "alto"); if (!h.Success) return (false, h.Message, "", null, null, null, null);
-        var wi = ParseDecimal(width, "ancho"); if (!wi.Success) return (false, wi.Message, "", null, null, null, null);
-        var l = ParseDecimal(length, "largo"); if (!l.Success) return (false, l.Message, "", null, null, null, null);
-        return (true, "", code.Trim().ToUpperInvariant(), w.Value, h.Value, wi.Value, l.Value);
+        var w = ParseDecimal(weight, "peso"); if (!w.Success) return (false, w.Message, null, null, null, null);
+        var h = ParseDecimal(height, "alto"); if (!h.Success) return (false, h.Message, null, null, null, null);
+        var wi = ParseDecimal(width, "ancho"); if (!wi.Success) return (false, wi.Message, null, null, null, null);
+        var l = ParseDecimal(length, "largo"); if (!l.Success) return (false, l.Message, null, null, null, null);
+        return (true, "", w.Value, h.Value, wi.Value, l.Value);
     }
 
     private static (bool Success, string Message, decimal? Value) ParseDecimal(string? value, string field)

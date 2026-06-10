@@ -1,24 +1,148 @@
 @model E1___Sosa_Morales.Models.Cajas.CajasViewModel
-@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
-@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
-@Html.AntiForgeryToken()
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Cajas/cajas.css")" asp-append-version="true" />
+}
+
 <partial name="_ModuleTabs" model="Model.Module" />
-<div class="crud-card">
-    <div class="crud-header"><div><h2>Cajas</h2><p>Gestiona cajas, dimensiones y volumen.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nueva caja</button></div>
-    <div class="crud-tools"><input id="txtSearch" placeholder="Buscar por codigo..." /><select id="selectStatus"><option value="active">Activas</option><option value="inactive">Inactivas</option></select><button id="btnBuscar" type="button">Buscar</button></div>
-    <div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
-    <div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div>
+
+<div class="caj" id="cajRoot">
+    <div class="caj__panel">
+        <div class="caj__toolbar">
+            <div class="caj__search-group">
+                <div class="caj__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="cajSearchInput" placeholder="Buscar por ID de caja..." autocomplete="off" />
+                </div>
+                <button type="button" class="caj__btn caj__btn--ghost" id="cajClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="caj__actions">
+                <button type="button" class="caj__btn caj__btn--outline" id="cajInactiveBtn">Ver inactivos</button>
+                <button type="button" class="caj__btn caj__btn--primary" id="cajCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="cajToast" class="caj__toast" role="status" aria-live="polite"></div>
+        <div class="caj__table-scroll" id="cajTableScroll">
+            <table class="caj__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>PESO</th>
+                    <th>ALTO</th>
+                    <th>ANCHO</th>
+                    <th>LARGO</th>
+                    <th>VOLUMEN</th>
+                    <th class="caj__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="cajActiveBody">
+                    <tr class="caj__loading-row"><td colspan="7">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="caj__footer">
+            <div class="caj__page-size">
+                <span>Mostrar</span>
+                <select id="cajPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="caj__pagination">
+                <span id="cajPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="caj__btn caj__btn--ghost" id="cajPrevBtn" disabled>Anterior</button>
+                <button type="button" class="caj__btn caj__btn--ghost" id="cajNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
 </div>
-<partial name="_SimpleCrudModals" />
+
+<div class="caj-modal" id="cajFormModal" aria-hidden="true">
+    <div class="caj-modal__backdrop"></div>
+    <div class="caj-modal__dialog" role="dialog" aria-modal="true">
+        <div class="caj-modal__header">
+            <h3 id="cajFormModalTitle">Crear caja</h3>
+            <button type="button" class="caj-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="cajForm" class="caj-modal__body" novalidate>
+            <input type="hidden" id="cajFormId" value="" />
+            <div class="caj-field"><label for="cajWeight">Peso (kg)</label><input type="number" step="0.01" min="0" id="cajWeight" name="weight" /></div>
+            <div class="caj-field"><label for="cajHeight">Alto</label><input type="number" step="0.01" min="0" id="cajHeight" name="height" /></div>
+            <div class="caj-field"><label for="cajWidth">Ancho</label><input type="number" step="0.01" min="0" id="cajWidth" name="width" /></div>
+            <div class="caj-field"><label for="cajLength">Largo</label><input type="number" step="0.01" min="0" id="cajLength" name="length" /></div>
+        </form>
+        <div class="caj-modal__footer">
+            <button type="button" class="caj__btn caj__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="caj__btn caj__btn--primary" id="cajFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="caj-modal" id="cajDetailModal" aria-hidden="true">
+    <div class="caj-modal__backdrop"></div>
+    <div class="caj-modal__dialog caj-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="caj-modal__header"><h3>Detalle de caja</h3><button type="button" class="caj-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="caj-modal__body" id="cajDetailBody"></div>
+        <div class="caj-modal__footer"><button type="button" class="caj__btn caj__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="caj-modal" id="cajInactiveModal" aria-hidden="true">
+    <div class="caj-modal__backdrop"></div>
+    <div class="caj-modal__dialog caj-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="caj-modal__header"><h3>Registros inactivos</h3><button type="button" class="caj-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="caj-modal__body">
+            <div class="caj__search-group caj__search-group--modal">
+                <div class="caj__search"><i class="bi bi-search"></i><input type="text" id="cajInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="caj__btn caj__btn--ghost" id="cajInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="caj__table-scroll caj__table-scroll--modal" id="cajInactiveTableScroll">
+                <table class="caj__table">
+                    <thead><tr>
+                        <th>ID</th><th>PESO</th><th>ALTO</th><th>ANCHO</th><th>LARGO</th><th>VOLUMEN</th>
+                        <th class="caj__th-actions">ACCIONES</th>
+                    </tr></thead>
+                    <tbody id="cajInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="caj__footer caj__footer--modal">
+                <div class="caj__page-size"><span>Mostrar</span><select id="cajInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="caj__pagination">
+                    <span id="cajInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="caj__btn caj__btn--ghost" id="cajInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="caj__btn caj__btn--ghost" id="cajInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="caj-modal" id="cajConfirmModal" aria-hidden="true">
+    <div class="caj-modal__backdrop"></div>
+    <div class="caj-modal__dialog caj-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="caj-modal__header"><h3 id="cajConfirmTitle">Confirmar</h3><button type="button" class="caj-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="caj-modal__body"><p id="cajConfirmMessage"></p></div>
+        <div class="caj-modal__footer">
+            <button type="button" class="caj__btn caj__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="caj__btn caj__btn--danger" id="cajConfirmBtn">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-<script>
-window.kmlCrudConfig = {
- idKey:"idBox", listUrl:"/Cajas/List", listInactiveUrl:"/Cajas/ListInactive", getUrl:"/Cajas/Get", createUrl:"/Cajas/Create", updateUrl:"/Cajas/Update", deleteLogicUrl:"/Cajas/DeleteLogic", restoreUrl:"/Cajas/Restore", deletePhysicalUrl:"/Cajas/DeletePhysical",
- createTitle:"Nueva caja", editTitle:"Editar caja",
- columns:[{key:"idBox",label:"ID"},{key:"code",label:"Codigo"},{key:"weight",label:"Peso",type:"number"},{key:"height",label:"Alto",type:"number"},{key:"width",label:"Ancho",type:"number"},{key:"length",label:"Largo",type:"number"},{key:"volume",label:"Volumen",type:"number"},{key:"status",label:"Estado",type:"status"}],
- detailColumns:[{key:"idBox",label:"ID"},{key:"code",label:"Codigo"},{key:"weight",label:"Peso",type:"number"},{key:"height",label:"Alto",type:"number"},{key:"width",label:"Ancho",type:"number"},{key:"length",label:"Largo",type:"number"},{key:"volume",label:"Volumen",type:"number"},{key:"createdAt",label:"Creado",type:"date"},{key:"updatedAt",label:"Actualizado",type:"date"}],
- fields:[{name:"code",label:"Codigo"},{name:"weight",label:"Peso",type:"number"},{name:"height",label:"Alto",type:"number"},{name:"width",label:"Ancho",type:"number"},{name:"length",label:"Largo",type:"number"}]
-};
-</script>
-<script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
+    <script>
+        window.cajUrls = {
+            list: '@Url.Action("List", "Cajas")',
+            listInactive: '@Url.Action("ListInactive", "Cajas")',
+            get: '@Url.Action("Get", "Cajas")',
+            create: '@Url.Action("Create", "Cajas")',
+            update: '@Url.Action("Update", "Cajas")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Cajas")',
+            restore: '@Url.Action("Restore", "Cajas")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Cajas")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Cajas/cajas.js")" asp-append-version="true"></script>
 }

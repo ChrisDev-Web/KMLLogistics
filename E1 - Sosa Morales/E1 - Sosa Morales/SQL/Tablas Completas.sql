@@ -483,7 +483,6 @@ CREATE TABLE SaleDetails (
 
 CREATE TABLE Boxes (
     id_box INT IDENTITY(1,1) PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE,
     weight DECIMAL(10,2) NULL,
     height DECIMAL(10,2) NULL,
     width DECIMAL(10,2) NULL,
