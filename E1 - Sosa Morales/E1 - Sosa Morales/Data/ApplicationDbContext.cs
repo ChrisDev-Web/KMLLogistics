@@ -1,27 +1,29 @@
 using E1___Sosa_Morales.Models.AlertasStock;
 using E1___Sosa_Morales.Models.Almacenes;
-using E1___Sosa_Morales.Models.DetalleAlmacen;
-using E1___Sosa_Morales.Models.MovimientosInventario;
-using E1___Sosa_Morales.Models.TiposMovimiento;
 using E1___Sosa_Morales.Models.Cargos;
+using E1___Sosa_Morales.Models.Categorias;
 using E1___Sosa_Morales.Models.Clientes;
 using E1___Sosa_Morales.Models.Countries;
+using E1___Sosa_Morales.Models.DetalleAlmacen;
 using E1___Sosa_Morales.Models.DetalleAlmacenCompra;
 using E1___Sosa_Morales.Models.DetalleCompra;
 using E1___Sosa_Morales.Models.DetalleTransferencia;
 using E1___Sosa_Morales.Models.Distritos;
-using E1___Sosa_Morales.Models.EstadosCompra;
 using E1___Sosa_Morales.Models.Empleados;
+using E1___Sosa_Morales.Models.EstadosCompra;
 using E1___Sosa_Morales.Models.EstadosTransferencia;
 using E1___Sosa_Morales.Models.ListaTransferencias;
+using E1___Sosa_Morales.Models.Marcas;
+using E1___Sosa_Morales.Models.MovimientosInventario;
 using E1___Sosa_Morales.Models.OrdenesCompra;
 using E1___Sosa_Morales.Models.Perfil;
-using E1___Sosa_Morales.Models.Provincias;
 using E1___Sosa_Morales.Models.Proveedores;
+using E1___Sosa_Morales.Models.Provincias;
 using E1___Sosa_Morales.Models.Regiones;
 using E1___Sosa_Morales.Models.Roles;
 using E1___Sosa_Morales.Models.Shared;
 using E1___Sosa_Morales.Models.TiposDocumento;
+using E1___Sosa_Morales.Models.TiposMovimiento;
 using E1___Sosa_Morales.Models.Users;
 using E1___Sosa_Morales.Models.SeguimientoVehiculo;
 using E1___Sosa_Morales.Models.Usuarios;
@@ -47,6 +49,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DocumentTypeListItem>().HasNoKey();
         modelBuilder.Entity<DocumentTypeDetail>().HasNoKey();
         modelBuilder.Entity<DocumentTypeSpResult>().HasNoKey();
+        modelBuilder.Entity<CategoriaListItem>().HasNoKey();
+        modelBuilder.Entity<CategoriaDetail>().HasNoKey();
+        modelBuilder.Entity<CategoriaSpResult>().HasNoKey();
         modelBuilder.Entity<CountryListItem>().HasNoKey();
         modelBuilder.Entity<CountryDetail>().HasNoKey();
         modelBuilder.Entity<CountrySpResult>().HasNoKey();
@@ -132,8 +137,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<WarehouseDetailMetrics>().HasNoKey();
         modelBuilder.Entity<WarehouseDetailSummaryItem>().HasNoKey();
         modelBuilder.Entity<WarehouseDetailProductItem>().HasNoKey();
+        modelBuilder.Entity<E1___Sosa_Morales.Models.ProductoProveedores.PrpListItem>().HasNoKey();
         modelBuilder.Entity<WarehouseDetailHeader>().HasNoKey();
         modelBuilder.Entity<WarehouseDetailRecord>().HasNoKey();
+
+        modelBuilder.Entity<E1___Sosa_Morales.Models.MarcasProveedor.SbrListItem>().HasNoKey();
         modelBuilder.Entity<WarehouseDetailOption>().HasNoKey();
         modelBuilder.Entity<InventoryMovementListItem>().HasNoKey();
         modelBuilder.Entity<InventoryMovementDetail>().HasNoKey();
@@ -141,5 +149,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ShipmentTrackingItem>().HasNoKey();
         modelBuilder.Entity<LogisticsAlertItem>().HasNoKey();
         modelBuilder.Entity<Models.AlertasStock.LogisticsAlertCountResult>().HasNoKey();
+        modelBuilder.Entity<MarcaListItem>().HasNoKey();
+        modelBuilder.Entity<MarcaSpResult>().HasNoKey();
+        modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoListItem>().HasNoKey();
+        modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoDetail>().HasNoKey();
+        modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoSpResult>().HasNoKey();
     }
 }

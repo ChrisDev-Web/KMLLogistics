@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace E1___Sosa_Morales.Models.Proveedores;
 
@@ -112,7 +114,7 @@ public class SupplierSpResult
 
 public class SupplierPagedResult
 {
-    public List<object> Items { get; set; } = [];
+    public List<SupplierListItem> Items { get; set; } = new List<SupplierListItem>();
     public int TotalCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }

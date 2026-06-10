@@ -6,16 +6,144 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Marcas/marcas.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Marcas/marcas.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="mar" id="marRoot">
+    <div class="mar__panel">
+        <div class="mar__toolbar">
+            <div class="mar__search-group">
+                <div class="mar__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="marSearchInput" placeholder="Buscar en Marcas" autocomplete="off" />
+                </div>
+                <button type="button" class="mar__btn mar__btn--ghost" id="marClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="mar__actions">
+                <button type="button" class="mar__btn mar__btn--outline" id="marInactiveBtn">Ver inactivos</button>
+                <button type="button" class="mar__btn mar__btn--primary" id="marCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="marToast" class="mar__toast" role="status" aria-live="polite"></div>
+        <div class="mar__table-scroll" id="marTableScroll">
+            <table class="mar__table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NOMBRE</th>
+                        <th>DESCRIPCIÓN</th>
+                        <th class="mar__th-actions">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="marActiveBody">
+                    <tr class="mar__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mar__footer">
+            <div class="mar__page-size">
+                <span>Mostrar</span>
+                <select id="marPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="mar__pagination">
+                <span id="marPageInfo">Página 1 de 1</span>
+                <button type="button" class="mar__btn mar__btn--ghost" id="marPrevBtn" disabled>Anterior</button>
+                <button type="button" class="mar__btn mar__btn--ghost" id="marNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mar-modal" id="marFormModal" aria-hidden="true">
+    <div class="mar-modal__backdrop"></div>
+    <div class="mar-modal__dialog" role="dialog" aria-modal="true">
+        <div class="mar-modal__header">
+            <h3 id="marFormModalTitle">Crear</h3>
+            <button type="button" class="mar-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="marForm" class="mar-modal__body" novalidate>
+            <input type="hidden" id="marFormId" value="" />
+            <div class="mar-field"><label for="marName">Nombre *</label><input type="text" id="marName" name="name" required maxlength="100" /></div>
+            <div class="mar-field"><label for="marDescription">Descripción</label><textarea id="marDescription" name="description" rows="3" maxlength="255"></textarea></div>
+        </form>
+        <div class="mar-modal__footer">
+            <button type="button" class="mar__btn mar__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="mar__btn mar__btn--primary" id="marFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="mar-modal" id="marDetailModal" aria-hidden="true">
+    <div class="mar-modal__backdrop"></div>
+    <div class="mar-modal__dialog mar-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="mar-modal__header"><h3>Detalle</h3><button type="button" class="mar-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="mar-modal__body" id="marDetailBody"></div>
+        <div class="mar-modal__footer"><button type="button" class="mar__btn mar__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="mar-modal" id="marInactiveModal" aria-hidden="true">
+    <div class="mar-modal__backdrop"></div>
+    <div class="mar-modal__dialog mar-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="mar-modal__header"><h3>Registros inactivos</h3><button type="button" class="mar-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="mar-modal__body">
+            <div class="mar__search-group mar__search-group--modal">
+                <div class="mar__search"><i class="bi bi-search"></i><input type="text" id="marInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="mar__btn mar__btn--ghost" id="marInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="mar__table-scroll mar__table-scroll--modal" id="marInactiveTableScroll">
+                <table class="mar__table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NOMBRE</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th class="mar__th-actions">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="mar__footer mar__footer--modal">
+                <div class="mar__page-size"><span>Mostrar</span><select id="marInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="mar__pagination">
+                    <span id="marInactivePageInfo">Página 1 de 1</span>
+                    <button type="button" class="mar__btn mar__btn--ghost" id="marInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="mar__btn mar__btn--ghost" id="marInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mar-modal" id="marConfirmModal" aria-hidden="true">
+    <div class="mar-modal__backdrop"></div>
+    <div class="mar-modal__dialog mar-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="mar-modal__header"><h3 id="marConfirmTitle">Confirmar</h3><button type="button" class="mar-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="mar-modal__body"><p id="marConfirmMessage"></p></div>
+        <div class="mar-modal__footer">
+            <button type="button" class="mar__btn mar__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="mar__btn mar__btn--danger" id="marConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Marcas/marcas.js" asp-append-version="true"></script>
+    <script>
+        window.marUrls = {
+            list: '@Url.Action("List", "Marcas")',
+            listInactive: '@Url.Action("ListInactive", "Marcas")',
+            get: '@Url.Action("Get", "Marcas")',
+            create: '@Url.Action("Create", "Marcas")',
+            update: '@Url.Action("Update", "Marcas")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Marcas")',
+            restore: '@Url.Action("Restore", "Marcas")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Marcas")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Marcas/marcas.js")" asp-append-version="true"></script>
 }

@@ -1,21 +1,78 @@
 ﻿@model E1___Sosa_Morales.Models.MarcasProveedor.MarcasProveedorViewModel
 @{
     Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
+    ViewBag.PageTitle = "Marcas de Proveedor";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/MarcasProveedor/marcas-proveedor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/MarcasProveedor/marcas-proveedor.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
+<div class="tabs">
+    <button onclick="loadModule('/Categorias')">Categorías</button>
+    <button onclick="loadModule('/Marcas')">Marcas</button>
+    <button onclick="loadModule('/ProductoProveedores')">Producto proveedores</button>
+</div>
+<div class="sbr" id="sbrRoot">
+    <div class="sbr__panel">
+        <div class="sbr__toolbar">
+            <button type="button" class="sbr__btn sbr__btn--primary" id="sbrCreateBtn">
+                <i class="bi bi-plus-lg"></i> Asignar Marca
+            </button>
+        </div>
+        @Html.AntiForgeryToken()
+        <table class="sbr__table">
+            <thead>
+                <tr>
+                    <th>PROVEEDOR</th>
+                    <th>MARCA</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="sbrBody"></tbody>
+        </table>
+    </div>
+</div>
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="sbr-modal" id="sbrModal">
+    <div class="sbr-modal__backdrop" onclick="closeModal('sbrModal')"></div>
+    <div class="sbr-modal__dialog">
+        <div class="sbr-modal__header"><h3>Asignar Marca a Proveedor</h3></div>
+        <form id="sbrForm" class="sbr-modal__body">
+            <div class="sbr-field">
+                <label>Proveedor</label>
+                <select id="sId" name="idSupplier" required>
+                    @foreach (var s in Model.Proveedores)
+                    {
+                        <option value="@s.IdSupplier">@s.Name</option>
+                    }   
+                </select>
+            </div>
+            <div class="sbr-field">
+                <label>Marca</label>
+                <select id="bId" name="idBrand" required>
+                    @foreach (var b in Model.Marcas)
+                    {
+                        <option value="@b.IdBrand">@b.Name</option>
+                    }
+                </select>
+            </div>
+        </form>
+        <div class="sbr-modal__footer">
+            <button class="sbr__btn" onclick="closeModal('sbrModal')">Cancelar</button>
+            <button class="sbr__btn sbr__btn--primary" id="sbrSaveBtn">Guardar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/MarcasProveedor/marcas-proveedor.js" asp-append-version="true"></script>
+    <script>
+        const sbrUrls = {
+            list: '@Url.Action("List", "MarcasProveedor")',
+            save: '@Url.Action("Save", "MarcasProveedor")',
+            delete: '@Url.Action("Delete", "MarcasProveedor")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/MarcasProveedor/marcas-proveedor.js")" asp-append-version="true"></script>
 }

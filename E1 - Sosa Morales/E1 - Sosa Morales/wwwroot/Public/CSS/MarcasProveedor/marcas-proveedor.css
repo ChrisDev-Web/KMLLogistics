@@ -1,1 +1,97 @@
-/* MÃ³dulo: Marcas de proveedor */
+/* Módulo Marcas de Proveedor - sbr.css */
+.sbr {
+    margin-top: 1rem;
+}
+
+.sbr__panel {
+    background: #fff;
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+}
+
+.sbr__toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.sbr__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-weight: 500;
+}
+
+.sbr__btn--primary {
+    background: var(--primary, #2563eb);
+    color: #fff;
+}
+
+.sbr__btn--danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+}
+
+.sbr__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+    .sbr__table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        color: var(--text-muted, #64748b);
+        border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+
+    .sbr__table td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+/* Modal */
+.sbr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+    .sbr-modal.is-open {
+        display: flex;
+    }
+
+.sbr-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.sbr-modal__dialog {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem;
+}
+
+.sbr-field {
+    margin-bottom: 1rem;
+}
+
+    .sbr-field select {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border, #e2e8f0);
+    }

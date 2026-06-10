@@ -6,16 +6,103 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Productos/productos.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Productos/productos.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="pro" id="proRoot">
+    <div class="pro__panel">
+        <div class="pro__toolbar">
+            <div class="pro__search-group">
+                <div class="pro__search"><i class="bi bi-search"></i><input type="text" id="proSearchInput" placeholder="Buscar Productos" autocomplete="off" /></div>
+                <button type="button" class="pro__btn pro__btn--ghost" id="proClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="pro__actions">
+                <button type="button" class="pro__btn pro__btn--outline" id="proInactiveBtn">Ver inactivos</button>
+                <button type="button" class="pro__btn pro__btn--primary" id="proCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="proToast" class="pro__toast" role="status" aria-live="polite"></div>
+
+        <div class="pro__table-scroll" id="proTableScroll">
+            <table class="pro__table">
+                <thead><tr><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>MARCA</th><th>COSTO</th><th>PRECIO VENTA</th><th class="pro__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="proActiveBody"><tr class="pro__loading-row"><td colspan="7">Cargando registros...</td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="pro__footer">
+            <div class="pro__page-size"><span>Mostrar</span><select id="proPageSize"><option value="10" selected>10</option><option value="20">20</option></select><span>registros</span></div>
+            <div class="pro__pagination"><span id="proPageInfo">Página 1 de 1</span><button type="button" class="pro__btn pro__btn--ghost" id="proPrevBtn" disabled>Anterior</button><button type="button" class="pro__btn pro__btn--ghost" id="proNextBtn" disabled>Siguiente</button></div>
+        </div>
+    </div>
 </div>
 
+<div class="pro-modal" id="proFormModal" aria-hidden="true">
+    <div class="pro-modal__backdrop"></div>
+    <div class="pro-modal__dialog pro-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="pro-modal__header"><h3 id="proFormModalTitle">Crear Producto</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div>
+        <form id="proForm" class="pro-modal__body" novalidate>
+            <input type="hidden" id="proFormId" name="IdProduct" value="0" />
+
+            <div class="row">
+                <div class="col-md-12 pro-field"><label>Nombre *</label><input type="text" id="proName" name="Name" required maxlength="100" /></div>
+
+                <div class="col-md-6 pro-field">
+                    <label>Categoría *</label>
+                    <select id="proCategory" name="IdCategory" required>
+                        <option value="">Seleccione...</option>
+                        @foreach (var cat in (IEnumerable<dynamic>)Model.Categorias)
+                        {
+                            <option value="@cat.IdCategory">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 pro-field">
+                    <label>Marca *</label>
+                    <select id="proBrand" name="IdBrand" required>
+                        <option value="">Seleccione...</option>
+                        @foreach (var mar in (IEnumerable<dynamic>)Model.Marcas)
+                        {
+                            <option value="@mar.IdBrand">@mar.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6 pro-field"><label>Costo *</label><input type="number" step="0.01" id="proCost" name="Cost" required /></div>
+                <div class="col-md-6 pro-field"><label>% Ganancia *</label><input type="number" step="0.01" id="proProfit" name="ProfitPercentage" required /></div>
+
+                <div class="col-md-3 pro-field"><label>Peso (kg)</label><input type="number" step="0.01" id="proWeight" name="Weight" /></div>
+                <div class="col-md-3 pro-field"><label>Alto (cm)</label><input type="number" step="0.01" id="proHeight" name="Height" /></div>
+                <div class="col-md-3 pro-field"><label>Ancho (cm)</label><input type="number" step="0.01" id="proWidth" name="Width" /></div>
+                <div class="col-md-3 pro-field"><label>Largo (cm)</label><input type="number" step="0.01" id="proLength" name="Length" /></div>
+
+                <div class="col-md-12 pro-field"><label>Descripción</label><textarea id="proDescription" name="Description" rows="2"></textarea></div>
+            </div>
+        </form>
+        <div class="pro-modal__footer"><button type="button" class="pro__btn pro__btn--ghost" data-dismiss="modal">Cancelar</button><button type="button" class="pro__btn pro__btn--primary" id="proFormSaveBtn">Guardar</button></div>
+    </div>
+</div>
+
+<div class="pro-modal" id="proInactiveModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--lg"><div class="pro-modal__header"><h3>Inactivos</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body"><div class="pro__table-scroll"><table class="pro__table"><thead><tr><th>ID</th><th>NOMBRE</th><th>PRECIO</th><th class="pro__th-actions">ACCIONES</th></tr></thead><tbody id="proInactiveBody"></tbody></table></div></div></div></div>
+
+<div class="pro-modal" id="proConfirmModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--xs"><div class="pro-modal__header"><h3 id="proConfirmTitle">Confirmar</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body"><p id="proConfirmMessage"></p></div><div class="pro-modal__footer"><button type="button" class="pro__btn pro__btn--ghost" data-dismiss="modal">Cancelar</button><button type="button" class="pro__btn pro__btn--danger" id="proConfirmBtn">Confirmar</button></div></div></div>
+
+<div class="pro-modal" id="proDetailModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--sm"><div class="pro-modal__header"><h3>Detalle</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body" id="proDetailBody"></div><div class="pro-modal__footer"><button type="button" class="pro__btn pro__btn--ghost" data-dismiss="modal">Cerrar</button></div></div></div>
+
 @section Scripts {
-    <script src="~/Public/JS/Productos/productos.js" asp-append-version="true"></script>
+    <script>
+        window.proUrls = {
+            list: '@Url.Action("List", "Productos")',
+            listInactive: '@Url.Action("ListInactive", "Productos")',
+            get: '@Url.Action("Get", "Productos")',
+            save: '@Url.Action("Save", "Productos")',
+            deleteLogic: '@Url.Action("DeleteLogic", "Productos")',
+            restore: '@Url.Action("Restore", "Productos")',
+            deletePhysical: '@Url.Action("DeletePhysical", "Productos")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Productos/productos.js")" asp-append-version="true"></script>
 }

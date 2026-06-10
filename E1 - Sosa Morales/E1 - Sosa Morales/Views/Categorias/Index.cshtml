@@ -1,21 +1,149 @@
-﻿@model E1___Sosa_Morales.Models.Categorias.CategoriasViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
+﻿    @model E1___Sosa_Morales.Models.Categorias.CategoriasViewModel
+    @{
+        Layout = "_DashboardLayout";
+        ViewBag.PageTitle = Model.Module.Title;
+        ViewBag.SidebarActive = Model.Module.SidebarActive;
+    }
 
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Categorias/categorias.css" asp-append-version="true" />
-}
+    @section Styles {
+        <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Categorias/categorias.css")" asp-append-version="true" />
+    }
 
-<partial name="_ModuleTabs" model="Model.Module" />
+    <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
-</div>
+    <div class="cat" id="catRoot">
+        <div class="cat__panel">
+            <div class="cat__toolbar">
+                <div class="cat__search-group">
+                    <div class="cat__search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="catSearchInput" placeholder="Buscar en Categorías" autocomplete="off" />
+                    </div>
+                    <button type="button" class="cat__btn cat__btn--ghost" id="catClearSearchBtn">Limpiar</button>
+                </div>
+                <div class="cat__actions">
+                    <button type="button" class="cat__btn cat__btn--outline" id="catInactiveBtn">Ver inactivos</button>
+                    <button type="button" class="cat__btn cat__btn--primary" id="catCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+                </div>
+            </div>
+            @Html.AntiForgeryToken()
+            <div id="catToast" class="cat__toast" role="status" aria-live="polite"></div>
+            <div class="cat__table-scroll" id="catTableScroll">
+                <table class="cat__table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NOMBRE</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th class="cat__th-actions">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="catActiveBody">
+                        <tr class="cat__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cat__footer">
+                <div class="cat__page-size">
+                    <span>Mostrar</span>
+                    <select id="catPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                    <span>registros</span>
+                </div>
+                <div class="cat__pagination">
+                    <span id="catPageInfo">Página 1 de 1</span>
+                    <button type="button" class="cat__btn cat__btn--ghost" id="catPrevBtn" disabled>Anterior</button>
+                    <button type="button" class="cat__btn cat__btn--ghost" id="catNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-@section Scripts {
-    <script src="~/Public/JS/Categorias/categorias.js" asp-append-version="true"></script>
-}
+    <div class="cat-modal" id="catFormModal" aria-hidden="true">
+        <div class="cat-modal__backdrop"></div>
+        <div class="cat-modal__dialog" role="dialog" aria-modal="true">
+            <div class="cat-modal__header">
+                <h3 id="catFormModalTitle">Crear</h3>
+                <button type="button" class="cat-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="catForm" class="cat-modal__body" novalidate>
+                <input type="hidden" id="catFormId" value="" />
+                <div class="cat-field"><label for="catName">Nombre *</label><input type="text" id="catName" name="name" required maxlength="100" /></div>
+                <div class="cat-field"><label for="catDescription">Descripción</label><textarea id="catDescription" name="description" rows="3" maxlength="255"></textarea></div>
+            </form>
+            <div class="cat-modal__footer">
+                <button type="button" class="cat__btn cat__btn--ghost" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="cat__btn cat__btn--primary" id="catFormSaveBtn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cat-modal" id="catDetailModal" aria-hidden="true">
+        <div class="cat-modal__backdrop"></div>
+        <div class="cat-modal__dialog cat-modal__dialog--sm" role="dialog" aria-modal="true">
+            <div class="cat-modal__header"><h3>Detalle</h3><button type="button" class="cat-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+            <div class="cat-modal__body" id="catDetailBody"></div>
+            <div class="cat-modal__footer"><button type="button" class="cat__btn cat__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+        </div>
+    </div>
+
+    <div class="cat-modal" id="catInactiveModal" aria-hidden="true">
+        <div class="cat-modal__backdrop"></div>
+        <div class="cat-modal__dialog cat-modal__dialog--lg" role="dialog" aria-modal="true">
+            <div class="cat-modal__header"><h3>Registros inactivos</h3><button type="button" class="cat-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+            <div class="cat-modal__body">
+                <div class="cat__search-group cat__search-group--modal">
+                    <div class="cat__search"><i class="bi bi-search"></i><input type="text" id="catInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                    <button type="button" class="cat__btn cat__btn--ghost" id="catInactiveClearBtn">Limpiar</button>
+                </div>
+                <div class="cat__table-scroll cat__table-scroll--modal" id="catInactiveTableScroll">
+                    <table class="cat__table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NOMBRE</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th class="cat__th-actions">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catInactiveBody"></tbody>
+                    </table>
+                </div>
+                <div class="cat__footer cat__footer--modal">
+                    <div class="cat__page-size"><span>Mostrar</span><select id="catInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                    <div class="cat__pagination">
+                        <span id="catInactivePageInfo">Página 1 de 1</span>
+                        <button type="button" class="cat__btn cat__btn--ghost" id="catInactivePrevBtn" disabled>Anterior</button>
+                        <button type="button" class="cat__btn cat__btn--ghost" id="catInactiveNextBtn" disabled>Siguiente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cat-modal" id="catConfirmModal" aria-hidden="true">
+        <div class="cat-modal__backdrop"></div>
+        <div class="cat-modal__dialog cat-modal__dialog--xs" role="dialog" aria-modal="true">
+            <div class="cat-modal__header"><h3 id="catConfirmTitle">Confirmar</h3><button type="button" class="cat-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+            <div class="cat-modal__body"><p id="catConfirmMessage"></p></div>
+            <div class="cat-modal__footer">
+                <button type="button" class="cat__btn cat__btn--ghost" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="cat__btn cat__btn--danger" id="catConfirmBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            window.catUrls = {
+                list: '@Url.Action("List", "Categorias")',
+                listInactive: '@Url.Action("ListInactive", "Categorias")',
+                get: '@Url.Action("Get", "Categorias")',    
+                create: '@Url.Action("Create", "Categorias")',
+                update: '@Url.Action("Update", "Categorias")',
+                deleteLogic: '@Url.Action("DeleteLogic", "Categorias")',
+                restore: '@Url.Action("Restore", "Categorias")',
+                deletePhysical: '@Url.Action("DeletePhysical", "Categorias")'
+            };
+        </script>
+        <script src="@Url.Content("~/Public/JS/Categorias/categorias.js")" asp-append-version="true"></script>
+    }
