@@ -160,6 +160,11 @@ th {
     gap: 12px;
 }
 
+.form-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 12px;
+}
+
 .modal-actions {
     display: flex;
     justify-content: flex-end;

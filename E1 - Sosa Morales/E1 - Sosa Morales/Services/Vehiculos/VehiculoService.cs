@@ -35,11 +35,13 @@ public class VehiculoService : IVehiculoService
     public async Task<(bool Success, string Message, int? Id)> CreateAsync(VehiculoSaveModel model)
     {
         var rows = await _context.Database.SqlQueryRaw<VehiculoSpResult>(
-            "EXEC dbo.sp_vehicle_create @id_vehicle_type, @plate, @maximum_weight, @maximum_volume",
+            "EXEC dbo.sp_vehicle_create @id_vehicle_type, @plate, @maximum_weight, @height, @width, @length",
             new SqlParameter("@id_vehicle_type", model.IdVehicleType),
             Param("@plate", model.Plate),
             Param("@maximum_weight", model.MaximumWeight),
-            Param("@maximum_volume", model.MaximumVolume))
+            Param("@height", model.Height),
+            Param("@width", model.Width),
+            Param("@length", model.Length))
             .ToListAsync();
 
         var row = rows.FirstOrDefault();
@@ -51,12 +53,14 @@ public class VehiculoService : IVehiculoService
     public async Task<(bool Success, string Message)> UpdateAsync(int id, VehiculoSaveModel model)
     {
         var rows = await _context.Database.SqlQueryRaw<VehiculoSpResult>(
-            "EXEC dbo.sp_vehicle_update @id_vehicle, @id_vehicle_type, @plate, @maximum_weight, @maximum_volume",
+            "EXEC dbo.sp_vehicle_update @id_vehicle, @id_vehicle_type, @plate, @maximum_weight, @height, @width, @length",
             new SqlParameter("@id_vehicle", id),
             new SqlParameter("@id_vehicle_type", model.IdVehicleType),
             Param("@plate", model.Plate),
             Param("@maximum_weight", model.MaximumWeight),
-            Param("@maximum_volume", model.MaximumVolume))
+            Param("@height", model.Height),
+            Param("@width", model.Width),
+            Param("@length", model.Length))
             .ToListAsync();
 
         var row = rows.FirstOrDefault();
@@ -105,6 +109,9 @@ public class VehiculoService : IVehiculoService
                 vehicleTypeName = r.VehicleTypeName,
                 plate = r.Plate,
                 maximumWeight = r.MaximumWeight,
+                height = r.Height,
+                width = r.Width,
+                length = r.Length,
                 maximumVolume = r.MaximumVolume,
                 status = r.Status
             }).ToList(),

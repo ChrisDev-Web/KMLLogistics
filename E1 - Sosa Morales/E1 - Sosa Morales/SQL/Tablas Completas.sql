@@ -528,7 +528,10 @@ CREATE TABLE Vehicles (
 
     plate VARCHAR(20) NOT NULL UNIQUE,
 
-    maximum_weight DECIMAL(10,2) NULL,
+    maximum_weight DECIMAL(10,32) NULL,
+    height DECIMAL(10,2) NULL,
+    width DECIMAL(10,2) NULL,
+    length DECIMAL(10,2) NULL,
     maximum_volume DECIMAL(10,2) NULL,
 
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
@@ -560,6 +563,7 @@ CREATE TABLE Shipments (
 
     departure_date DATETIME NULL,
     arrival_date DATETIME NULL,
+    return_available_at DATETIME NULL,
 
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
@@ -616,6 +620,39 @@ CREATE TABLE ShipmentSales (
 
     CONSTRAINT uq_shipment_sale
         UNIQUE (id_shipment, id_sale)
+);
+
+CREATE TABLE ShipmentDetails (
+    id_shipment_detail INT IDENTITY(1,1) PRIMARY KEY,
+    id_shipment INT NOT NULL UNIQUE,
+    delivery_address VARCHAR(255) NOT NULL,
+    id_district INT NULL,
+    client_name VARCHAR(200) NULL,
+    simulated_distance_km DECIMAL(10,2) NOT NULL DEFAULT (0),
+    travel_minutes INT NOT NULL DEFAULT (0),
+    origin_latitude DECIMAL(9,6) NOT NULL DEFAULT (-12.046374),
+    origin_longitude DECIMAL(9,6) NOT NULL DEFAULT (-77.042793),
+    dest_latitude DECIMAL(9,6) NOT NULL,
+    dest_longitude DECIMAL(9,6) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    CONSTRAINT fk_shipment_detail_shipment FOREIGN KEY (id_shipment) REFERENCES Shipments(id_shipment),
+    CONSTRAINT fk_shipment_detail_district FOREIGN KEY (id_district) REFERENCES Districts(id_district)
+);
+
+CREATE TABLE LogisticsAlerts (
+    id_logistics_alert INT IDENTITY(1,1) PRIMARY KEY,
+    id_shipment INT NOT NULL,
+    id_vehicle INT NOT NULL,
+    alert_type VARCHAR(30) NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    resolved_at DATETIME NULL,
+    CONSTRAINT fk_logistics_alert_shipment FOREIGN KEY (id_shipment) REFERENCES Shipments(id_shipment),
+    CONSTRAINT fk_logistics_alert_vehicle FOREIGN KEY (id_vehicle) REFERENCES Vehicles(id_vehicle),
+    CONSTRAINT chk_logistics_alert_status CHECK (status IN ('ACTIVE', 'RESOLVED')),
+    CONSTRAINT chk_logistics_alert_type CHECK (alert_type IN ('RETURNING', 'AVAILABLE'))
 );
 
 INSERT INTO Roles (name, description)

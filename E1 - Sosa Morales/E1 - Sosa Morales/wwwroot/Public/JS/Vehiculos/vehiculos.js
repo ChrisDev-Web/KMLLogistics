@@ -135,7 +135,10 @@ function openCreateModal() {
     document.getElementById("txtVehicleType").value = "";
     document.getElementById("txtPlate").value = "";
     document.getElementById("txtMaximumWeight").value = "";
-    document.getElementById("txtMaximumVolume").value = "";
+    document.getElementById("txtHeight").value = "";
+    document.getElementById("txtWidth").value = "";
+    document.getElementById("txtLength").value = "";
+    updateVolumePreview();
     document.getElementById("modalForm").style.display = "flex";
 }
 
@@ -148,8 +151,19 @@ async function openEditModal(id) {
     document.getElementById("txtVehicleType").value = data.vehicleTypeId;
     document.getElementById("txtPlate").value = data.plate;
     document.getElementById("txtMaximumWeight").value = data.maximumWeight ?? "";
-    document.getElementById("txtMaximumVolume").value = data.maximumVolume ?? "";
+    document.getElementById("txtHeight").value = data.height ?? "";
+    document.getElementById("txtWidth").value = data.width ?? "";
+    document.getElementById("txtLength").value = data.length ?? "";
+    updateVolumePreview();
     document.getElementById("modalForm").style.display = "flex";
+}
+
+function updateVolumePreview() {
+    const h = parseFloat(document.getElementById("txtHeight").value) || 0;
+    const w = parseFloat(document.getElementById("txtWidth").value) || 0;
+    const l = parseFloat(document.getElementById("txtLength").value) || 0;
+    const vol = h * w * l;
+    document.getElementById("txtMaximumVolume").value = vol > 0 ? formatNumber(vol) : "";
 }
 
 async function viewItem(id) {
@@ -206,7 +220,9 @@ async function saveItem() {
     const vehicleTypeId = document.getElementById("txtVehicleType").value;
     const plate = document.getElementById("txtPlate").value.trim();
     const maximumWeight = document.getElementById("txtMaximumWeight").value;
-    const maximumVolume = document.getElementById("txtMaximumVolume").value;
+    const height = document.getElementById("txtHeight").value;
+    const width = document.getElementById("txtWidth").value;
+    const length = document.getElementById("txtLength").value;
 
     if (!vehicleTypeId) {
         showMessageModal("Validacion", "Seleccione el tipo de vehiculo.");
@@ -225,7 +241,9 @@ async function saveItem() {
     form.append("vehicleTypeId", vehicleTypeId);
     form.append("plate", plate);
     form.append("maximumWeight", maximumWeight);
-    form.append("maximumVolume", maximumVolume);
+    form.append("height", height);
+    form.append("width", width);
+    form.append("length", length);
 
     try {
         const res = await fetch(url, { method: "POST", body: form });

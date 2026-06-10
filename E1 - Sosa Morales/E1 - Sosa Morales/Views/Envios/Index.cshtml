@@ -1,53 +1,161 @@
 @model E1___Sosa_Morales.Models.Envios.EnviosViewModel
-@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
-@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Public/CSS/Envios/envios.css" asp-append-version="true" />
+}
+
 @Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-<div class="crud-card"><div class="crud-header"><div><h2>Envios</h2><p>Gestiona vehiculo, empleado, estado y fechas del envio.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nuevo envio</button></div><div class="crud-tools"><input id="txtSearch" placeholder="Buscar por placa, estado o empleado..." /><button id="btnBuscar" type="button">Buscar</button></div><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div></div>
-<partial name="_SimpleCrudModals" />
+
+<div class="crud-card" id="envRoot">
+    <div class="crud-header">
+        <div>
+            <h2>Envios</h2>
+            <p>Gestiona vehiculo, empleado, estado y fecha de salida. Asigna cajas desde Editar.</p>
+        </div>
+        <button id="btnCreate" class="btn-primary" type="button">+ Nuevo envio</button>
+    </div>
+    <div class="crud-tools">
+        <input id="txtSearch" placeholder="Buscar por placa, estado o empleado..." />
+        <button id="btnBuscar" type="button">Buscar</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="pagination">
+        <button id="btnPrev" type="button">Anterior</button>
+        <span id="pageInfo">Pagina 1</span>
+        <button id="btnNext" type="button">Siguiente</button>
+    </div>
+</div>
+
+<div id="modalForm" class="modal">
+    <div class="modal-content env-modal">
+        <h3 id="modalTitle">Formulario</h3>
+        <input type="hidden" id="txtId" />
+        <div id="formFields" class="form-grid"></div>
+        <div id="envBoxesPanel" class="env-boxes env-boxes--hidden">
+            <div class="env-boxes__header">
+                <h4>Cajas del envio</h4>
+                <p id="envCapacityText" class="env-boxes__capacity"></p>
+            </div>
+            <div class="env-boxes__bars">
+                <div class="env-cap-bar">
+                    <span>Peso</span>
+                    <div class="env-cap-bar__track"><div id="envWeightBar" class="env-cap-bar__fill"></div></div>
+                    <small id="envWeightLabel"></small>
+                </div>
+                <div class="env-cap-bar">
+                    <span>Volumen</span>
+                    <div class="env-cap-bar__track"><div id="envVolumeBar" class="env-cap-bar__fill env-cap-bar__fill--vol"></div></div>
+                    <small id="envVolumeLabel"></small>
+                </div>
+            </div>
+            <div id="envBoxesList" class="env-boxes__list"></div>
+            <div id="envAddBoxRow" class="env-boxes__add">
+                <select id="envBoxSelect"><option value="">Seleccione caja disponible...</option></select>
+                <button type="button" id="btnAddBox" class="btn-primary">+ Agregar caja</button>
+            </div>
+            <p id="envBoxesHint" class="env-boxes__hint"></p>
+        </div>
+        <div class="modal-actions">
+            <button id="btnCancel" type="button">Cancelar</button>
+            <button id="btnSave" class="btn-primary" type="button">Guardar envio</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalView" class="modal">
+    <div class="modal-content env-modal">
+        <h3>Detalle del envio</h3>
+        <div id="detailBody" class="detail-grid"></div>
+        <div id="envViewBoxesPanel" class="env-boxes">
+            <div class="env-boxes__header"><h4>Cajas asignadas</h4></div>
+            <div id="envViewBoxesList" class="env-boxes__list"></div>
+        </div>
+        <div class="modal-actions">
+            <button id="btnCloseView" class="btn-primary" type="button">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalMessage" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="messageTitle">Mensaje</h3>
+        <p id="messageText"></p>
+        <div class="modal-actions"><button id="btnCloseMessage" class="btn-primary" type="button">Aceptar</button></div>
+    </div>
+</div>
+
+<div id="modalConfirm" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="confirmTitle">Confirmar accion</h3>
+        <p id="confirmText"></p>
+        <div class="modal-actions">
+            <button id="btnCancelConfirm" type="button">Cancelar</button>
+            <button id="btnConfirm" class="btn-danger" type="button">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-<script>
-window.kmlCrudConfig = {
-    idKey: "idShipment",
-    listUrl: "/Envios/List",
-    getUrl: "/Envios/Get",
-    createUrl: "/Envios/Create",
-    updateUrl: "/Envios/Update",
-    deleteUrl: "/Envios/DeleteLogic",
-    optionsUrl: "/Envios/Options",
-    createTitle: "Nuevo envio",
-    editTitle: "Editar envio",
-    columns: [
-        { key: "idShipment", label: "ID" },
-        { key: "vehiclePlate", label: "Vehiculo" },
-        { key: "employeeName", label: "Empleado" },
-        { key: "shipmentStatusName", label: "Estado" },
-        { key: "usedWeight", label: "Peso usado", type: "number" },
-        { key: "maximumWeight", label: "Peso max.", type: "number" },
-        { key: "departureDate", label: "Salida", type: "date" },
-        { key: "arrivalDate", label: "Llegada", type: "date" }
-    ],
-    detailColumns: [
-        { key: "idShipment", label: "ID" },
-        { key: "vehiclePlate", label: "Vehiculo" },
-        { key: "vehicleTypeName", label: "Tipo" },
-        { key: "employeeName", label: "Empleado" },
-        { key: "shipmentStatusName", label: "Estado" },
-        { key: "usedWeight", label: "Peso usado", type: "number" },
-        { key: "maximumWeight", label: "Peso maximo", type: "number" },
-        { key: "usedVolume", label: "Volumen usado", type: "number" },
-        { key: "maximumVolume", label: "Volumen maximo", type: "number" },
-        { key: "departureDate", label: "Salida", type: "date" },
-        { key: "arrivalDate", label: "Llegada", type: "date" },
-        { key: "createdAt", label: "Creado", type: "date" }
-    ],
-    fields: [
-        { name: "vehicleId", dataKey: "idVehicle", label: "Vehiculo", type: "select", optionsKey: "vehicles", valueKey: "idVehicle", textKey: "name" },
-        { name: "employeeId", dataKey: "idEmployee", label: "Empleado", type: "select", optionsKey: "employees", valueKey: "idEmployee", textKey: "name" },
-        { name: "shipmentStatusId", dataKey: "idShipmentStatus", label: "Estado", type: "select", optionsKey: "statuses", valueKey: "idShipmentStatus", textKey: "name" },
-        { name: "departureDate", label: "Fecha salida", type: "datetime-local" },
-        { name: "arrivalDate", label: "Fecha llegada", type: "datetime-local" }
-    ]
-};
-</script><script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
+    <script>
+        window.kmlCrudConfig = {
+            idKey: "idShipment",
+            listUrl: "/Envios/List",
+            getUrl: "/Envios/Get",
+            createUrl: "/Envios/Create",
+            updateUrl: "/Envios/Update",
+            deleteUrl: "/Envios/DeleteLogic",
+            optionsUrl: "/Envios/Options",
+            createTitle: "Nuevo envio",
+            editTitle: "Editar envio",
+            columns: [
+                { key: "idShipment", label: "ID" },
+                { key: "vehiclePlate", label: "Vehiculo" },
+                { key: "employeeName", label: "Empleado" },
+                { key: "shipmentStatusName", label: "Estado" },
+                { key: "usedWeight", label: "Peso usado", type: "number" },
+                { key: "maximumWeight", label: "Peso max.", type: "number" },
+                { key: "departureDate", label: "Salida", type: "date" },
+                { key: "arrivalDate", label: "Llegada", type: "date" }
+            ],
+            detailColumns: [
+                { key: "idShipment", label: "ID" },
+                { key: "vehiclePlate", label: "Vehiculo" },
+                { key: "vehicleTypeName", label: "Tipo" },
+                { key: "employeeName", label: "Empleado" },
+                { key: "shipmentStatusName", label: "Estado" },
+                { key: "usedWeight", label: "Peso usado", type: "number" },
+                { key: "maximumWeight", label: "Peso maximo", type: "number" },
+                { key: "usedVolume", label: "Volumen usado", type: "number" },
+                { key: "maximumVolume", label: "Volumen maximo", type: "number" },
+                { key: "departureDate", label: "Salida", type: "date" },
+                { key: "arrivalDate", label: "Llegada", type: "date" },
+                { key: "createdAt", label: "Creado", type: "date" }
+            ],
+            fields: [
+                { name: "vehicleId", dataKey: "idVehicle", label: "Vehiculo", type: "select", optionsKey: "vehicles", valueKey: "idVehicle", textKey: "name" },
+                { name: "employeeId", dataKey: "idEmployee", label: "Empleado", type: "select", optionsKey: "employees", valueKey: "idEmployee", textKey: "name" },
+                { name: "shipmentStatusId", dataKey: "idShipmentStatus", label: "Estado", type: "select", optionsKey: "statuses", valueKey: "idShipmentStatus", textKey: "name" },
+                { name: "departureDate", label: "Fecha salida", type: "datetime-local" }
+            ]
+        };
+        window.envBoxUrls = {
+            list: '@Url.Action("List", "CajasEnvio")',
+            available: '@Url.Action("AvailableBoxes", "CajasEnvio")',
+            add: '@Url.Action("Create", "CajasEnvio")',
+            remove: '@Url.Action("Delete", "CajasEnvio")'
+        };
+    </script>
+    <script src="~/Public/JS/Envios/envios.js" asp-append-version="true"></script>
 }

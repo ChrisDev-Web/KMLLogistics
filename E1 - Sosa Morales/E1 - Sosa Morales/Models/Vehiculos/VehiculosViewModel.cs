@@ -14,6 +14,9 @@ public class VehiculoListItem
     public string VehicleTypeName { get; set; } = string.Empty;
     public string Plate { get; set; } = string.Empty;
     public decimal? MaximumWeight { get; set; }
+    public decimal? Height { get; set; }
+    public decimal? Width { get; set; }
+    public decimal? Length { get; set; }
     public decimal? MaximumVolume { get; set; }
     public byte Status { get; set; }
     public int TotalCount { get; set; }
@@ -26,6 +29,9 @@ public class VehiculoDetail
     public string VehicleTypeName { get; set; } = string.Empty;
     public string Plate { get; set; } = string.Empty;
     public decimal? MaximumWeight { get; set; }
+    public decimal? Height { get; set; }
+    public decimal? Width { get; set; }
+    public decimal? Length { get; set; }
     public decimal? MaximumVolume { get; set; }
     public byte Status { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -37,7 +43,9 @@ public class VehiculoSaveModel
     public int IdVehicleType { get; set; }
     public string Plate { get; set; } = string.Empty;
     public decimal? MaximumWeight { get; set; }
-    public decimal? MaximumVolume { get; set; }
+    public decimal? Height { get; set; }
+    public decimal? Width { get; set; }
+    public decimal? Length { get; set; }
 }
 
 public class VehiculoTypeOption

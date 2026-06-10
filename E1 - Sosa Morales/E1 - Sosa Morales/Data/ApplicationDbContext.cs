@@ -23,6 +23,7 @@ using E1___Sosa_Morales.Models.Roles;
 using E1___Sosa_Morales.Models.Shared;
 using E1___Sosa_Morales.Models.TiposDocumento;
 using E1___Sosa_Morales.Models.Users;
+using E1___Sosa_Morales.Models.SeguimientoVehiculo;
 using E1___Sosa_Morales.Models.Usuarios;
 using Microsoft.EntityFrameworkCore;
 
@@ -137,5 +138,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<InventoryMovementListItem>().HasNoKey();
         modelBuilder.Entity<InventoryMovementDetail>().HasNoKey();
         modelBuilder.Entity<InventoryMovementFilterOption>().HasNoKey();
+        modelBuilder.Entity<ShipmentTrackingItem>().HasNoKey();
+        modelBuilder.Entity<LogisticsAlertItem>().HasNoKey();
+        modelBuilder.Entity<Models.AlertasStock.LogisticsAlertCountResult>().HasNoKey();
     }
 }

@@ -50,6 +50,9 @@ public class VehiculosController : Controller
                 vehicleTypeName = item.VehicleTypeName,
                 plate = item.Plate,
                 maximumWeight = item.MaximumWeight,
+                height = item.Height,
+                width = item.Width,
+                length = item.Length,
                 maximumVolume = item.MaximumVolume,
                 status = item.Status,
                 createdAt = item.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "",
@@ -60,9 +63,9 @@ public class VehiculosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(int vehicleTypeId, string plate, string? maximumWeight, string? maximumVolume)
+    public async Task<IActionResult> Create(int vehicleTypeId, string plate, string? maximumWeight, string? height, string? width, string? length)
     {
-        var validation = BuildSaveModel(vehicleTypeId, plate, maximumWeight, maximumVolume);
+        var validation = BuildSaveModel(vehicleTypeId, plate, maximumWeight, height, width, length);
         if (!validation.Success) return Json(new { success = false, message = validation.Message });
 
         var (success, message, id) = await _service.CreateAsync(validation.Model);
@@ -71,9 +74,9 @@ public class VehiculosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(int id, int vehicleTypeId, string plate, string? maximumWeight, string? maximumVolume)
+    public async Task<IActionResult> Update(int id, int vehicleTypeId, string plate, string? maximumWeight, string? height, string? width, string? length)
     {
-        var validation = BuildSaveModel(vehicleTypeId, plate, maximumWeight, maximumVolume);
+        var validation = BuildSaveModel(vehicleTypeId, plate, maximumWeight, height, width, length);
         if (!validation.Success) return Json(new { success = false, message = validation.Message });
 
         var (success, message) = await _service.UpdateAsync(id, validation.Model);
@@ -108,7 +111,9 @@ public class VehiculosController : Controller
         int vehicleTypeId,
         string? plate,
         string? maximumWeight,
-        string? maximumVolume)
+        string? height,
+        string? width,
+        string? length)
     {
         if (vehicleTypeId <= 0)
             return (false, "Seleccione un tipo de vehiculo.", new());
@@ -119,15 +124,23 @@ public class VehiculosController : Controller
         var parsedWeight = ParseNullableDecimal(maximumWeight, "peso maximo");
         if (!parsedWeight.Success) return (false, parsedWeight.Message, new());
 
-        var parsedVolume = ParseNullableDecimal(maximumVolume, "volumen maximo");
-        if (!parsedVolume.Success) return (false, parsedVolume.Message, new());
+        var parsedHeight = ParseNullableDecimal(height, "alto");
+        if (!parsedHeight.Success) return (false, parsedHeight.Message, new());
+
+        var parsedWidth = ParseNullableDecimal(width, "ancho");
+        if (!parsedWidth.Success) return (false, parsedWidth.Message, new());
+
+        var parsedLength = ParseNullableDecimal(length, "largo");
+        if (!parsedLength.Success) return (false, parsedLength.Message, new());
 
         return (true, "", new VehiculoSaveModel
         {
             IdVehicleType = vehicleTypeId,
             Plate = plate.Trim().ToUpperInvariant(),
             MaximumWeight = parsedWeight.Value,
-            MaximumVolume = parsedVolume.Value
+            Height = parsedHeight.Value,
+            Width = parsedWidth.Value,
+            Length = parsedLength.Value
         });
     }
 

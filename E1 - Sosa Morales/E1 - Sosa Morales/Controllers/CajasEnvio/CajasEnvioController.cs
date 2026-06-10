@@ -25,11 +25,97 @@ public class CajasEnvioController : Controller
         return Json(new { items = rows, totalCount = total, page, pageSize, totalPages = pageSize > 0 ? (int)Math.Ceiling(total / (double)pageSize) : 0 });
     }
 
-    [HttpGet] public async Task<IActionResult> Options() => Json(new { shipments = await _context.Database.SqlQueryRaw<ShipmentOption>("EXEC dbo.sp_shipment_options").ToListAsync(), boxes = await _context.Database.SqlQueryRaw<BoxOption>("EXEC dbo.sp_box_options").ToListAsync() });
+    [HttpGet]
+    public async Task<IActionResult> Options() => Json(new
+    {
+        shipments = await _context.Database.SqlQueryRaw<ShipmentOption>("EXEC dbo.sp_shipment_options").ToListAsync(),
+        boxes = await _context.Database.SqlQueryRaw<BoxOption>("EXEC dbo.sp_box_options_available").ToListAsync()
+    });
+
+    [HttpGet]
+    public async Task<IActionResult> AvailableBoxes(int shipmentId)
+    {
+        var lockMessage = await GetShipmentBoxLockMessageAsync(shipmentId);
+        if (lockMessage is not null)
+            return Json(new { success = false, message = lockMessage, items = Array.Empty<BoxOption>(), assignedBoxIds = Array.Empty<int>() });
+
+        var rows = await _context.Database.SqlQueryRaw<BoxOption>(
+            "EXEC dbo.sp_box_options_for_shipment @id_shipment",
+            new SqlParameter("@id_shipment", shipmentId)).ToListAsync();
+
+        var assigned = await _context.Database.SqlQueryRaw<ShipmentBoxAssignedId>(
+            "SELECT id_box AS IdBox FROM ShipmentBoxes WHERE id_shipment = @id_shipment",
+            new SqlParameter("@id_shipment", shipmentId)).ToListAsync();
+
+        var packed = await _context.Database.SqlQueryRaw<PackedBoxShipmentInfo>(
+            """
+            SELECT
+                b.id_box AS IdBox,
+                (
+                    SELECT TOP 1 sb.id_shipment
+                    FROM ShipmentBoxes sb
+                    INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL
+                    WHERE sb.id_box = b.id_box
+                ) AS IdShipment
+            FROM Boxes b
+            WHERE b.deleted_at IS NULL AND b.status = 1
+              AND EXISTS (SELECT 1 FROM BoxDetails bd WHERE bd.id_box = b.id_box)
+            ORDER BY b.id_box
+            """).ToListAsync();
+
+        var message = BuildBoxAvailabilityMessage(shipmentId, rows, assigned, packed);
+        return Json(new
+        {
+            success = true,
+            items = rows,
+            assignedBoxIds = assigned.Select(a => a.IdBox).ToList(),
+            message
+        });
+    }
+
+    private static string BuildBoxAvailabilityMessage(
+        int shipmentId,
+        List<BoxOption> available,
+        List<ShipmentBoxAssignedId> assigned,
+        List<PackedBoxShipmentInfo> packed)
+    {
+        if (available.Count > 0)
+            return "Seleccione una caja empaquetada libre para agregar al envio.";
+
+        var assignedIds = assigned.Select(a => a.IdBox).ToList();
+        if (assignedIds.Count > 0)
+        {
+            var onOther = packed.Where(p => p.IdShipment.HasValue && p.IdShipment.Value != shipmentId)
+                .Select(p => $"#{p.IdBox} (envio #{p.IdShipment})").ToList();
+            var empty = packed.Where(p => !p.IdShipment.HasValue).Select(p => $"#{p.IdBox}").ToList();
+
+            if (onOther.Count > 0 && empty.Count == 0)
+                return $"Las cajas empaquetadas ya estan en otros envios: {string.Join(", ", onOther)}. "
+                     + $"Este envio ya tiene: {string.Join(", ", assignedIds.Select(id => "#" + id))}. "
+                     + "Empaquete una venta en caja vacia (#2, #4...) en Detalle de caja para agregar mas.";
+
+            if (assignedIds.Count > 0 && empty.Count == 0)
+                return $"Las cajas empaquetadas (#{string.Join(", #", assignedIds)}) ya estan en este envio. "
+                     + "Vaya a Ventas de envio para asociar las ventas. Para otra caja, empaquete en una caja vacia primero.";
+
+            if (empty.Count > 0)
+                return $"Hay cajas vacias listas ({string.Join(", ", empty)}) pero sin productos. Empaquete una venta en Detalle de caja primero.";
+        }
+
+        var anyPacked = packed.Count > 0;
+        if (!anyPacked)
+            return "No hay cajas con productos. Vaya a Detalle de caja y empaquete una venta en una caja.";
+
+        return "No hay cajas libres para agregar. Revise Detalle de caja o quite cajas de otro envio.";
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(int shipmentId, int boxId)
     {
+        var lockMessage = await GetShipmentBoxLockMessageAsync(shipmentId);
+        if (lockMessage is not null)
+            return Json(new { success = false, message = lockMessage });
+
         var validationMessage = await ValidateBoxAssignmentAsync(shipmentId, boxId);
         if (!string.IsNullOrWhiteSpace(validationMessage))
         {
@@ -44,12 +130,41 @@ public class CajasEnvioController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
+        var shipmentIdRows = await _context.Database.SqlQueryRaw<ShipmentBoxShipmentId>(
+            "SELECT id_shipment AS IdShipment FROM ShipmentBoxes WHERE id_shipment_box = @id",
+            new SqlParameter("@id", id)).ToListAsync();
+        var shipmentId = shipmentIdRows.FirstOrDefault()?.IdShipment;
+        if (shipmentId is null)
+            return Json(new { success = false, message = "Registro no encontrado." });
+
+        var lockMessage = await GetShipmentBoxLockMessageAsync(shipmentId.Value);
+        if (lockMessage is not null)
+            return Json(new { success = false, message = lockMessage });
+
         var rows = await _context.Database.SqlQueryRaw<ShipmentBoxActionResult>("EXEC dbo.sp_shipment_box_delete @id_shipment_box", new SqlParameter("@id_shipment_box", id)).ToListAsync();
         var row = rows.FirstOrDefault() ?? new ShipmentBoxActionResult { Message = "No se pudo eliminar." };
         return Json(new { success = row.Success == 1, message = row.Message });
     }
 
     private static SqlParameter Param(string name, object? value) => new(name, value ?? DBNull.Value);
+
+    private async Task<string?> GetShipmentBoxLockMessageAsync(int shipmentId)
+    {
+        var rows = await _context.Database.SqlQueryRaw<ShipmentBoxLockStatus>(
+            """
+            SELECT ss.name AS ShipmentStatusName
+            FROM Shipments s
+            INNER JOIN ShipmentStatuses ss ON ss.id_shipment_status = s.id_shipment_status
+            WHERE s.id_shipment = @id_shipment AND s.deleted_at IS NULL
+            """,
+            new SqlParameter("@id_shipment", shipmentId)).ToListAsync();
+
+        var status = rows.FirstOrDefault()?.ShipmentStatusName ?? "";
+        if (status is "En Transito" or "Entregado" or "Cancelado")
+            return $"No se pueden modificar cajas: el envio esta en estado {status}.";
+
+        return null;
+    }
 
     private async Task<string?> ValidateBoxAssignmentAsync(int shipmentId, int boxId)
     {

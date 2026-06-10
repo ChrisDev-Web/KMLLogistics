@@ -20,6 +20,7 @@ public class EnviosController : Controller
     [HttpGet]
     public async Task<IActionResult> List(string? search, int page = 1, int pageSize = 10, int? shipmentStatusId = null, int? vehicleId = null)
     {
+        await _context.Database.ExecuteSqlRawAsync("EXEC dbo.sp_logistics_sync_shipments");
         pageSize = pageSize is 10 or 20 or 50 ? pageSize : 10;
         if (page < 1) page = 1;
         var rows = await _context.Database.SqlQueryRaw<ShipmentListItem>(
@@ -45,7 +46,7 @@ public class EnviosController : Controller
 
     [HttpGet] public async Task<IActionResult> Options() => Json(new
     {
-        vehicles = await _context.Database.SqlQueryRaw<ShipmentVehicleOption>("SELECT v.id_vehicle AS IdVehicle, CONCAT(v.plate, ' - ', vt.name) AS Name FROM Vehicles v INNER JOIN VehicleTypes vt ON vt.id_vehicle_type = v.id_vehicle_type WHERE v.deleted_at IS NULL AND v.status = 1 ORDER BY v.plate").ToListAsync(),
+        vehicles = await _context.Database.SqlQueryRaw<ShipmentVehicleOption>("EXEC dbo.sp_vehicle_options_available").ToListAsync(),
         employees = await _context.Database.SqlQueryRaw<ShipmentEmployeeOption>("SELECT id_employee AS IdEmployee, CONCAT(name, ' ', last_name_paternal) AS Name FROM Employees WHERE deleted_at IS NULL AND status = 1 ORDER BY name").ToListAsync(),
         statuses = await _context.Database.SqlQueryRaw<ShipmentStatusOption>("EXEC dbo.sp_shipment_status_options").ToListAsync()
     });

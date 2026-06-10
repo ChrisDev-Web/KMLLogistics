@@ -13,3 +13,7 @@ public class ShipmentBoxSpResult { public int Success { get; set; } public strin
 public class ShipmentBoxActionResult { public int Success { get; set; } public string Message { get; set; } = ""; }
 public class ShipmentBoxDuplicateCheck { public int Count { get; set; } }
 public class ShipmentBoxCapacityCheck { public decimal? UsedWeight { get; set; } public decimal? UsedVolume { get; set; } public decimal? BoxWeight { get; set; } public decimal? BoxVolume { get; set; } public decimal? MaximumWeight { get; set; } public decimal? MaximumVolume { get; set; } }
+public class ShipmentBoxShipmentId { public int IdShipment { get; set; } }
+public class ShipmentBoxLockStatus { public string ShipmentStatusName { get; set; } = ""; }
+public class ShipmentBoxAssignedId { public int IdBox { get; set; } }
+public class PackedBoxShipmentInfo { public int IdBox { get; set; } public int? IdShipment { get; set; } }

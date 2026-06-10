@@ -36,11 +36,15 @@ public class StockAlertService : IStockAlertService
 
     public async Task<int> GetActiveCountAsync()
     {
-        var result = await _context.Database
+        var stockResult = await _context.Database
             .SqlQueryRaw<StockAlertCountResult>("EXEC dbo.sp_stock_alert_count_active")
             .ToListAsync();
+        var logisticsResult = await _context.Database
+            .SqlQueryRaw<LogisticsAlertCountResult>("EXEC dbo.sp_logistics_alert_count_active")
+            .ToListAsync();
 
-        return result.FirstOrDefault()?.ActiveAlerts ?? 0;
+        return (stockResult.FirstOrDefault()?.ActiveAlerts ?? 0)
+             + (logisticsResult.FirstOrDefault()?.ActiveAlerts ?? 0);
     }
 
     public Task<List<StockAlertFilterOption>> GetProductFilterOptionsAsync(string status = "ALL")

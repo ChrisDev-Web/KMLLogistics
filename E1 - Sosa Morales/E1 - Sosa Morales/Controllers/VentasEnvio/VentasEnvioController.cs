@@ -25,7 +25,21 @@ public class VentasEnvioController : Controller
         return Json(new { items = rows, totalCount = total, page, pageSize, totalPages = pageSize > 0 ? (int)Math.Ceiling(total / (double)pageSize) : 0 });
     }
 
-    [HttpGet] public async Task<IActionResult> Options() => Json(new { shipments = await _context.Database.SqlQueryRaw<ShipmentOption>("EXEC dbo.sp_shipment_options").ToListAsync(), sales = await _context.Database.SqlQueryRaw<SaleOptionForShipment>("EXEC dbo.sp_sale_options_for_shipment").ToListAsync() });
+    [HttpGet]
+    public async Task<IActionResult> Options() => Json(new
+    {
+        shipments = await _context.Database.SqlQueryRaw<ShipmentOption>("EXEC dbo.sp_shipment_options").ToListAsync(),
+        sales = await _context.Database.SqlQueryRaw<SaleOptionForShipment>("EXEC dbo.sp_sale_options_for_shipment").ToListAsync()
+    });
+
+    [HttpGet]
+    public async Task<IActionResult> AvailableSales(int? shipmentId = null)
+    {
+        var rows = await _context.Database.SqlQueryRaw<SaleOptionForShipment>(
+            "EXEC dbo.sp_sale_options_for_shipment @id_shipment",
+            new SqlParameter("@id_shipment", (object?)shipmentId ?? DBNull.Value)).ToListAsync();
+        return Json(new { items = rows });
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(int shipmentId, int saleId)

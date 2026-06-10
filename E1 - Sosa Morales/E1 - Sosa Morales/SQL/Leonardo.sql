@@ -748,11 +748,93 @@ CREATE OR ALTER PROCEDURE dbo.sp_box_options
 AS
 BEGIN
     SET NOCOUNT ON;
+    EXEC dbo.sp_box_options_for_pack;
+END
+GO
 
-    SELECT id_box AS IdBox, CONCAT(N'Caja #', id_box) AS Name
-    FROM Boxes
-    WHERE deleted_at IS NULL AND status = 1
-    ORDER BY id_box;
+CREATE OR ALTER PROCEDURE dbo.sp_box_options_for_pack
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        b.id_box AS IdBox,
+        CONCAT(
+            N'Caja #', b.id_box,
+            N' · ', CAST(ISNULL(b.weight, 0) AS VARCHAR(20)), N' kg',
+            CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM ShipmentBoxes sb
+                    INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL
+                    WHERE sb.id_box = b.id_box
+                ) THEN CONCAT(N' · en envio #', (SELECT TOP 1 sb.id_shipment FROM ShipmentBoxes sb INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL WHERE sb.id_box = b.id_box))
+                WHEN EXISTS (SELECT 1 FROM BoxDetails bd WHERE bd.id_box = b.id_box)
+                    THEN CONCAT(N' · ', (SELECT COUNT(*) FROM BoxDetails bd WHERE bd.id_box = b.id_box), N' productos empaquetados')
+                ELSE N' · vacia (lista para empaquetar)'
+            END
+        ) AS Name
+    FROM Boxes b
+    WHERE b.deleted_at IS NULL AND b.status = 1
+    ORDER BY b.id_box;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_box_options_available
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        b.id_box AS IdBox,
+        CONCAT(
+            N'Caja #', b.id_box,
+            N' · ', CAST(ISNULL(b.weight, 0) AS VARCHAR(20)), N' kg',
+            N' · ', CAST(ISNULL(b.volume, 0) AS VARCHAR(20)), N' m³',
+            N' · ', (SELECT COUNT(*) FROM BoxDetails bd WHERE bd.id_box = b.id_box), N' productos'
+        ) AS Name
+    FROM Boxes b
+    WHERE b.deleted_at IS NULL
+      AND b.status = 1
+      AND EXISTS (SELECT 1 FROM BoxDetails bd WHERE bd.id_box = b.id_box)
+      AND NOT EXISTS (
+            SELECT 1
+            FROM ShipmentBoxes sb
+            INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL
+            WHERE sb.id_box = b.id_box
+      )
+    ORDER BY b.id_box;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_box_options_for_shipment
+    @id_shipment INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        b.id_box AS IdBox,
+        CONCAT(
+            N'Caja #', b.id_box,
+            N' · ', CAST(ISNULL(b.weight, 0) AS VARCHAR(20)), N' kg',
+            N' · ', CAST(ISNULL(b.volume, 0) AS VARCHAR(20)), N' m³'
+        ) AS Name
+    FROM Boxes b
+    WHERE b.deleted_at IS NULL
+      AND b.status = 1
+      AND EXISTS (SELECT 1 FROM BoxDetails bd WHERE bd.id_box = b.id_box)
+      AND NOT EXISTS (
+            SELECT 1
+            FROM ShipmentBoxes sb
+            INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL
+            WHERE sb.id_box = b.id_box
+              AND sb.id_shipment <> @id_shipment
+      )
+      AND NOT EXISTS (
+            SELECT 1 FROM ShipmentBoxes sb
+            WHERE sb.id_shipment = @id_shipment AND sb.id_box = b.id_box
+      )
+    ORDER BY b.id_box;
 END
 GO
 
@@ -821,12 +903,32 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    DECLARE @status_empaquetado INT = (SELECT TOP 1 id_shipment_status FROM dbo.ShipmentStatuses WHERE name = N'Empaquetado' AND deleted_at IS NULL);
+    DECLARE @status_transito INT = (SELECT TOP 1 id_shipment_status FROM dbo.ShipmentStatuses WHERE name = N'En Transito' AND deleted_at IS NULL);
+
     SELECT
         MIN(sd.id_sale_detail) AS IdSaleDetail,
         sd.id_sale AS IdSale,
         CONCAT(N'Venta #', sd.id_sale, N' (', COUNT(*), N' productos)') AS Name
     FROM SaleDetails sd
     INNER JOIN Sales s ON s.id_sale = sd.id_sale AND s.deleted_at IS NULL
+    WHERE EXISTS (
+        SELECT 1
+        FROM SaleDetails sd2
+        OUTER APPLY (
+            SELECT SUM(bd.quantity) AS qty FROM BoxDetails bd WHERE bd.id_sale_detail = sd2.id_sale_detail
+        ) packed
+        WHERE sd2.id_sale = sd.id_sale
+          AND sd2.quantity - ISNULL(packed.qty, 0) > 0
+    )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM ShipmentSales ss
+        INNER JOIN Shipments sh ON sh.id_shipment = ss.id_shipment AND sh.deleted_at IS NULL
+        WHERE ss.id_sale = sd.id_sale
+          AND ss.deleted_at IS NULL
+          AND sh.id_shipment_status IN (@status_empaquetado, @status_transito)
+    )
     GROUP BY sd.id_sale
     ORDER BY sd.id_sale DESC;
 END
@@ -901,6 +1003,18 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM Sales WHERE id_sale = @id_sale AND deleted_at IS NULL)
     BEGIN SELECT 0 AS Success, N'Venta no valida.' AS Message, 0 AS CreatedCount; RETURN; END
 
+    DECLARE @status_empaquetado INT = (SELECT TOP 1 id_shipment_status FROM dbo.ShipmentStatuses WHERE name = N'Empaquetado' AND deleted_at IS NULL);
+    DECLARE @status_transito INT = (SELECT TOP 1 id_shipment_status FROM dbo.ShipmentStatuses WHERE name = N'En Transito' AND deleted_at IS NULL);
+
+    IF EXISTS (
+        SELECT 1
+        FROM ShipmentSales ss
+        INNER JOIN Shipments sh ON sh.id_shipment = ss.id_shipment AND sh.deleted_at IS NULL
+        WHERE ss.id_sale = @id_sale AND ss.deleted_at IS NULL
+          AND sh.id_shipment_status IN (@status_empaquetado, @status_transito)
+    )
+    BEGIN SELECT 0 AS Success, N'La venta ya esta empaquetada o en transito y no puede empaquetarse de nuevo.' AS Message, 0 AS CreatedCount; RETURN; END
+
     BEGIN TRY
         BEGIN TRANSACTION;
 
@@ -922,6 +1036,8 @@ BEGIN
             RETURN;
         END
 
+        EXEC dbo.sp_box_sync_content_metrics @id_box;
+
         COMMIT TRANSACTION;
         SELECT 1 AS Success, N'Productos de la venta empaquetados correctamente.' AS Message, @created AS CreatedCount;
     END TRY
@@ -932,16 +1048,44 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE dbo.sp_box_sync_content_metrics
+    @id_box INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE b
+    SET weight = CAST(ISNULL(metrics.total_weight, b.weight) AS DECIMAL(10,2)),
+        updated_at = GETDATE()
+    FROM Boxes b
+    OUTER APPLY (
+        SELECT SUM(CAST(bd.quantity AS DECIMAL(18,4)) * ISNULL(p.weight, 0.1)) AS total_weight,
+               SUM(CAST(bd.quantity AS DECIMAL(18,4)) * ISNULL(p.volume, ISNULL(p.height, 1) * ISNULL(p.width, 1) * ISNULL(p.length, 1))) AS total_volume
+        FROM BoxDetails bd
+        INNER JOIN SaleDetails sd ON sd.id_sale_detail = bd.id_sale_detail
+        INNER JOIN Products p ON p.id_product = sd.id_product
+        WHERE bd.id_box = b.id_box
+    ) metrics
+    WHERE b.id_box = @id_box;
+END
+GO
+
 CREATE OR ALTER PROCEDURE dbo.sp_box_detail_delete
     @id_box_detail INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
+    DECLARE @id_box INT;
+    SELECT @id_box = id_box FROM BoxDetails WHERE id_box_detail = @id_box_detail;
+
     DELETE FROM BoxDetails WHERE id_box_detail = @id_box_detail;
 
     IF @@ROWCOUNT = 0 SELECT 0 AS Success, N'Registro no encontrado.' AS Message;
-    ELSE SELECT 1 AS Success, N'Detalle de caja eliminado correctamente.' AS Message;
+    ELSE BEGIN
+        IF @id_box IS NOT NULL EXEC dbo.sp_box_sync_content_metrics @id_box;
+        SELECT 1 AS Success, N'Detalle de caja eliminado correctamente.' AS Message;
+    END
 END
 GO
 
@@ -1363,6 +1507,16 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM Boxes WHERE id_box = @id_box AND deleted_at IS NULL AND status = 1)
     BEGIN SELECT 0 AS Success, 'Seleccione una caja activa.' AS Message, NULL AS IdShipmentBox; RETURN; END
 
+    IF NOT EXISTS (SELECT 1 FROM BoxDetails WHERE id_box = @id_box)
+    BEGIN SELECT 0 AS Success, 'La caja no tiene productos empaquetados. Use Detalle de caja primero.' AS Message, NULL AS IdShipmentBox; RETURN; END
+
+    IF EXISTS (
+        SELECT 1 FROM ShipmentBoxes sb
+        INNER JOIN Shipments s ON s.id_shipment = sb.id_shipment AND s.deleted_at IS NULL
+        WHERE sb.id_box = @id_box AND sb.id_shipment <> @id_shipment
+    )
+    BEGIN SELECT 0 AS Success, 'La caja ya esta asociada a otro envio activo.' AS Message, NULL AS IdShipmentBox; RETURN; END
+
     IF EXISTS (SELECT 1 FROM ShipmentBoxes WHERE id_shipment = @id_shipment AND id_box = @id_box)
     BEGIN SELECT 0 AS Success, 'La caja ya esta asociada a este envio.' AS Message, NULL AS IdShipmentBox; RETURN; END
 
@@ -1485,17 +1639,31 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_sale_options_for_shipment
+    @id_shipment INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT
         s.id_sale AS IdSale,
-        CONCAT('Venta #', s.id_sale, ' - ', c.name, ' ', c.last_name_paternal) AS Name,
+        CONCAT(N'Venta #', s.id_sale, N' - ', c.name, N' ', c.last_name_paternal) AS Name,
         s.total AS Total
     FROM Sales s
     INNER JOIN Clients c ON c.id_client = s.id_client
     WHERE s.deleted_at IS NULL
+      AND EXISTS (
+            SELECT 1
+            FROM SaleDetails sd
+            INNER JOIN BoxDetails bd ON bd.id_sale_detail = sd.id_sale_detail
+            WHERE sd.id_sale = s.id_sale
+      )
+      AND NOT EXISTS (
+            SELECT 1
+            FROM ShipmentSales ss
+            INNER JOIN Shipments sh ON sh.id_shipment = ss.id_shipment AND sh.deleted_at IS NULL
+            WHERE ss.id_sale = s.id_sale
+              AND ss.deleted_at IS NULL
+      )
     ORDER BY s.id_sale DESC;
 END
 GO

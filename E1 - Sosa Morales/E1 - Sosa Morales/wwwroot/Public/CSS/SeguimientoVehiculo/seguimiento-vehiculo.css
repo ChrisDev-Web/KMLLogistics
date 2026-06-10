@@ -1,0 +1,94 @@
+.sgv { margin-top: 1rem; }
+.sgv__panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(15,23,42,.06); }
+.sgv__toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.sgv__toolbar h2 { margin: 0 0 .25rem; font-size: 1.15rem; }
+.sgv__toolbar p { margin: 0; color: #64748b; font-size: .9rem; }
+.sgv__actions { display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap; }
+.sgv__field { display: flex; flex-direction: column; gap: .35rem; min-width: 240px; }
+.sgv__field label { font-size: .8rem; font-weight: 600; color: #475569; }
+.sgv__field select {
+    padding: .5rem .75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: .875rem;
+    background: #fff;
+    color: #0f172a;
+    min-width: 260px;
+}
+.sgv__field select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.sgv__btn { padding: .5rem .9rem; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-size: .875rem; }
+.sgv__btn--ghost:hover { border-color: #2563eb; color: #2563eb; }
+
+.sgv__countdown-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: .85rem 1.1rem;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #1e40af, #2563eb);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37,99,235,.25);
+}
+.sgv__countdown-bar--hidden { display: none; }
+.sgv__countdown-label { font-size: .82rem; font-weight: 600; opacity: .92; }
+.sgv__countdown-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .04em;
+    min-width: 7.5rem;
+}
+.sgv__countdown-sub { margin-left: auto; font-size: .8rem; opacity: .9; }
+
+.sgv__detail { min-height: 200px; }
+.sgv__card { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #f8fafc; }
+.sgv__card-header { display: flex; justify-content: space-between; align-items: center; padding: .85rem 1rem; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.sgv__card-header h3 { margin: 0; font-size: 1rem; }
+.sgv__badge { font-size: .75rem; padding: .2rem .55rem; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+.sgv__meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .5rem 1rem; padding: .85rem 1rem; font-size: .82rem; color: #475569; }
+.sgv__meta strong { color: #0f172a; }
+
+.sgv__scene-wrap {
+    position: relative;
+    background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 35%, #86efac 100%);
+    padding: .75rem;
+}
+.sgv__scene {
+    width: 100%;
+    height: 300px;
+    border-radius: 12px;
+    border: 1px solid #94a3b8;
+    display: block;
+    box-shadow: inset 0 2px 12px rgba(15,23,42,.08);
+}
+
+.sgv__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: .5rem 1rem .25rem;
+    font-size: .78rem;
+    color: #475569;
+}
+.sgv__legend span { display: inline-flex; align-items: center; gap: .35rem; }
+.sgv__legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.sgv__legend i.sgv__dot--origin { background: #16a34a; }
+.sgv__legend i.sgv__dot--dest { background: #dc2626; }
+.sgv__legend i.sgv__dot--truck { background: #2563eb; }
+
+.sgv__progress { padding: .65rem 1rem 1rem; background: #fff; }
+.sgv__progress-bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.sgv__progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #16a34a); transition: width .8s ease; }
+.sgv__progress-text { margin-top: .4rem; font-size: .82rem; color: #64748b; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .25rem; }
+
+.sgv__empty, .sgv__loading { text-align: center; color: #64748b; padding: 2.5rem 1rem; }
+.sgv__toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 2000; padding: .75rem 1rem; border-radius: 8px; background: #059669; color: #fff; opacity: 0; transition: opacity .25s; }
+.sgv__toast.is-visible { opacity: 1; }
+
+@media (max-width: 640px) {
+    .sgv__field, .sgv__field select { min-width: 100%; width: 100%; }
+    .sgv__actions { width: 100%; }
+    .sgv__scene { height: 240px; }
+}
