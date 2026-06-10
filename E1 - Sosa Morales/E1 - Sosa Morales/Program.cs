@@ -51,9 +51,9 @@ using E1___Sosa_Morales.Services.Users;
 using E1___Sosa_Morales.Services.Usuarios;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-
+using E1___Sosa_Morales.Services.TiposVehiculo;
+using E1___Sosa_Morales.Services.Vehiculos;
 using Microsoft.EntityFrameworkCore;
-
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,7 +71,8 @@ builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerifica
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
     options.UseSqlServer(builder.Configuration.GetConnectionString("bd_ventas")));
-
+builder.Services.AddScoped<ITiposVehiculoService, TiposVehiculoService>();
+builder.Services.AddScoped<IVehiculoService, VehiculoService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IStockAlertService, StockAlertService>();
@@ -115,6 +116,7 @@ builder.Services.AddScoped<IRegionService, RegionService>();
 builder.Services.AddScoped<IProvinceService, ProvinceService>();
 
 builder.Services.AddScoped<IDistrictService, DistrictService>();
+
 
 builder.Services.AddScoped<IRoleService, RoleService>();
 

@@ -1,21 +1,24 @@
-﻿@model E1___Sosa_Morales.Models.Cajas.CajasViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Cajas/cajas.css" asp-append-version="true" />
-}
-
+@model E1___Sosa_Morales.Models.Cajas.CajasViewModel
+@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
+@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="crud-card">
+    <div class="crud-header"><div><h2>Cajas</h2><p>Gestiona cajas, dimensiones y volumen.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nueva caja</button></div>
+    <div class="crud-tools"><input id="txtSearch" placeholder="Buscar por codigo..." /><select id="selectStatus"><option value="active">Activas</option><option value="inactive">Inactivas</option></select><button id="btnBuscar" type="button">Buscar</button></div>
+    <div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+    <div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div>
 </div>
-
+<partial name="_SimpleCrudModals" />
 @section Scripts {
-    <script src="~/Public/JS/Cajas/cajas.js" asp-append-version="true"></script>
+<script>
+window.kmlCrudConfig = {
+ idKey:"idBox", listUrl:"/Cajas/List", listInactiveUrl:"/Cajas/ListInactive", getUrl:"/Cajas/Get", createUrl:"/Cajas/Create", updateUrl:"/Cajas/Update", deleteLogicUrl:"/Cajas/DeleteLogic", restoreUrl:"/Cajas/Restore", deletePhysicalUrl:"/Cajas/DeletePhysical",
+ createTitle:"Nueva caja", editTitle:"Editar caja",
+ columns:[{key:"idBox",label:"ID"},{key:"code",label:"Codigo"},{key:"weight",label:"Peso",type:"number"},{key:"height",label:"Alto",type:"number"},{key:"width",label:"Ancho",type:"number"},{key:"length",label:"Largo",type:"number"},{key:"volume",label:"Volumen",type:"number"},{key:"status",label:"Estado",type:"status"}],
+ detailColumns:[{key:"idBox",label:"ID"},{key:"code",label:"Codigo"},{key:"weight",label:"Peso",type:"number"},{key:"height",label:"Alto",type:"number"},{key:"width",label:"Ancho",type:"number"},{key:"length",label:"Largo",type:"number"},{key:"volume",label:"Volumen",type:"number"},{key:"createdAt",label:"Creado",type:"date"},{key:"updatedAt",label:"Actualizado",type:"date"}],
+ fields:[{name:"code",label:"Codigo"},{name:"weight",label:"Peso",type:"number"},{name:"height",label:"Alto",type:"number"},{name:"width",label:"Ancho",type:"number"},{name:"length",label:"Largo",type:"number"}]
+};
+</script>
+<script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
 }

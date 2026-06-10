@@ -1,21 +1,53 @@
-﻿@model E1___Sosa_Morales.Models.Envios.EnviosViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Envios/envios.css" asp-append-version="true" />
-}
-
+@model E1___Sosa_Morales.Models.Envios.EnviosViewModel
+@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
+@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
-</div>
-
+<div class="crud-card"><div class="crud-header"><div><h2>Envios</h2><p>Gestiona vehiculo, empleado, estado y fechas del envio.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nuevo envio</button></div><div class="crud-tools"><input id="txtSearch" placeholder="Buscar por placa, estado o empleado..." /><button id="btnBuscar" type="button">Buscar</button></div><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div></div>
+<partial name="_SimpleCrudModals" />
 @section Scripts {
-    <script src="~/Public/JS/Envios/envios.js" asp-append-version="true"></script>
+<script>
+window.kmlCrudConfig = {
+    idKey: "idShipment",
+    listUrl: "/Envios/List",
+    getUrl: "/Envios/Get",
+    createUrl: "/Envios/Create",
+    updateUrl: "/Envios/Update",
+    deleteUrl: "/Envios/DeleteLogic",
+    optionsUrl: "/Envios/Options",
+    createTitle: "Nuevo envio",
+    editTitle: "Editar envio",
+    columns: [
+        { key: "idShipment", label: "ID" },
+        { key: "vehiclePlate", label: "Vehiculo" },
+        { key: "employeeName", label: "Empleado" },
+        { key: "shipmentStatusName", label: "Estado" },
+        { key: "usedWeight", label: "Peso usado", type: "number" },
+        { key: "maximumWeight", label: "Peso max.", type: "number" },
+        { key: "departureDate", label: "Salida", type: "date" },
+        { key: "arrivalDate", label: "Llegada", type: "date" }
+    ],
+    detailColumns: [
+        { key: "idShipment", label: "ID" },
+        { key: "vehiclePlate", label: "Vehiculo" },
+        { key: "vehicleTypeName", label: "Tipo" },
+        { key: "employeeName", label: "Empleado" },
+        { key: "shipmentStatusName", label: "Estado" },
+        { key: "usedWeight", label: "Peso usado", type: "number" },
+        { key: "maximumWeight", label: "Peso maximo", type: "number" },
+        { key: "usedVolume", label: "Volumen usado", type: "number" },
+        { key: "maximumVolume", label: "Volumen maximo", type: "number" },
+        { key: "departureDate", label: "Salida", type: "date" },
+        { key: "arrivalDate", label: "Llegada", type: "date" },
+        { key: "createdAt", label: "Creado", type: "date" }
+    ],
+    fields: [
+        { name: "vehicleId", dataKey: "idVehicle", label: "Vehiculo", type: "select", optionsKey: "vehicles", valueKey: "idVehicle", textKey: "name" },
+        { name: "employeeId", dataKey: "idEmployee", label: "Empleado", type: "select", optionsKey: "employees", valueKey: "idEmployee", textKey: "name" },
+        { name: "shipmentStatusId", dataKey: "idShipmentStatus", label: "Estado", type: "select", optionsKey: "statuses", valueKey: "idShipmentStatus", textKey: "name" },
+        { name: "departureDate", label: "Fecha salida", type: "datetime-local" },
+        { name: "arrivalDate", label: "Fecha llegada", type: "datetime-local" }
+    ]
+};
+</script><script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
 }

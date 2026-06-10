@@ -1,21 +1,12 @@
-﻿@model E1___Sosa_Morales.Models.DetalleCaja.DetalleCajaViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleCaja/detalle-caja.css" asp-append-version="true" />
-}
-
+@model E1___Sosa_Morales.Models.DetalleCaja.DetalleCajaViewModel
+@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
+@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
-</div>
-
+<div class="crud-card"><div class="crud-header"><div><h2>Detalle de caja</h2><p>Asocia productos de ventas a cajas.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nuevo detalle</button></div><div class="crud-tools"><input id="txtSearch" placeholder="Buscar por caja, venta o producto..." /><button id="btnBuscar" type="button">Buscar</button></div><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div></div>
+<partial name="_SimpleCrudModals" />
 @section Scripts {
-    <script src="~/Public/JS/DetalleCaja/detalle-caja.js" asp-append-version="true"></script>
+<script>
+window.kmlCrudConfig={idKey:"idBoxDetail",listUrl:"/DetalleCaja/List",getUrl:"/DetalleCaja/Get",createUrl:"/DetalleCaja/Create",updateUrl:"/DetalleCaja/Update",deleteUrl:"/DetalleCaja/Delete",optionsUrl:"/DetalleCaja/Options",createTitle:"Nuevo detalle",editTitle:"Editar detalle",columns:[{key:"idBoxDetail",label:"ID"},{key:"boxCode",label:"Caja"},{key:"idSale",label:"Venta"},{key:"productName",label:"Producto"},{key:"quantity",label:"Cantidad",type:"number"}],detailColumns:[{key:"idBoxDetail",label:"ID"},{key:"boxCode",label:"Caja"},{key:"idSale",label:"Venta"},{key:"productName",label:"Producto"},{key:"quantity",label:"Cantidad",type:"number"}],fields:[{name:"boxId",dataKey:"idBox",label:"Caja",type:"select",optionsKey:"boxes",valueKey:"idBox",textKey:"code"},{name:"saleDetailId",dataKey:"idSaleDetail",label:"Detalle venta",type:"select",optionsKey:"saleDetails",valueKey:"idSaleDetail",textKey:"name"},{name:"quantity",label:"Cantidad",type:"number"}]};
+</script><script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
 }
