@@ -26,6 +26,7 @@ BEGIN
         u.id_role,
         u.username,
         u.password_hash,
+        u.photo,
         u.created_at,
         u.updated_at,
         r.name AS role_name

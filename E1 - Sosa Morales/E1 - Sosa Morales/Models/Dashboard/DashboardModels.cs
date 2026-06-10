@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace E1___Sosa_Morales.Models.Dashboard;
 
 public class DashboardCard
@@ -26,7 +29,7 @@ public class ModuleViewModel
     public string Title { get; set; } = string.Empty;
     public string CurrentController { get; set; } = string.Empty;
     public string CurrentTab { get; set; } = string.Empty;
-    public List<ModuleTab> Tabs { get; set; } = [];
+    public List<ModuleTab> Tabs { get; set; } = new List<ModuleTab>();
     public string SidebarActive { get; set; } = string.Empty;
 }
 

@@ -1,21 +1,58 @@
 ﻿@model E1___Sosa_Morales.Models.ProductoProveedores.ProductoProveedoresViewModel
 @{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
+    Layout = "_DashboardLayout"; ViewBag.PageTitle = "Producto Proveedores";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/ProductoProveedores/producto-proveedores.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/ProductoProveedores/producto-proveedores.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
+<div class="tabs">
+    <button onclick="loadModule('/Categorias')">Categorías</button>
+    <button onclick="loadModule('/Marcas')">Marcas</button>
+    <button onclick="loadModule('/ProductoProveedores')">Producto proveedores</button>
+</div>
+<div class="prp" id="prpRoot">
+    <div class="prp__panel">
+        <div class="prp__toolbar">
+            <button type="button" class="prp__btn prp__btn--primary" id="prpCreateBtn"><i class="bi bi-plus-lg"></i> Asignar</button>
+        </div>
+        @Html.AntiForgeryToken()
+        <table class="prp__table">
+            <thead><tr><th>PRODUCTO</th><th>PROVEEDOR</th><th>COSTO</th><th>¿PRINCIPAL?</th><th>ACCIONES</th></tr></thead>
+            <tbody id="prpBody"></tbody>
+        </table>
+    </div>
+</div>
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="prp-modal" id="prpModal">
+    <div class="prp-modal__backdrop"></div>
+    <div class="prp-modal__dialog">
+        <div class="prp-modal__header"><h3>Asignar Producto</h3></div>
+        <form id="prpForm" class="prp-modal__body">
+            <div class="prp-field"><label>Producto</label><select id="pId" name="idProduct" required>@foreach(var p in (IEnumerable<dynamic>)Model.Productos){
+            <option value="@p.IdProduct">@p.Name</option>
+                        }
+</select></div>
+            <div class="prp-field"><label>Proveedor</label><select id="sId" name="idSupplier" required>@foreach(var s in (IEnumerable<dynamic>)Model.Proveedores){
+            <option value="@s.IdSupplier">@s.Name</option>
+                        }
+</select></div>
+            <div class="prp-field"><label>Costo</label><input type="number" step="0.01" id="cost" name="cost" required /></div>
+            <div class="prp-field"><input type="checkbox" id="isMain" name="isMain" /> <label style="display:inline">¿Es principal?</label></div>
+        </form>
+        <div class="prp-modal__footer"><button class="prp__btn" onclick="closeModal('prpModal')">Cancelar</button><button class="prp__btn prp__btn--primary" id="prpSaveBtn">Guardar</button></div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/ProductoProveedores/producto-proveedores.js" asp-append-version="true"></script>
+    <script>
+        window.prpUrls = {
+            list: '@Url.Action("List", "ProductoProveedores")',
+            save: '@Url.Action("Save", "ProductoProveedores")',
+            delete: '@Url.Action("Delete", "ProductoProveedores")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/ProductoProveedores/producto-proveedores.js")" asp-append-version="true"></script>
 }

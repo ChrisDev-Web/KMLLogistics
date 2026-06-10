@@ -1,57 +1,32 @@
 using E1___Sosa_Morales.Data;
-
-using E1___Sosa_Morales.Services.Almacenes;
-
-using E1___Sosa_Morales.Services.DetalleAlmacen;
-
-using E1___Sosa_Morales.Services.MovimientosInventario;
-
-using E1___Sosa_Morales.Services.TiposMovimiento;
-
 using E1___Sosa_Morales.Services.AlertasStock;
-
+using E1___Sosa_Morales.Services.Almacenes;
 using E1___Sosa_Morales.Services.Cargos;
-
+using E1___Sosa_Morales.Services.Categorias;
 using E1___Sosa_Morales.Services.Clientes;
-
 using E1___Sosa_Morales.Services.Countries;
-
-using E1___Sosa_Morales.Services.Distritos;
-
-using E1___Sosa_Morales.Services.Empleados;
-
-using E1___Sosa_Morales.Services.EstadosTransferencia;
-
-using E1___Sosa_Morales.Services.ListaTransferencias;
-
-using E1___Sosa_Morales.Services.DetalleTransferencia;
-
-using E1___Sosa_Morales.Services.EstadosCompra;
-
-using E1___Sosa_Morales.Services.OrdenesCompra;
-
-using E1___Sosa_Morales.Services.DetalleCompra;
-
+using E1___Sosa_Morales.Services.DetalleAlmacen;
 using E1___Sosa_Morales.Services.DetalleAlmacenCompra;
-
+using E1___Sosa_Morales.Services.DetalleCompra;
+using E1___Sosa_Morales.Services.DetalleTransferencia;
+using E1___Sosa_Morales.Services.Distritos;
+using E1___Sosa_Morales.Services.Empleados;
+using E1___Sosa_Morales.Services.EstadosCompra;
+using E1___Sosa_Morales.Services.EstadosTransferencia;
+using E1___Sosa_Morales.Services.ListaTransferencias;
+using E1___Sosa_Morales.Services.Marcas;
+using E1___Sosa_Morales.Services.MovimientosInventario;
+using E1___Sosa_Morales.Services.OrdenesCompra;
 using E1___Sosa_Morales.Services.Perfil;
-
-using E1___Sosa_Morales.Services.Provincias;
-
 using E1___Sosa_Morales.Services.Proveedores;
-
+using E1___Sosa_Morales.Services.Provincias;
 using E1___Sosa_Morales.Services.Regiones;
-
 using E1___Sosa_Morales.Services.Roles;
-
 using E1___Sosa_Morales.Services.TiposDocumento;
-
+using E1___Sosa_Morales.Services.TiposMovimiento;
 using E1___Sosa_Morales.Services.Users;
-
 using E1___Sosa_Morales.Services.Usuarios;
-
 using Microsoft.AspNetCore.Authentication.Cookies;
-
 using Microsoft.EntityFrameworkCore;
 
 
@@ -78,13 +53,23 @@ builder.Services.AddScoped<IStockAlertService, StockAlertService>();
 
 builder.Services.AddScoped<IDocumentTypeService, DocumentTypeService>();
 
+builder.Services.AddScoped<E1___Sosa_Morales.Services.ProductoProveedores.IPrpService,
+                           E1___Sosa_Morales.Services.ProductoProveedores.PrpService>();
+
 builder.Services.AddScoped<IClientService, ClientService>();
 
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+
+builder.Services.AddScoped<E1___Sosa_Morales.Services.MarcasProveedor.ISbrService,
+                           E1___Sosa_Morales.Services.MarcasProveedor.SbrService>();
 
 builder.Services.AddScoped<IJobPositionService, JobPositionService>();
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+// Añade esto junto a tus otros servicios
+builder.Services.AddScoped<E1___Sosa_Morales.Services.Productos.IProductoService, E1___Sosa_Morales.Services.Productos.ProductoService>();
 
 builder.Services.AddScoped<IStatusTransferService, StatusTransferService>();
 
@@ -117,6 +102,8 @@ builder.Services.AddScoped<IProvinceService, ProvinceService>();
 builder.Services.AddScoped<IDistrictService, DistrictService>();
 
 builder.Services.AddScoped<IRoleService, RoleService>();
+
+builder.Services.AddScoped<IMarcaService, MarcaService>();
 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 

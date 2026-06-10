@@ -4,6 +4,8 @@ using E1___Sosa_Morales.Models.Users;
 using E1___Sosa_Morales.Services.Shared;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace E1___Sosa_Morales.Services.Proveedores;
 
@@ -123,16 +125,8 @@ public class SupplierService : ISupplierService
         var total = rows.FirstOrDefault()?.TotalCount ?? 0;
         return new SupplierPagedResult
         {
-            Items = rows.Select(r => (object)new
-            {
-                id = r.IdSupplier,
-                documentTypeName = r.DocumentTypeName,
-                documentNumber = r.DocumentNumber,
-                name = r.Name,
-                phone = r.Phone ?? "",
-                email = r.Email ?? "",
-                districtName = r.DistrictName
-            }).ToList(),
+            // ahora Items es la lista concreta de SupplierListItem
+            Items = rows,
             TotalCount = total,
             Page = page,
             PageSize = pageSize,

@@ -8,6 +8,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\NewFolder1\**" />
+    <Compile Remove="Services\NewFolder2\**" />
+    <Compile Remove="Services\NewFolder3\**" />
+    <Compile Remove="Services\NewFolder4\**" />
+    <Compile Remove="Services\NewFolder\**" />
+    <Content Remove="Services\NewFolder1\**" />
+    <Content Remove="Services\NewFolder2\**" />
+    <Content Remove="Services\NewFolder3\**" />
+    <Content Remove="Services\NewFolder4\**" />
+    <Content Remove="Services\NewFolder\**" />
+    <EmbeddedResource Remove="Services\NewFolder1\**" />
+    <EmbeddedResource Remove="Services\NewFolder2\**" />
+    <EmbeddedResource Remove="Services\NewFolder3\**" />
+    <EmbeddedResource Remove="Services\NewFolder4\**" />
+    <EmbeddedResource Remove="Services\NewFolder\**" />
+    <None Remove="Services\NewFolder1\**" />
+    <None Remove="Services\NewFolder2\**" />
+    <None Remove="Services\NewFolder3\**" />
+    <None Remove="Services\NewFolder4\**" />
+    <None Remove="Services\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Data\" />
   </ItemGroup>
 
