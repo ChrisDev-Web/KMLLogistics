@@ -871,7 +871,7 @@ BEGIN
          OR p.name LIKE '%' + @search + '%'
          OR CAST(sd.id_sale AS VARCHAR(20)) LIKE '%' + @search + '%'
       )
-    ORDER BY sd.id_sale DESC, bd.id_box_detail DESC
+    ORDER BY bd.id_box_detail DESC
     OFFSET (@page - 1) * @page_size ROWS
     FETCH NEXT @page_size ROWS ONLY;
 END
