@@ -26,7 +26,7 @@ public class ProductoProveedoresController : Controller
         {
             Module = ModuleRegistry.BuildModuleView("Catalogo", "ProductoProveedores", "productos"),
             Productos = (await _prodService.ListActiveAsync(null, null, null, 1, 50)).Items,
-            Proveedores = (await _provService.ListActiveAsync(null, null, null, 1, 1000)).Items
+            Proveedores = await _provService.ListActiveForSelectAsync()
         });
     }
 

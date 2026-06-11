@@ -23,7 +23,7 @@ public class MarcasProveedorController : Controller
     public async Task<IActionResult> Index() => View(new MarcasProveedorViewModel
     {
         Module = ModuleRegistry.BuildModuleView("Catalogo", "MarcasProveedor", "productos"),
-        Proveedores = (await _supService.ListActiveAsync(null, null, null, 1, 1000)).Items,
+        Proveedores = await _supService.ListActiveForSelectAsync(),
         Marcas = (await _marcaService.ListActiveAsync(null, 1, 50)).Items
     });
 

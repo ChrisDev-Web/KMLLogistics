@@ -6,6 +6,7 @@ public interface ISupplierService
 {
     Task<SupplierPagedResult> ListActiveAsync(string? search, int? idDocumentType, int? idDistrict, int page, int pageSize);
     Task<SupplierPagedResult> ListInactiveAsync(string? search, int? idDocumentType, int? idDistrict, int page, int pageSize);
+    Task<List<SupplierListItem>> ListActiveForSelectAsync();
     Task<SupplierDetail?> GetByIdAsync(int id);
     Task<List<SupplierDocumentTypeOption>> GetDocumentTypeOptionsAsync();
     Task<List<SupplierDistrictOption>> GetDistrictOptionsAsync();

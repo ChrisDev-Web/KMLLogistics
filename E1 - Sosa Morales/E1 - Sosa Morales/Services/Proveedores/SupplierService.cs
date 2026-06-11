@@ -21,6 +21,17 @@ public class SupplierService : ISupplierService
     public Task<SupplierPagedResult> ListInactiveAsync(string? search, int? idDocumentType, int? idDistrict, int page, int pageSize)
         => QueryListAsync(false, search, idDocumentType, idDistrict, page, pageSize);
 
+    public async Task<List<SupplierListItem>> ListActiveForSelectAsync()
+    {
+        return await _context.Database.SqlQueryRaw<SupplierListItem>(
+            "EXEC dbo.sp_supplier_list_active @search, @id_document_type, @id_district, @page, @page_size",
+            Param("@search", null),
+            Param("@id_document_type", null),
+            Param("@id_district", null),
+            new SqlParameter("@page", 1),
+            new SqlParameter("@page_size", 1000)).ToListAsync();
+    }
+
     public async Task<SupplierDetail?> GetByIdAsync(int id)
     {
         var rows = await _context.Database
@@ -125,8 +136,16 @@ public class SupplierService : ISupplierService
         var total = rows.FirstOrDefault()?.TotalCount ?? 0;
         return new SupplierPagedResult
         {
-            // ahora Items es la lista concreta de SupplierListItem
-            Items = rows,
+            Items = rows.Select(r => (object)new
+            {
+                id = r.IdSupplier,
+                documentTypeName = r.DocumentTypeName,
+                documentNumber = r.DocumentNumber,
+                name = r.Name,
+                phone = r.Phone ?? "",
+                email = r.Email ?? "",
+                districtName = r.DistrictName
+            }).ToList(),
             TotalCount = total,
             Page = page,
             PageSize = pageSize,

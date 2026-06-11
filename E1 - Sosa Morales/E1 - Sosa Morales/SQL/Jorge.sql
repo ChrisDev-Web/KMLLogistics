@@ -30,7 +30,7 @@ BEGIN
             OR name LIKE '%' + @search + '%'
             OR description LIKE '%' + @search + '%'
           )
-    ORDER BY name
+    ORDER BY id_category DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -60,7 +60,7 @@ BEGIN
             OR name LIKE '%' + @search + '%'
             OR description LIKE '%' + @search + '%'
           )
-    ORDER BY name
+    ORDER BY id_category DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -229,7 +229,7 @@ BEGIN
             OR name LIKE '%' + @search + '%'
             OR description LIKE '%' + @search + '%'
           )
-    ORDER BY name
+    ORDER BY id_brand DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -258,7 +258,7 @@ BEGIN
             OR name LIKE '%' + @search + '%'
             OR description LIKE '%' + @search + '%'
           )
-    ORDER BY name
+    ORDER BY id_brand DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -434,7 +434,7 @@ BEGIN
             OR c.name LIKE '%' + @search + '%'
             OR b.name LIKE '%' + @search + '%'
           )
-    ORDER BY p.name
+    ORDER BY p.id_product DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -475,7 +475,7 @@ BEGIN
             OR c.name LIKE '%' + @search + '%'
             OR b.name LIKE '%' + @search + '%'
           )
-    ORDER BY p.name
+    ORDER BY p.id_product DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -733,7 +733,7 @@ BEGIN
             OR p.name LIKE '%' + @search + '%'
             OR s.name LIKE '%' + @search + '%'
           )
-    ORDER BY p.name, s.name
+    ORDER BY ps.id_product_supplier DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO
@@ -840,7 +840,7 @@ BEGIN
             OR s.name LIKE '%' + @search + '%'
             OR b.name LIKE '%' + @search + '%'
           )
-    ORDER BY s.name, b.name
+    ORDER BY sb.id_supplier DESC, sb.id_brand DESC
     OFFSET (@page - 1) * @page_size ROWS FETCH NEXT @page_size ROWS ONLY;
 END
 GO

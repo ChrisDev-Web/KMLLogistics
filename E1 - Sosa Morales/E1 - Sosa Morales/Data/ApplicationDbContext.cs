@@ -152,6 +152,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<InventoryMovementDetail>().HasNoKey();
         modelBuilder.Entity<InventoryMovementFilterOption>().HasNoKey();
         modelBuilder.Entity<MarcaListItem>().HasNoKey();
+        modelBuilder.Entity<MarcaDetail>().HasNoKey();
         modelBuilder.Entity<MarcaSpResult>().HasNoKey();
         modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoListItem>().HasNoKey();
         modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoDetail>().HasNoKey();

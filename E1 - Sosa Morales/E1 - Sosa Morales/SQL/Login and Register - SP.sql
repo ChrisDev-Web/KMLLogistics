@@ -56,49 +56,22 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM Users WHERE username = @username AND deleted_at IS NULL)
     BEGIN
-        SELECT 0 AS success, 'El nombre de usuario ya existe.' AS message;
+        SELECT 0 AS success, 'El nombre de usuario ya existe.' AS message, CAST(NULL AS INT) AS id_user;
         RETURN;
     END
 
     IF NOT EXISTS (SELECT 1 FROM Roles WHERE id_role = @id_role AND deleted_at IS NULL)
     BEGIN
-        SELECT 0 AS success, 'El rol especificado no existe.' AS message;
+        SELECT 0 AS success, 'El rol especificado no existe.' AS message, CAST(NULL AS INT) AS id_user;
         RETURN;
     END
 
     INSERT INTO Users (id_role, username, password_hash)
     VALUES (@id_role, @username, @password_hash);
 
-    SELECT 1 AS success, 'Usuario registrado correctamente.' AS message, SCOPE_IDENTITY() AS id_user;
+    SELECT 1 AS success, 'Usuario registrado correctamente.' AS message, CAST(SCOPE_IDENTITY() AS INT) AS id_user;
 END
 GO
 
--- ============================================================
--- sp_role_list_active
--- Lista los roles activos (para select en Register)
--- ============================================================
-IF OBJECT_ID('sp_role_list_active', 'P') IS NOT NULL
-    DROP PROCEDURE sp_role_list_active;
-GO
-
-CREATE PROCEDURE sp_role_list_active
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT
-        id_role,
-        name,
-        description
-    FROM Roles
-    WHERE deleted_at IS NULL
-    ORDER BY name;
-END
-GO
-
-INSERT INTO Roles (name, description)
-VALUES
-('Administrador', 'Acceso completo al sistema'),
-('Supervisor', 'Supervisa operaciones y usuarios'),
-('Operador', 'Realiza tareas operativas'),
-('Consulta', 'Solo tiene permisos de lectura');
+-- Roles para Register: usar dbo.sp_role_list_select_active (definido en Espinoza.sql).
+-- No redefinir sp_role_list_active aquí; el módulo Seguridad usa la versión paginada.

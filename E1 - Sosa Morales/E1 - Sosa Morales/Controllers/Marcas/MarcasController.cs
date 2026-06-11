@@ -29,7 +29,8 @@ public class MarcasController : Controller
     {
         try
         {
-            return Json(await _service.ListActiveAsync(search, page, pageSize));
+            var result = await _service.ListActiveAsync(search, page, pageSize);
+            return Json(MapPagedResult(result));
         }
         catch (Exception ex)
         {
@@ -50,7 +51,10 @@ public class MarcasController : Controller
             {
                 id = item.IdBrand,
                 name = item.Name,
-                description = item.Description
+                description = item.Description ?? "",
+                status = item.Status,
+                createdAt = item.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "",
+                updatedAt = item.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? ""
             }
         });
     }
@@ -105,13 +109,29 @@ public class MarcasController : Controller
     {
         try
         {
-            return Json(await _service.ListInactiveAsync(search, page, pageSize));
+            var result = await _service.ListInactiveAsync(search, page, pageSize);
+            return Json(MapPagedResult(result));
         }
         catch (Exception ex)
         {
             return Json(new { success = false, message = "Error interno: " + ex.Message });
         }
     }
+
+    private static object MapPagedResult(Models.Shared.CatalogPagedResult<MarcaListItem> result)
+        => new
+        {
+            items = result.Items.Select(r => new
+            {
+                id = r.IdBrand,
+                name = r.Name,
+                description = r.Description ?? ""
+            }),
+            totalCount = result.TotalCount,
+            page = result.Page,
+            pageSize = result.PageSize,
+            totalPages = result.TotalPages
+        };
 
     [HttpPost]
     [ValidateAntiForgeryToken]
