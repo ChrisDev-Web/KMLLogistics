@@ -8,6 +8,9 @@ using E1___Sosa_Morales.Models.DetalleAlmacen;
 using E1___Sosa_Morales.Models.DetalleAlmacenCompra;
 using E1___Sosa_Morales.Models.DetalleCompra;
 using E1___Sosa_Morales.Models.DetalleTransferencia;
+using E1___Sosa_Morales.Models.DetalleVenta;
+using E1___Sosa_Morales.Models.EstadosVenta;
+using E1___Sosa_Morales.Models.ListaVentas;
 using E1___Sosa_Morales.Models.Distritos;
 using E1___Sosa_Morales.Models.Empleados;
 using E1___Sosa_Morales.Models.EstadosCompra;
@@ -151,5 +154,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoListItem>().HasNoKey();
         modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoDetail>().HasNoKey();
         modelBuilder.Entity<E1___Sosa_Morales.Models.Productos.ProductoSpResult>().HasNoKey();
+        modelBuilder.Entity<SaleStatusListItem>().HasNoKey();
+        modelBuilder.Entity<SaleStatusDetail>().HasNoKey();
+        modelBuilder.Entity<SaleStatusSpResult>().HasNoKey();
+        modelBuilder.Entity<PosProductItem>().HasNoKey();
+        modelBuilder.Entity<SaleClientOption>().HasNoKey();
+        modelBuilder.Entity<SaleEmployeeInfo>().HasNoKey();
+        modelBuilder.Entity<PaymentMethodOption>().HasNoKey();
+        modelBuilder.Entity<SaleCreateResult>().HasNoKey();
+        modelBuilder.Entity<SaleDetailListItem>().HasNoKey();
+        modelBuilder.Entity<SaleDetailMetrics>().HasNoKey();
     }
 }

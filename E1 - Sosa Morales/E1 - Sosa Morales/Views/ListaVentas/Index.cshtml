@@ -6,16 +6,74 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/ListaVentas/lista-ventas.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/ListaVentas/lista-ventas.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="lvnt" id="lvntRoot">
+    <div class="lvnt__layout">
+        <div class="lvnt__main">
+            <div class="lvnt__toolbar">
+                <div class="lvnt__search-group">
+                    <div class="lvnt__search"><i class="bi bi-search"></i><input type="text" id="lvntSearchInput" placeholder="Buscar productos..." autocomplete="off" /></div>
+                    <button type="button" class="lvnt__btn lvnt__btn--ghost" id="lvntClearSearchBtn">Limpiar</button>
+                </div>
+                <div class="lvnt__filter-group">
+                    <select id="lvntCategoryFilter" class="lvnt__filter-select"><option value="">Todas las categorías</option></select>
+                    <select id="lvntBrandFilter" class="lvnt__filter-select"><option value="">Todas las marcas</option></select>
+                </div>
+            </div>
+            @Html.AntiForgeryToken()
+            <div id="lvntToast" class="lvnt__toast" role="status" aria-live="polite"></div>
+            <div class="lvnt__products" id="lvntProducts">
+                <div class="lvnt__loading">Cargando productos...</div>
+            </div>
+        </div>
+
+        <aside class="lvnt__cart" id="lvntCart">
+            <div class="lvnt__cart-header"><h3><i class="bi bi-cart3"></i> Carrito</h3></div>
+            <div class="lvnt__cart-body" id="lvntCartBody">
+                <p class="lvnt__cart-empty">Sin productos en el carrito.</p>
+            </div>
+            <div class="lvnt__cart-footer">
+                <div class="lvnt-field">
+                    <label for="lvntClient">Cliente *</label>
+                    <select id="lvntClient" required><option value="">Seleccione cliente...</option></select>
+                </div>
+                <div class="lvnt__doc-info" id="lvntDocInfo">Tipo comprobante: —</div>
+                <div class="lvnt-field">
+                    <label for="lvntPayment">Método de pago *</label>
+                    <select id="lvntPayment" required><option value="">Seleccione...</option></select>
+                </div>
+                <div class="lvnt__cash-fields" id="lvntCashFields" hidden>
+                    <div class="lvnt-field"><label for="lvntAmountPaid">Pago con (S/)</label><input type="number" step="0.01" min="0" id="lvntAmountPaid" /></div>
+                    <div class="lvnt-field"><label for="lvntChange">Vuelto de (S/)</label><input type="number" step="0.01" id="lvntChange" readonly /></div>
+                </div>
+                <div class="lvnt__totals">
+                    <div class="lvnt__total-row"><span>Productos</span><strong id="lvntSubtotal">S/ 0.00</strong></div>
+                    <div class="lvnt__total-row"><span>IGV 18%</span><strong id="lvntTax">S/ 0.00</strong></div>
+                    <div class="lvnt__total-row lvnt__total-row--main"><span>TOTAL</span><strong id="lvntTotal">S/ 0.00</strong></div>
+                </div>
+                <button type="button" class="lvnt__btn lvnt__btn--primary lvnt__btn--block" id="lvntCheckoutBtn" disabled><i class="bi bi-receipt"></i> Confirmar venta</button>
+            </div>
+        </aside>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/ListaVentas/lista-ventas.js" asp-append-version="true"></script>
+    <script>
+        window.lvntUrls = {
+            products: '@Url.Action("Products", "ListaVentas")',
+            categoryFilters: '@Url.Action("CategoryFilters", "ListaVentas")',
+            brandFilters: '@Url.Action("BrandFilters", "ListaVentas")',
+            initData: '@Url.Action("InitData", "ListaVentas")',
+            checkout: '@Url.Action("Checkout", "ListaVentas")'
+        };
+        window.lvntConfig = {
+            productImageBase: '@Url.Content("~/Public/Images/Products/")',
+            defaultProductImage: '@Url.Content("~/Public/Images/Logo - KMLLogistics.png")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/ListaVentas/lista-ventas.js")" asp-append-version="true"></script>
 }

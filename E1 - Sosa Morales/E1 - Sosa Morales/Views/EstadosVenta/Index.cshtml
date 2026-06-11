@@ -6,16 +6,128 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/EstadosVenta/estados-venta.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/EstadosVenta/estados-venta.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="evnt" id="evntRoot">
+    <div class="evnt__panel">
+        <div class="evnt__toolbar">
+            <div class="evnt__search-group">
+                <div class="evnt__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="evntSearchInput" placeholder="Buscar estados..." autocomplete="off" />
+                </div>
+                <button type="button" class="evnt__btn evnt__btn--ghost" id="evntClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="evnt__actions">
+                <button type="button" class="evnt__btn evnt__btn--outline" id="evntInactiveBtn">Ver inactivos</button>
+                <button type="button" class="evnt__btn evnt__btn--primary" id="evntCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="evntToast" class="evnt__toast" role="status" aria-live="polite"></div>
+        <div class="evnt__table-scroll" id="evntTableScroll">
+            <table class="evnt__table">
+                <thead><tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th class="evnt__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="evntActiveBody"><tr class="evnt__loading-row"><td colspan="4">Cargando registros...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="evnt__footer">
+            <div class="evnt__page-size">
+                <span>Mostrar</span>
+                <select id="evntPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="evnt__pagination">
+                <span id="evntPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="evnt__btn evnt__btn--ghost" id="evntPrevBtn" disabled>Anterior</button>
+                <button type="button" class="evnt__btn evnt__btn--ghost" id="evntNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="evnt-modal" id="evntFormModal" aria-hidden="true">
+    <div class="evnt-modal__backdrop"></div>
+    <div class="evnt-modal__dialog" role="dialog" aria-modal="true">
+        <div class="evnt-modal__header">
+            <h3 id="evntFormModalTitle">Crear</h3>
+            <button type="button" class="evnt-modal__close" data-dismiss="modal">&times;</button>
+        </div>
+        <form id="evntForm" class="evnt-modal__body" novalidate>
+            <input type="hidden" id="evntFormId" value="" />
+            <div class="evnt-field"><label for="evntName">Nombre *</label><input type="text" id="evntName" required maxlength="50" /></div>
+            <div class="evnt-field"><label for="evntDescription">Descripción</label><textarea id="evntDescription" rows="2" maxlength="255"></textarea></div>
+        </form>
+        <div class="evnt-modal__footer">
+            <button type="button" class="evnt__btn evnt__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="evnt__btn evnt__btn--primary" id="evntFormSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="evnt-modal" id="evntDetailModal" aria-hidden="true">
+    <div class="evnt-modal__backdrop"></div>
+    <div class="evnt-modal__dialog evnt-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="evnt-modal__header"><h3>Detalle</h3><button type="button" class="evnt-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="evnt-modal__body" id="evntDetailBody"></div>
+        <div class="evnt-modal__footer"><button type="button" class="evnt__btn evnt__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="evnt-modal" id="evntInactiveModal" aria-hidden="true">
+    <div class="evnt-modal__backdrop"></div>
+    <div class="evnt-modal__dialog evnt-modal__dialog--lg" role="dialog" aria-modal="true">
+        <div class="evnt-modal__header"><h3>Registros inactivos</h3><button type="button" class="evnt-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="evnt-modal__body">
+            <div class="evnt__search-group evnt__search-group--modal">
+                <div class="evnt__search"><i class="bi bi-search"></i><input type="text" id="evntInactiveSearchInput" placeholder="Buscar inactivos..." autocomplete="off" /></div>
+                <button type="button" class="evnt__btn evnt__btn--ghost" id="evntInactiveClearBtn">Limpiar</button>
+            </div>
+            <div class="evnt__table-scroll evnt__table-scroll--modal" id="evntInactiveTableScroll">
+                <table class="evnt__table">
+                    <thead><tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th class="evnt__th-actions">ACCIONES</th></tr></thead>
+                    <tbody id="evntInactiveBody"></tbody>
+                </table>
+            </div>
+            <div class="evnt__footer evnt__footer--modal">
+                <div class="evnt__page-size"><span>Mostrar</span><select id="evntInactivePageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+                <div class="evnt__pagination">
+                    <span id="evntInactivePageInfo">Pagina 1 de 1</span>
+                    <button type="button" class="evnt__btn evnt__btn--ghost" id="evntInactivePrevBtn" disabled>Anterior</button>
+                    <button type="button" class="evnt__btn evnt__btn--ghost" id="evntInactiveNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="evnt-modal" id="evntConfirmModal" aria-hidden="true">
+    <div class="evnt-modal__backdrop"></div>
+    <div class="evnt-modal__dialog evnt-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="evnt-modal__header"><h3 id="evntConfirmTitle">Confirmar</h3><button type="button" class="evnt-modal__close" data-dismiss="modal">&times;</button></div>
+        <div class="evnt-modal__body"><p id="evntConfirmMessage"></p></div>
+        <div class="evnt-modal__footer">
+            <button type="button" class="evnt__btn evnt__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="evnt__btn evnt__btn--danger" id="evntConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/EstadosVenta/estados-venta.js" asp-append-version="true"></script>
+    <script>
+        window.evntUrls = {
+            list: '@Url.Action("List", "EstadosVenta")',
+            listInactive: '@Url.Action("ListInactive", "EstadosVenta")',
+            get: '@Url.Action("Get", "EstadosVenta")',
+            create: '@Url.Action("Create", "EstadosVenta")',
+            update: '@Url.Action("Update", "EstadosVenta")',
+            deleteLogic: '@Url.Action("DeleteLogic", "EstadosVenta")',
+            restore: '@Url.Action("Restore", "EstadosVenta")',
+            deletePhysical: '@Url.Action("DeletePhysical", "EstadosVenta")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/EstadosVenta/estados-venta.js")" asp-append-version="true"></script>
 }

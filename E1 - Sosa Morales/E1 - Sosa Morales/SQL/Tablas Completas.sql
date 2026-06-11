@@ -410,6 +410,19 @@ CREATE TABLE TransferDetails (
     );
 
 -- ==========================================
+-- Payment Methods
+-- ==========================================
+CREATE TABLE PaymentMethods (
+    id_payment_method INT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    status TINYINT NOT NULL DEFAULT (1)
+);
+
+-- ==========================================
 -- SaleStatuses
 -- ==========================================
 CREATE TABLE SaleStatuses (
@@ -430,9 +443,17 @@ CREATE TABLE Sales (
     id_client INT NOT NULL,
     id_employee INT NOT NULL,
     id_sale_status INT NOT NULL,
+    id_payment_method INT NOT NULL,
+    sale_number VARCHAR(20) NOT NULL,
+    receipt_type VARCHAR(20) NOT NULL,
+    document_type_name VARCHAR(50) NOT NULL,
+    document_number VARCHAR(20) NOT NULL,
     subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,
+    discount DECIMAL(10,2) NOT NULL DEFAULT 0,
     tax DECIMAL(10,2) NOT NULL DEFAULT 0,
     total DECIMAL(10,2) NOT NULL DEFAULT 0,
+    amount_paid DECIMAL(10,2) NULL,
+    change_amount DECIMAL(10,2) NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
@@ -447,7 +468,16 @@ CREATE TABLE Sales (
 
     CONSTRAINT fk_sale_status
         FOREIGN KEY (id_sale_status)
-        REFERENCES SaleStatuses(id_sale_status)
+        REFERENCES SaleStatuses(id_sale_status),
+
+    CONSTRAINT fk_sale_payment_method
+        FOREIGN KEY (id_payment_method)
+        REFERENCES PaymentMethods(id_payment_method),
+
+    CONSTRAINT uq_sale_number UNIQUE (sale_number),
+
+    CONSTRAINT chk_sale_receipt_type
+        CHECK (receipt_type IN ('BOLETA', 'FACTURA'))
 );
 
 -- ==========================================

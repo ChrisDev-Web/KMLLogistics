@@ -6,16 +6,60 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleVenta/detalle-venta.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleVenta/detalle-venta.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dvnt" id="dvntRoot">
+    <div class="dvnt__panel">
+        <div class="dvnt__metrics" id="dvntMetrics">
+            <div class="dvnt-metric"><span class="dvnt-metric__label">Ventas</span><strong class="dvnt-metric__value" id="dvntMetricSales">—</strong></div>
+            <div class="dvnt-metric dvnt-metric--profit"><span class="dvnt-metric__label">Ganancia neta</span><strong class="dvnt-metric__value" id="dvntMetricProfit">—</strong></div>
+            <div class="dvnt-metric dvnt-metric--sub"><span class="dvnt-metric__label">Subtotal</span><strong class="dvnt-metric__value" id="dvntMetricSubtotal">—</strong></div>
+            <div class="dvnt-metric dvnt-metric--tax"><span class="dvnt-metric__label">IGV 18%</span><strong class="dvnt-metric__value" id="dvntMetricTax">—</strong></div>
+            <div class="dvnt-metric dvnt-metric--total"><span class="dvnt-metric__label">Total</span><strong class="dvnt-metric__value" id="dvntMetricTotal">—</strong></div>
+        </div>
+        <div class="dvnt__toolbar">
+            <div class="dvnt__search-group">
+                <div class="dvnt__search"><i class="bi bi-search"></i><input type="text" id="dvntSearchInput" placeholder="Buscar detalle..." autocomplete="off" /></div>
+                <button type="button" class="dvnt__btn dvnt__btn--ghost" id="dvntClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dvnt__filters">
+                <div class="dvnt__filter"><label for="dvntFilterSale">N° venta</label><input type="number" id="dvntFilterSale" min="1" placeholder="Todos" /></div>
+                <div class="dvnt__filter"><label for="dvntFilterProduct">Producto</label><select id="dvntFilterProduct"><option value="">Todos</option></select></div>
+                <div class="dvnt__filter"><label for="dvntFilterClient">Cliente</label><select id="dvntFilterClient"><option value="">Todos</option></select></div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dvntToast" class="dvnt__toast" role="status" aria-live="polite"></div>
+        <div class="dvnt__table-scroll" id="dvntTableScroll">
+            <table class="dvnt__table">
+                <thead><tr>
+                    <th>ID</th><th>N° VENTA</th><th>PRODUCTO</th><th>CLIENTE</th><th>ALMACÉN</th>
+                    <th>CANT.</th><th class="dvnt__col-money">P. UNIT.</th><th class="dvnt__col-money">SUBTOTAL</th><th>FECHA</th>
+                </tr></thead>
+                <tbody id="dvntBody"><tr class="dvnt__loading-row"><td colspan="9">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="dvnt__footer">
+            <div class="dvnt__page-size"><span>Mostrar</span><select id="dvntPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
+            <div class="dvnt__pagination">
+                <span id="dvntPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dvnt__btn dvnt__btn--ghost" id="dvntPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dvnt__btn dvnt__btn--ghost" id="dvntNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleVenta/detalle-venta.js" asp-append-version="true"></script>
+    <script>
+        window.dvntUrls = {
+            list: '@Url.Action("List", "DetalleVenta")',
+            metrics: '@Url.Action("Metrics", "DetalleVenta")',
+            filterOptions: '@Url.Action("FilterOptions", "DetalleVenta")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleVenta/detalle-venta.js")" asp-append-version="true"></script>
 }

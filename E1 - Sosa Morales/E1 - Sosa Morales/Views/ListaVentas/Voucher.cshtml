@@ -1,0 +1,197 @@
+@model E1___Sosa_Morales.Models.ListaVentas.SaleVoucherViewModel
+@{
+    Layout = null;
+    var h = Model.Header;
+    var title = h.ReceiptType == "FACTURA" ? "FACTURA ELECTRONICA" : "BOLETA DE VENTA ELECTRONICA";
+    var culture = new System.Globalization.CultureInfo("es-PE");
+    var voucherUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={Uri.EscapeDataString(voucherUrl)}";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@h.SaleNumber</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #111;
+            background: #fff;
+            width: 72mm;
+            max-width: 72mm;
+            margin: 0 auto;
+            padding: 10px 8px 16px;
+        }
+        .center { text-align: center; }
+        .bold { font-weight: 700; }
+        .company-name {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+        .company-line {
+            font-size: 10px;
+            line-height: 1.45;
+            color: #222;
+        }
+        .dash {
+            border-top: 1px dashed #111;
+            margin: 10px 0;
+        }
+        .title {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 4px 0 2px;
+        }
+        .doc-number {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 3px 0;
+            line-height: 1.35;
+        }
+        .row span:first-child { flex-shrink: 0; }
+        .row span:last-child {
+            text-align: right;
+            word-break: break-word;
+        }
+        .items-title {
+            font-weight: 700;
+            margin: 2px 0 6px;
+        }
+        .item-row {
+            display: grid;
+            grid-template-columns: 16px 1fr auto;
+            gap: 6px;
+            align-items: start;
+            margin-bottom: 6px;
+            line-height: 1.35;
+        }
+        .item-name { word-break: break-word; }
+        .item-price { white-space: nowrap; text-align: right; }
+        .dot {
+            border-top: 1px dotted #666;
+            margin: 8px 0;
+        }
+        .total-bar {
+            border-top: 2px solid #111;
+            margin: 10px 0 6px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .qr-wrap {
+            margin: 14px auto 8px;
+            width: 140px;
+            height: 140px;
+        }
+        .qr-wrap img {
+            width: 140px;
+            height: 140px;
+            display: block;
+        }
+        .hint {
+            font-size: 9px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .thanks {
+            font-size: 10px;
+            line-height: 1.4;
+        }
+        .no-print {
+            margin-top: 12px;
+            text-align: center;
+        }
+        .no-print button {
+            padding: 8px 16px;
+            border: 1px solid #111;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        @@media print {
+            body { width: 72mm; max-width: 72mm; }
+            .no-print { display: none !important; }
+            @@page { size: 80mm auto; margin: 4mm; }
+        }
+    </style>
+</head>
+<body onload="setTimeout(function(){ window.focus(); window.print(); }, 400);">
+    <div class="center company-name">KML LOGISTICS</div>
+    <div class="center company-line bold">KML Logistic S.A.C.</div>
+    <div class="center company-line">RUC: 20601234567</div>
+    <div class="center company-line">Av. Principal 123, Los Olivos, Lima, Lima</div>
+    <div class="center company-line">Tel: (01) 000-0000</div>
+    <div class="center company-line">contacto@kmllogistics.com</div>
+
+    <div class="dash"></div>
+
+    <div class="center title">@title</div>
+    <div class="center doc-number">@h.SaleNumber</div>
+
+    <div class="dash"></div>
+
+    <div class="row"><span>Fecha:</span><span>@h.CreatedAt.ToString("dd MMM yyyy, h:mm tt", culture)</span></div>
+    <div class="row"><span>Empleado:</span><span>@h.EmployeeName</span></div>
+    <div class="row"><span>Metodo de pago:</span><span>@h.PaymentMethodName</span></div>
+    <div class="row"><span>Cliente:</span><span>@h.ClientName</span></div>
+    <div class="row"><span>@h.DocumentTypeName:</span><span>@h.DocumentNumber</span></div>
+
+    <div class="dash"></div>
+
+    <div class="items-title">DESCRIPCION</div>
+    @foreach (var line in Model.Lines)
+    {
+        <div class="item-row">
+            <span>@line.Quantity</span>
+            <span class="item-name">@line.ProductName</span>
+            <span class="item-price">S/ @line.Subtotal.ToString("F2")</span>
+        </div>
+    }
+
+    <div class="dot"></div>
+
+    <div class="row"><span>Productos</span><span>S/ @h.Subtotal.ToString("F2")</span></div>
+    <div class="row"><span>Descuento</span><span>-S/ @h.Discount.ToString("F2")</span></div>
+    <div class="row"><span>IGV 18%</span><span>S/ @h.Tax.ToString("F2")</span></div>
+    @if (h.AmountPaid.HasValue)
+    {
+        <div class="row"><span>Pago con</span><span>S/ @h.AmountPaid.Value.ToString("F2")</span></div>
+    }
+    @if (h.ChangeAmount.HasValue && h.ChangeAmount.Value > 0)
+    {
+        <div class="row"><span>Vuelto</span><span>S/ @h.ChangeAmount.Value.ToString("F2")</span></div>
+    }
+
+    <div class="total-bar"></div>
+    <div class="total-row"><span>Total</span><span>S/ @h.Total.ToString("F2")</span></div>
+
+    <div class="dash"></div>
+
+    <div class="center qr-wrap">
+        <img src="@qrUrl" alt="QR comprobante" />
+    </div>
+    <div class="center hint">Escanea el QR para revisar tu comprobante digital.</div>
+    <div class="center thanks">Gracias por confiar en KML Logistics.</div>
+
+    <div class="no-print">
+        <button type="button" onclick="window.print()">Imprimir voucher</button>
+    </div>
+</body>
+</html>

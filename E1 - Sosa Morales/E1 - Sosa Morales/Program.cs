@@ -8,6 +8,9 @@ using E1___Sosa_Morales.Services.Countries;
 using E1___Sosa_Morales.Services.DetalleAlmacen;
 using E1___Sosa_Morales.Services.DetalleAlmacenCompra;
 using E1___Sosa_Morales.Services.DetalleCompra;
+using E1___Sosa_Morales.Services.DetalleVenta;
+using E1___Sosa_Morales.Services.EstadosVenta;
+using E1___Sosa_Morales.Services.ListaVentas;
 using E1___Sosa_Morales.Services.DetalleTransferencia;
 using E1___Sosa_Morales.Services.Distritos;
 using E1___Sosa_Morales.Services.Empleados;
@@ -68,7 +71,7 @@ builder.Services.AddScoped<E1___Sosa_Morales.Services.MarcasProveedor.ISbrServic
 builder.Services.AddScoped<IJobPositionService, JobPositionService>();
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-// AÒade esto junto a tus otros servicios
+// Aùade esto junto a tus otros servicios
 builder.Services.AddScoped<E1___Sosa_Morales.Services.Productos.IProductoService, E1___Sosa_Morales.Services.Productos.ProductoService>();
 
 builder.Services.AddScoped<IStatusTransferService, StatusTransferService>();
@@ -108,6 +111,10 @@ builder.Services.AddScoped<IMarcaService, MarcaService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 builder.Services.AddScoped<IPerfilService, PerfilService>();
+
+builder.Services.AddScoped<ISaleStatusService, SaleStatusService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<ISaleDetailService, SaleDetailService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 
