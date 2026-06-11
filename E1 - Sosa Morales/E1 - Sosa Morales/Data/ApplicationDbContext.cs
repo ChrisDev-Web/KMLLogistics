@@ -174,5 +174,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<StatisticsTrendRow>().HasNoKey();
         modelBuilder.Entity<StatisticsPaymentRow>().HasNoKey();
         modelBuilder.Entity<StatisticsTopProductRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsCategoryRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsHourlyRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsRecentSaleRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsStockAlertRow>().HasNoKey();
     }
 }

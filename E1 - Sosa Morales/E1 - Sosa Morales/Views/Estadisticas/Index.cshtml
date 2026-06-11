@@ -2,14 +2,16 @@
 @using System.Text.Json
 @{
     Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.PageTitle = "Estadísticas";
     ViewBag.SidebarActive = Model.Module.SidebarActive;
     var dash = Model.Dashboard;
-    var summary = dash?.Summary;
-    var periodLabel = dash?.Period?.Label ?? "Hoy";
+    var s = dash?.Summary;
+    var c = dash?.Comparison;
+    var periodLabel = dash?.Period?.Label ?? "Últimos 30 días";
+    var activePreset = dash?.Period?.Preset ?? "last30";
     var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     string Fmt(decimal v) => v.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("es-PE"));
-    var netBalance = (summary?.TotalSales ?? 0) - (summary?.TotalPurchases ?? 0);
+    var netFlow = (s?.TotalSales ?? 0) - (s?.TotalPurchases ?? 0);
 }
 
 @section Styles {
@@ -18,145 +20,187 @@
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="stats" id="statsRoot">
-    <div class="stats__hero">
-        <div class="stats__hero-text">
-            <h1 class="stats__title">Panel de estadísticas</h1>
-            <p class="stats__subtitle">Métricas de ventas, compras y rendimiento en tiempo real</p>
-            <span class="stats__period-badge" id="statsPeriodBadge">@periodLabel</span>
+<div class="dash" id="statsRoot">
+    <header class="dash__head">
+        <div>
+            <h1 class="dash__title">Dashboard</h1>
+            <p class="dash__subtitle">Resumen general de la gestión del negocio</p>
         </div>
-        <div class="stats__hero-icon" aria-hidden="true">
-            <i class="bi bi-graph-up-arrow"></i>
-        </div>
-    </div>
-
-    <div class="stats__filters">
-        <div class="stats__presets" id="statsPresets">
-            <button type="button" class="stats-preset active" data-preset="today">Hoy</button>
-            <button type="button" class="stats-preset" data-preset="yesterday">Ayer</button>
-            <button type="button" class="stats-preset" data-preset="last7">7 días</button>
-            <button type="button" class="stats-preset" data-preset="last30">30 días</button>
-            <button type="button" class="stats-preset" data-preset="month">Este mes</button>
-            <button type="button" class="stats-preset" data-preset="custom">Rango</button>
-        </div>
-        <div class="stats__custom-range" id="statsCustomRange" hidden>
-            <label>
-                <span>Desde</span>
+        <div class="dash__filters">
+            <div class="dash__presets" id="statsPresets">
+                <button type="button" class="dash-pill @(activePreset == "today" ? "active" : "")" data-preset="today">Hoy</button>
+                <button type="button" class="dash-pill @(activePreset == "last30" ? "active" : "")" data-preset="last30">30 días</button>
+                <button type="button" class="dash-pill @(activePreset == "month" ? "active" : "")" data-preset="month">Mes actual</button>
+                <button type="button" class="dash-pill @(activePreset == "custom" ? "active" : "")" data-preset="custom">Rango</button>
+            </div>
+            <div class="dash__range" id="statsCustomRange" hidden>
                 <input type="date" id="statsDateFrom" />
-            </label>
-            <label>
-                <span>Hasta</span>
+                <span>—</span>
                 <input type="date" id="statsDateTo" />
-            </label>
-            <button type="button" class="stats-btn stats-btn--primary" id="statsApplyRange">
-                <i class="bi bi-funnel"></i> Aplicar
-            </button>
+                <button type="button" class="dash-btn" id="statsApplyRange">Aplicar</button>
+            </div>
+            <span class="dash__period" id="statsPeriodBadge">@periodLabel</span>
         </div>
+    </header>
+
+    <div class="dash__kpis" id="statsKpis">
+        <article class="dash-kpi dash-kpi--green">
+            <div class="dash-kpi__top">
+                <div class="dash-kpi__icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <span class="dash-kpi__badge" id="kpiBadgeSales">—</span>
+            </div>
+            <span class="dash-kpi__label">Ingresos por ventas</span>
+            <span class="dash-kpi__hint">Facturación del período</span>
+            <strong class="dash-kpi__value" id="kpiTotalSales">S/ @Fmt(s?.TotalSales ?? 0)</strong>
+            <canvas class="dash-kpi__spark" id="sparkSales" height="40"></canvas>
+        </article>
+        <article class="dash-kpi dash-kpi--orange">
+            <div class="dash-kpi__top">
+                <div class="dash-kpi__icon"><i class="bi bi-bag-check"></i></div>
+                <span class="dash-kpi__badge" id="kpiBadgePurchases">—</span>
+            </div>
+            <span class="dash-kpi__label">Egresos por compras</span>
+            <span class="dash-kpi__hint">Compras completadas en el rango</span>
+            <strong class="dash-kpi__value" id="kpiTotalPurchases">S/ @Fmt(s?.TotalPurchases ?? 0)</strong>
+            <canvas class="dash-kpi__spark" id="sparkPurchases" height="40"></canvas>
+        </article>
+        <article class="dash-kpi dash-kpi--blue">
+            <div class="dash-kpi__top">
+                <div class="dash-kpi__icon"><i class="bi bi-cash-stack"></i></div>
+                <span class="dash-kpi__badge" id="kpiBadgeFlow">—</span>
+            </div>
+            <span class="dash-kpi__label">Flujo neto</span>
+            <span class="dash-kpi__hint">Ingresos − egresos</span>
+            <strong class="dash-kpi__value" id="kpiNetBalance">S/ @Fmt(netFlow)</strong>
+            <canvas class="dash-kpi__spark" id="sparkFlow" height="40"></canvas>
+        </article>
+        <article class="dash-kpi dash-kpi--purple">
+            <div class="dash-kpi__top">
+                <div class="dash-kpi__icon"><i class="bi bi-piggy-bank"></i></div>
+                <span class="dash-kpi__badge" id="kpiBadgeProfit">—</span>
+            </div>
+            <span class="dash-kpi__label">Ganancia neta</span>
+            <span class="dash-kpi__hint">Margen sobre costo de producto</span>
+            <strong class="dash-kpi__value" id="kpiNetProfit">S/ @Fmt(s?.NetProfit ?? 0)</strong>
+            <canvas class="dash-kpi__spark" id="sparkProfit" height="40"></canvas>
+        </article>
     </div>
 
-    <div class="stats__kpis" id="statsKpis">
-        <article class="stats-kpi stats-kpi--sales">
-            <div class="stats-kpi__icon"><i class="bi bi-cart-check"></i></div>
-            <div class="stats-kpi__body">
-                <span class="stats-kpi__label">Total ventas</span>
-                <strong class="stats-kpi__value" id="kpiTotalSales">S/ @Fmt(summary?.TotalSales ?? 0)</strong>
-                <span class="stats-kpi__meta" id="kpiSalesCount">@(summary?.SalesCount ?? 0) venta@((summary?.SalesCount ?? 0) == 1 ? "" : "s")</span>
-            </div>
-        </article>
-        <article class="stats-kpi stats-kpi--purchases">
-            <div class="stats-kpi__icon"><i class="bi bi-bag-check"></i></div>
-            <div class="stats-kpi__body">
-                <span class="stats-kpi__label">Total compras</span>
-                <strong class="stats-kpi__value" id="kpiTotalPurchases">S/ @Fmt(summary?.TotalPurchases ?? 0)</strong>
-                <span class="stats-kpi__meta" id="kpiPurchasesCount">@(summary?.PurchasesCount ?? 0) compra@((summary?.PurchasesCount ?? 0) == 1 ? "" : "s")</span>
-            </div>
-        </article>
-        <article class="stats-kpi stats-kpi--profit">
-            <div class="stats-kpi__icon"><i class="bi bi-currency-dollar"></i></div>
-            <div class="stats-kpi__body">
-                <span class="stats-kpi__label">Ganancia neta</span>
-                <strong class="stats-kpi__value" id="kpiNetProfit">S/ @Fmt(summary?.NetProfit ?? 0)</strong>
-                <span class="stats-kpi__meta">Margen sobre costo</span>
-            </div>
-        </article>
-        <article class="stats-kpi stats-kpi--balance">
-            <div class="stats-kpi__icon"><i class="bi bi-piggy-bank"></i></div>
-            <div class="stats-kpi__body">
-                <span class="stats-kpi__label">Balance neto</span>
-                <strong class="stats-kpi__value" id="kpiNetBalance">S/ @Fmt(netBalance)</strong>
-                <span class="stats-kpi__meta">Ventas − compras</span>
-            </div>
-        </article>
-    </div>
-
-    <div class="stats__charts" id="statsCharts">
-        <section class="stats-card stats-card--wide">
-            <header class="stats-card__header">
+    <div class="dash__grid" id="statsCharts">
+        <section class="dash-card dash-card--8">
+            <header class="dash-card__head">
                 <div>
-                    <h2>Tendencia ventas vs compras</h2>
-                    <p>Evolución diaria del período seleccionado</p>
+                    <h2>Evolución de ventas, compras y ganancia</h2>
+                    <p id="trendChartSubtitle">Historial operativo del período</p>
                 </div>
-                <span class="stats-card__tag stats-card__tag--line">Líneas</span>
+                <div class="dash-series" id="seriesToggles">
+                    <button type="button" class="dash-series__btn active" data-series="all">Todo</button>
+                    <button type="button" class="dash-series__btn" data-series="sales">Ventas</button>
+                    <button type="button" class="dash-series__btn" data-series="purchases">Compras</button>
+                    <button type="button" class="dash-series__btn" data-series="profit">Ganancia</button>
+                </div>
             </header>
-            <div class="stats-card__canvas">
-                <canvas id="chartTrendLine" aria-label="Gráfico de líneas ventas y compras"></canvas>
-            </div>
+            <div class="dash-card__canvas dash-card__canvas--lg"><canvas id="chartTrend"></canvas></div>
         </section>
 
-        <section class="stats-card">
-            <header class="stats-card__header">
+        <section class="dash-card dash-card--4">
+            <header class="dash-card__head">
                 <div>
-                    <h2>Ingresos diarios</h2>
-                    <p>Total vendido por día</p>
+                    <h2>Composición del flujo</h2>
+                    <p>Ingresos vs egresos del período</p>
                 </div>
-                <span class="stats-card__tag stats-card__tag--bar">Barras</span>
             </header>
-            <div class="stats-card__canvas">
-                <canvas id="chartSalesBar" aria-label="Gráfico de barras de ventas"></canvas>
+            <div class="dash-donut-wrap">
+                <div class="dash-card__canvas dash-card__canvas--donut"><canvas id="chartFlow"></canvas></div>
+                <div class="dash-donut-center" id="flowCenter">S/ 0.00</div>
             </div>
+            <ul class="dash-legend" id="flowLegend"></ul>
         </section>
 
-        <section class="stats-card">
-            <header class="stats-card__header">
+        <section class="dash-card dash-card--4">
+            <header class="dash-card__head">
                 <div>
-                    <h2>Métodos de pago</h2>
-                    <p>Distribución por forma de cobro</p>
+                    <h2>Ventas por método de pago</h2>
+                    <p>Distribución de cobros</p>
                 </div>
-                <span class="stats-card__tag stats-card__tag--donut">Circular</span>
             </header>
-            <div class="stats-card__canvas stats-card__canvas--donut">
-                <canvas id="chartPayments" aria-label="Gráfico circular métodos de pago"></canvas>
+            <div class="dash-donut-wrap">
+                <div class="dash-card__canvas dash-card__canvas--donut"><canvas id="chartPayments"></canvas></div>
+                <div class="dash-donut-center dash-donut-center--sm" id="paymentCenter">S/ 0.00</div>
             </div>
-            <ul class="stats-legend" id="paymentLegend"></ul>
+            <ul class="dash-legend" id="paymentLegend"></ul>
         </section>
 
-        <section class="stats-card stats-card--wide">
-            <header class="stats-card__header">
+        <section class="dash-card dash-card--4">
+            <header class="dash-card__head">
+                <div>
+                    <h2>Ingresos y egresos por hora</h2>
+                    <p>Actividad del período</p>
+                </div>
+            </header>
+            <div class="dash-card__canvas"><canvas id="chartHourly"></canvas></div>
+        </section>
+
+        <section class="dash-card dash-card--4">
+            <header class="dash-card__head">
+                <div>
+                    <h2>Resultado operativo</h2>
+                    <p>Ventas, compras y balance</p>
+                </div>
+            </header>
+            <div class="dash-card__canvas"><canvas id="chartResult"></canvas></div>
+        </section>
+
+        <section class="dash-card dash-card--4">
+            <header class="dash-card__head">
+                <div>
+                    <h2>Top categorías por ventas</h2>
+                    <p>Participación por categoría</p>
+                </div>
+            </header>
+            <div class="dash-bars" id="categoryBars"></div>
+        </section>
+
+        <section class="dash-card dash-card--8">
+            <header class="dash-card__head">
                 <div>
                     <h2>Top productos vendidos</h2>
-                    <p>Ranking por ingresos generados</p>
+                    <p>Ranking por ingresos</p>
                 </div>
-                <span class="stats-card__tag stats-card__tag--bar">Barras</span>
             </header>
-            <div class="stats-card__canvas stats-card__canvas--tall">
-                <canvas id="chartTopProducts" aria-label="Gráfico de barras top productos"></canvas>
+            <div class="dash-card__canvas dash-card__canvas--md"><canvas id="chartProducts"></canvas></div>
+        </section>
+
+        <section class="dash-card dash-card--6">
+            <header class="dash-card__head">
+                <div>
+                    <h2>Alertas de stock</h2>
+                    <p>Productos con stock bajo (≤ 10 u.)</p>
+                </div>
+            </header>
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead><tr><th>Producto</th><th>Almacén</th><th>Stock</th><th>Estado</th></tr></thead>
+                    <tbody id="stockAlertsBody"></tbody>
+                </table>
             </div>
         </section>
 
-        <section class="stats-card stats-card--wide">
-            <header class="stats-card__header">
+        <section class="dash-card dash-card--6">
+            <header class="dash-card__head">
                 <div>
-                    <h2>Ganancia neta diaria</h2>
-                    <p>Margen después de costos de producto</p>
+                    <h2>Últimas ventas</h2>
+                    <p>Transacciones del período</p>
                 </div>
-                <span class="stats-card__tag stats-card__tag--area">Área</span>
             </header>
-            <div class="stats-card__canvas">
-                <canvas id="chartProfitArea" aria-label="Gráfico de área ganancia neta"></canvas>
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead><tr><th>Fecha</th><th>Cliente</th><th>Pago</th><th>Total</th></tr></thead>
+                    <tbody id="recentSalesBody"></tbody>
+                </table>
             </div>
         </section>
     </div>
-
 </div>
 
 @section Scripts {

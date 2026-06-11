@@ -22,7 +22,7 @@ public class EstadisticasController : Controller
         var model = new EstadisticasViewModel
         {
             Module = ModuleRegistry.BuildModuleView("Estadisticas", "Estadisticas", "dashboard"),
-            Dashboard = await _estadisticasService.GetDashboardAsync("today", null, null)
+            Dashboard = await _estadisticasService.GetDashboardAsync("last30", null, null)
         };
 
         return View(model);
