@@ -13,6 +13,7 @@ using E1___Sosa_Morales.Models.EstadosVenta;
 using E1___Sosa_Morales.Models.ListaVentas;
 using E1___Sosa_Morales.Models.Distritos;
 using E1___Sosa_Morales.Models.Empleados;
+using E1___Sosa_Morales.Models.Estadisticas;
 using E1___Sosa_Morales.Models.EstadosCompra;
 using E1___Sosa_Morales.Models.EstadosTransferencia;
 using E1___Sosa_Morales.Models.ListaTransferencias;
@@ -169,5 +170,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ShipmentTrackingItem>().HasNoKey();
         modelBuilder.Entity<LogisticsAlertItem>().HasNoKey();
         modelBuilder.Entity<Models.AlertasStock.LogisticsAlertCountResult>().HasNoKey();
+        modelBuilder.Entity<StatisticsSummaryRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsTrendRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsPaymentRow>().HasNoKey();
+        modelBuilder.Entity<StatisticsTopProductRow>().HasNoKey();
     }
 }

@@ -1,21 +1,171 @@
 ﻿@model E1___Sosa_Morales.Models.Estadisticas.EstadisticasViewModel
+@using System.Text.Json
 @{
     Layout = "_DashboardLayout";
     ViewBag.PageTitle = Model.Module.Title;
     ViewBag.SidebarActive = Model.Module.SidebarActive;
+    var dash = Model.Dashboard;
+    var summary = dash?.Summary;
+    var periodLabel = dash?.Period?.Label ?? "Hoy";
+    var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    string Fmt(decimal v) => v.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("es-PE"));
+    var netBalance = (summary?.TotalSales ?? 0) - (summary?.TotalPurchases ?? 0);
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/Estadisticas/estadisticas.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/Estadisticas/estadisticas.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="stats" id="statsRoot">
+    <div class="stats__hero">
+        <div class="stats__hero-text">
+            <h1 class="stats__title">Panel de estadísticas</h1>
+            <p class="stats__subtitle">Métricas de ventas, compras y rendimiento en tiempo real</p>
+            <span class="stats__period-badge" id="statsPeriodBadge">@periodLabel</span>
+        </div>
+        <div class="stats__hero-icon" aria-hidden="true">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+    </div>
+
+    <div class="stats__filters">
+        <div class="stats__presets" id="statsPresets">
+            <button type="button" class="stats-preset active" data-preset="today">Hoy</button>
+            <button type="button" class="stats-preset" data-preset="yesterday">Ayer</button>
+            <button type="button" class="stats-preset" data-preset="last7">7 días</button>
+            <button type="button" class="stats-preset" data-preset="last30">30 días</button>
+            <button type="button" class="stats-preset" data-preset="month">Este mes</button>
+            <button type="button" class="stats-preset" data-preset="custom">Rango</button>
+        </div>
+        <div class="stats__custom-range" id="statsCustomRange" hidden>
+            <label>
+                <span>Desde</span>
+                <input type="date" id="statsDateFrom" />
+            </label>
+            <label>
+                <span>Hasta</span>
+                <input type="date" id="statsDateTo" />
+            </label>
+            <button type="button" class="stats-btn stats-btn--primary" id="statsApplyRange">
+                <i class="bi bi-funnel"></i> Aplicar
+            </button>
+        </div>
+    </div>
+
+    <div class="stats__kpis" id="statsKpis">
+        <article class="stats-kpi stats-kpi--sales">
+            <div class="stats-kpi__icon"><i class="bi bi-cart-check"></i></div>
+            <div class="stats-kpi__body">
+                <span class="stats-kpi__label">Total ventas</span>
+                <strong class="stats-kpi__value" id="kpiTotalSales">S/ @Fmt(summary?.TotalSales ?? 0)</strong>
+                <span class="stats-kpi__meta" id="kpiSalesCount">@(summary?.SalesCount ?? 0) venta@((summary?.SalesCount ?? 0) == 1 ? "" : "s")</span>
+            </div>
+        </article>
+        <article class="stats-kpi stats-kpi--purchases">
+            <div class="stats-kpi__icon"><i class="bi bi-bag-check"></i></div>
+            <div class="stats-kpi__body">
+                <span class="stats-kpi__label">Total compras</span>
+                <strong class="stats-kpi__value" id="kpiTotalPurchases">S/ @Fmt(summary?.TotalPurchases ?? 0)</strong>
+                <span class="stats-kpi__meta" id="kpiPurchasesCount">@(summary?.PurchasesCount ?? 0) compra@((summary?.PurchasesCount ?? 0) == 1 ? "" : "s")</span>
+            </div>
+        </article>
+        <article class="stats-kpi stats-kpi--profit">
+            <div class="stats-kpi__icon"><i class="bi bi-currency-dollar"></i></div>
+            <div class="stats-kpi__body">
+                <span class="stats-kpi__label">Ganancia neta</span>
+                <strong class="stats-kpi__value" id="kpiNetProfit">S/ @Fmt(summary?.NetProfit ?? 0)</strong>
+                <span class="stats-kpi__meta">Margen sobre costo</span>
+            </div>
+        </article>
+        <article class="stats-kpi stats-kpi--balance">
+            <div class="stats-kpi__icon"><i class="bi bi-piggy-bank"></i></div>
+            <div class="stats-kpi__body">
+                <span class="stats-kpi__label">Balance neto</span>
+                <strong class="stats-kpi__value" id="kpiNetBalance">S/ @Fmt(netBalance)</strong>
+                <span class="stats-kpi__meta">Ventas − compras</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="stats__charts" id="statsCharts">
+        <section class="stats-card stats-card--wide">
+            <header class="stats-card__header">
+                <div>
+                    <h2>Tendencia ventas vs compras</h2>
+                    <p>Evolución diaria del período seleccionado</p>
+                </div>
+                <span class="stats-card__tag stats-card__tag--line">Líneas</span>
+            </header>
+            <div class="stats-card__canvas">
+                <canvas id="chartTrendLine" aria-label="Gráfico de líneas ventas y compras"></canvas>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <header class="stats-card__header">
+                <div>
+                    <h2>Ingresos diarios</h2>
+                    <p>Total vendido por día</p>
+                </div>
+                <span class="stats-card__tag stats-card__tag--bar">Barras</span>
+            </header>
+            <div class="stats-card__canvas">
+                <canvas id="chartSalesBar" aria-label="Gráfico de barras de ventas"></canvas>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <header class="stats-card__header">
+                <div>
+                    <h2>Métodos de pago</h2>
+                    <p>Distribución por forma de cobro</p>
+                </div>
+                <span class="stats-card__tag stats-card__tag--donut">Circular</span>
+            </header>
+            <div class="stats-card__canvas stats-card__canvas--donut">
+                <canvas id="chartPayments" aria-label="Gráfico circular métodos de pago"></canvas>
+            </div>
+            <ul class="stats-legend" id="paymentLegend"></ul>
+        </section>
+
+        <section class="stats-card stats-card--wide">
+            <header class="stats-card__header">
+                <div>
+                    <h2>Top productos vendidos</h2>
+                    <p>Ranking por ingresos generados</p>
+                </div>
+                <span class="stats-card__tag stats-card__tag--bar">Barras</span>
+            </header>
+            <div class="stats-card__canvas stats-card__canvas--tall">
+                <canvas id="chartTopProducts" aria-label="Gráfico de barras top productos"></canvas>
+            </div>
+        </section>
+
+        <section class="stats-card stats-card--wide">
+            <header class="stats-card__header">
+                <div>
+                    <h2>Ganancia neta diaria</h2>
+                    <p>Margen después de costos de producto</p>
+                </div>
+                <span class="stats-card__tag stats-card__tag--area">Área</span>
+            </header>
+            <div class="stats-card__canvas">
+                <canvas id="chartProfitArea" aria-label="Gráfico de área ganancia neta"></canvas>
+            </div>
+        </section>
+    </div>
+
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/Estadisticas/estadisticas.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        window.statsConfig = {
+            dataUrl: '@Url.Action("Data", "Estadisticas")',
+            initialData: @Html.Raw(JsonSerializer.Serialize(dash, jsonOptions))
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/Estadisticas/estadisticas.js")" asp-append-version="true"></script>
 }

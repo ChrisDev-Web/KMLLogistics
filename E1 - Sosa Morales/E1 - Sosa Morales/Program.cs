@@ -14,6 +14,7 @@ using E1___Sosa_Morales.Services.ListaVentas;
 using E1___Sosa_Morales.Services.DetalleTransferencia;
 using E1___Sosa_Morales.Services.Distritos;
 using E1___Sosa_Morales.Services.Empleados;
+using E1___Sosa_Morales.Services.Estadisticas;
 using E1___Sosa_Morales.Services.EstadosCompra;
 using E1___Sosa_Morales.Services.EstadosTransferencia;
 using E1___Sosa_Morales.Services.ListaTransferencias;
@@ -118,6 +119,7 @@ builder.Services.AddScoped<IPerfilService, PerfilService>();
 builder.Services.AddScoped<ISaleStatusService, SaleStatusService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<ISaleDetailService, SaleDetailService>();
+builder.Services.AddScoped<IEstadisticasService, EstadisticasService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 
