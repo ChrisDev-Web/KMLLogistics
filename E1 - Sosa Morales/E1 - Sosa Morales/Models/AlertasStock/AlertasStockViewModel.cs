@@ -12,7 +12,7 @@ public class AlertasStockViewModel
 {
     public StockAlertFilter Filter { get; set; } = new();
     public AlertasStockSummary Summary { get; set; } = new();
-    public List<StockAlertItem> Alerts { get; set; } = [];
+    public List<UnifiedAlertRow> Alerts { get; set; } = [];
     public List<StockAlertFilterOption> Products { get; set; } = [];
     public List<StockAlertFilterOption> Warehouses { get; set; } = [];
     public int ResultCount => Alerts.Count;

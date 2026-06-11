@@ -115,7 +115,7 @@ BEGIN
     IF @stock IS NULL
         RETURN;
 
-    IF @stock <= @min_stock
+    IF @stock <= 10
     BEGIN
         IF EXISTS (
             SELECT 1
@@ -167,6 +167,41 @@ END
 GO
 
 -- ============================================================
+-- sp_stock_alert_sync_all
+-- Evalúa todos los detalles de almacén (umbral stock <= 10)
+-- ============================================================
+IF OBJECT_ID('dbo.sp_stock_alert_sync_all', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_stock_alert_sync_all;
+GO
+
+CREATE PROCEDURE dbo.sp_stock_alert_sync_all
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @id_warehouse_detail INT;
+
+    DECLARE detail_cursor CURSOR LOCAL FAST_FORWARD FOR
+        SELECT wd.id_warehouse_detail
+        FROM dbo.WarehouseDetails wd
+        INNER JOIN dbo.Products p ON p.id_product = wd.id_product AND p.deleted_at IS NULL
+        INNER JOIN dbo.Warehouses w ON w.id_warehouse = wd.id_warehouse AND w.deleted_at IS NULL;
+
+    OPEN detail_cursor;
+    FETCH NEXT FROM detail_cursor INTO @id_warehouse_detail;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        EXEC dbo.sp_stock_alert_check @id_warehouse_detail;
+        FETCH NEXT FROM detail_cursor INTO @id_warehouse_detail;
+    END
+
+    CLOSE detail_cursor;
+    DEALLOCATE detail_cursor;
+END
+GO
+
+-- ============================================================
 -- sp_stock_alert_list_active
 -- Lista alertas con buscador y filtros (vista AlertasStock / campana)
 -- @status: ACTIVE (default), RESOLVED, ALL
@@ -188,6 +223,8 @@ CREATE PROCEDURE dbo.sp_stock_alert_list_active
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    EXEC dbo.sp_stock_alert_sync_all;
 
     SET @search = NULLIF(LTRIM(RTRIM(@search)), '');
     SET @status = UPPER(NULLIF(LTRIM(RTRIM(@status)), ''));
@@ -212,7 +249,7 @@ BEGIN
         wd.min_stock,
         wd.location,
         CASE
-            WHEN wd.stock < wd.min_stock THEN wd.min_stock - wd.stock
+            WHEN wd.stock <= 10 THEN 10 - wd.stock
             ELSE 0
         END AS stock_deficit,
         u.username AS last_sent_by_username
@@ -226,7 +263,7 @@ BEGIN
       AND (
             (@status = 'ALL' AND sa.status IN ('ACTIVE', 'RESOLVED'))
          OR (@status = 'RESOLVED' AND sa.status = 'RESOLVED')
-         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= wd.min_stock)
+         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= 10)
       )
       AND (@id_product IS NULL OR wd.id_product = @id_product)
       AND (@id_warehouse IS NULL OR wd.id_warehouse = @id_warehouse)
@@ -271,7 +308,7 @@ BEGIN
       AND (
             (@status = 'ALL' AND sa.status IN ('ACTIVE', 'RESOLVED'))
          OR (@status = 'RESOLVED' AND sa.status = 'RESOLVED')
-         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= wd.min_stock)
+         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= 10)
       )
     ORDER BY p.name ASC;
 END
@@ -307,7 +344,7 @@ BEGIN
       AND (
             (@status = 'ALL' AND sa.status IN ('ACTIVE', 'RESOLVED'))
          OR (@status = 'RESOLVED' AND sa.status = 'RESOLVED')
-         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= wd.min_stock)
+         OR (@status = 'ACTIVE' AND sa.status = 'ACTIVE' AND wd.stock <= 10)
       )
     ORDER BY w.name ASC;
 END
@@ -351,7 +388,7 @@ BEGIN
     FROM dbo.WarehouseDetails wd
     WHERE wd.id_warehouse_detail = @id_warehouse_detail;
 
-    IF @stock > @min_stock
+    IF @stock > 10
     BEGIN
         UPDATE dbo.StockAlerts
         SET
@@ -390,11 +427,15 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    EXEC dbo.sp_stock_alert_sync_all;
+
     SELECT COUNT(*) AS active_alerts
     FROM dbo.StockAlerts sa
     INNER JOIN dbo.WarehouseDetails wd ON wd.id_warehouse_detail = sa.id_warehouse_detail
+    INNER JOIN dbo.Products p ON p.id_product = wd.id_product AND p.deleted_at IS NULL
+    INNER JOIN dbo.Warehouses w ON w.id_warehouse = wd.id_warehouse AND w.deleted_at IS NULL
     WHERE sa.status = 'ACTIVE'
-      AND wd.stock <= wd.min_stock;
+      AND wd.stock <= 10;
 END
 GO
 

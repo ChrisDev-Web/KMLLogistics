@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/Public/CSS/Dashboard/dashboard.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="dashboard-body">
+<body class="dashboard-body" data-auth="@(User.Identity?.IsAuthenticated == true ? "true" : "false")" data-alerts-url="@Url.Action("Notifications", "AlertasStock")">
     <div class="dashboard-layout">
         @await Html.PartialAsync("_Sidebar")
 
@@ -29,6 +29,7 @@
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/Public/JS/Shared/kml-table-list.js" asp-append-version="true"></script>
     <script src="~/Public/JS/Dashboard/dashboard.js" asp-append-version="true"></script>
+    <script src="~/Public/JS/Shared/global-alerts.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

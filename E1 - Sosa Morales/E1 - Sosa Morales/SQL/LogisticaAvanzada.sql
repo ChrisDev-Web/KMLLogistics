@@ -244,10 +244,15 @@ GO
 IF OBJECT_ID('dbo.sp_logistics_alert_list_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_logistics_alert_list_active;
 GO
 CREATE PROCEDURE dbo.sp_logistics_alert_list_active
+    @status VARCHAR(20) = 'ACTIVE'
 AS
 BEGIN
     SET NOCOUNT ON;
     EXEC dbo.sp_logistics_sync_shipments;
+
+    SET @status = UPPER(NULLIF(LTRIM(RTRIM(@status)), ''));
+    IF @status IS NULL OR @status NOT IN ('ACTIVE', 'RESOLVED', 'ALL')
+        SET @status = 'ACTIVE';
 
     SELECT
         la.id_logistics_alert AS IdLogisticsAlert,
@@ -260,8 +265,40 @@ BEGIN
         la.created_at AS CreatedAt
     FROM dbo.LogisticsAlerts la
     INNER JOIN dbo.Vehicles v ON v.id_vehicle = la.id_vehicle
-    WHERE la.status = 'ACTIVE'
+    WHERE (
+            (@status = 'ALL' AND la.status IN ('ACTIVE', 'RESOLVED'))
+         OR (@status = 'ACTIVE' AND la.status = 'ACTIVE')
+         OR (@status = 'RESOLVED' AND la.status = 'RESOLVED')
+    )
     ORDER BY la.created_at DESC;
+END
+GO
+
+IF OBJECT_ID('dbo.sp_logistics_alert_resend', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_logistics_alert_resend;
+GO
+CREATE PROCEDURE dbo.sp_logistics_alert_resend
+    @id_logistics_alert INT,
+    @id_user            INT,
+    @message            VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.LogisticsAlerts
+        WHERE id_logistics_alert = @id_logistics_alert AND status = 'ACTIVE'
+    )
+    BEGIN
+        SET @message = 'La alerta no existe o ya fue resuelta.';
+        RETURN;
+    END
+
+    UPDATE dbo.LogisticsAlerts
+    SET created_at = GETDATE()
+    WHERE id_logistics_alert = @id_logistics_alert
+      AND status = 'ACTIVE';
+
+    SET @message = 'Alerta reenviada correctamente.';
 END
 GO
 

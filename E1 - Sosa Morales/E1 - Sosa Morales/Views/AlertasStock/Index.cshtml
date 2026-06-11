@@ -1,28 +1,23 @@
 @model E1___Sosa_Morales.Models.AlertasStock.AlertasStockViewModel
 @{
     Layout = "_DashboardLayout";
-    ViewBag.PageTitle = "Alertas de stock";
+    ViewBag.PageTitle = "Alertas del sistema";
     ViewBag.SidebarActive = "dashboard";
     var f = Model.Filter;
     var s = Model.Summary;
-    var hasAdvancedFilters = f.IdProduct.HasValue || f.IdWarehouse.HasValue;
 }
 
 @section Styles {
     <link rel="stylesheet" href="@Url.Content("~/Public/CSS/AlertasStock/alertas-stock.css")" asp-append-version="true" />
 }
 
-<div class="alerts-page">
+<div class="alerts-page" id="alertsPageRoot" data-status="@f.Status">
     <div class="alerts-page__header">
         <div>
             <h1 class="alerts-page__title">Alertas</h1>
-            <p class="alerts-page__subtitle">Centro de notificaciones y alertas de stock del sistema</p>
+            <p class="alerts-page__subtitle">Stock bajo, vehículos en regreso y disponibilidad logística</p>
         </div>
         <div class="alerts-page__header-actions">
-            <button type="button" class="alerts-btn alerts-btn--outline" id="toggleFiltersBtn" aria-expanded="@(hasAdvancedFilters ? "true" : "false")">
-                <i class="bi bi-funnel"></i>
-                Filtros
-            </button>
             <a asp-controller="Dashboard" asp-action="Index" class="alerts-btn alerts-btn--back">
                 <i class="bi bi-arrow-left"></i>
                 Volver al Dashboard
@@ -36,7 +31,7 @@
             <div class="alerts-kpi__body">
                 <span class="alerts-kpi__label">Activas</span>
                 <span class="alerts-kpi__count" id="kpiActive">@s.ActiveCount</span>
-                <span class="alerts-kpi__hint">Stock bajo — requieren atención</span>
+                <span class="alerts-kpi__hint">Stock y logística pendientes</span>
             </div>
             <span class="alerts-kpi__bar"></span>
         </div>
@@ -44,8 +39,8 @@
             <div class="alerts-kpi__icon"><i class="bi bi-bell-fill"></i></div>
             <div class="alerts-kpi__body">
                 <span class="alerts-kpi__label">Reenviadas</span>
-                <span class="alerts-kpi__count">@s.HighNotifyCount</span>
-                <span class="alerts-kpi__hint">Más de un aviso sin reponer</span>
+                <span class="alerts-kpi__count" id="kpiHighNotify">@s.HighNotifyCount</span>
+                <span class="alerts-kpi__hint">Más de un aviso sin resolver</span>
             </div>
             <span class="alerts-kpi__bar"></span>
         </div>
@@ -53,8 +48,8 @@
             <div class="alerts-kpi__icon"><i class="bi bi-check-circle-fill"></i></div>
             <div class="alerts-kpi__body">
                 <span class="alerts-kpi__label">Resueltas</span>
-                <span class="alerts-kpi__count">@s.ResolvedCount</span>
-                <span class="alerts-kpi__hint">Stock repuesto</span>
+                <span class="alerts-kpi__count" id="kpiResolved">@s.ResolvedCount</span>
+                <span class="alerts-kpi__hint">Atendidas o repuestas</span>
             </div>
             <span class="alerts-kpi__bar"></span>
         </div>
@@ -62,7 +57,7 @@
             <div class="alerts-kpi__icon"><i class="bi bi-bell"></i></div>
             <div class="alerts-kpi__body">
                 <span class="alerts-kpi__label">Total alertas</span>
-                <span class="alerts-kpi__count">@s.TotalCount</span>
+                <span class="alerts-kpi__count" id="kpiTotal">@s.TotalCount</span>
                 <span class="alerts-kpi__hint">Registros en el sistema</span>
             </div>
             <span class="alerts-kpi__bar"></span>
@@ -70,29 +65,19 @@
     </div>
 
     <div class="alerts-panel">
-        <div class="alerts-panel__tabs">
-            <a asp-controller="AlertasStock" asp-action="Index"
-               asp-route-search="@f.Search" asp-route-idProduct="@f.IdProduct" asp-route-idWarehouse="@f.IdWarehouse"
-               asp-route-status="ALL"
-               class="alerts-tab @(f.Status == "ALL" ? "active" : "")">
-                Todas <span class="alerts-tab__count">(@s.TotalCount)</span>
-            </a>
-            <a asp-controller="AlertasStock" asp-action="Index"
-               asp-route-search="@f.Search" asp-route-idProduct="@f.IdProduct" asp-route-idWarehouse="@f.IdWarehouse"
-               asp-route-status="ACTIVE"
-               class="alerts-tab @(f.Status == "ACTIVE" ? "active" : "")">
-                Activas <span class="alerts-tab__count">(@s.ActiveCount)</span>
-            </a>
-            <a asp-controller="AlertasStock" asp-action="Index"
-               asp-route-search="@f.Search" asp-route-idProduct="@f.IdProduct" asp-route-idWarehouse="@f.IdWarehouse"
-               asp-route-status="RESOLVED"
-               class="alerts-tab @(f.Status == "RESOLVED" ? "active" : "")">
-                Resueltas <span class="alerts-tab__count">(@s.ResolvedCount)</span>
-            </a>
+        <div class="alerts-panel__tabs" id="alertsTabs">
+            <button type="button" class="alerts-tab @(f.Status == "ALL" ? "active" : "")" data-status="ALL">
+                Todas <span class="alerts-tab__count" id="tabCountAll">(@s.TotalCount)</span>
+            </button>
+            <button type="button" class="alerts-tab @(f.Status == "ACTIVE" ? "active" : "")" data-status="ACTIVE">
+                Activas <span class="alerts-tab__count" id="tabCountActive">(@s.ActiveCount)</span>
+            </button>
+            <button type="button" class="alerts-tab @(f.Status == "RESOLVED" ? "active" : "")" data-status="RESOLVED">
+                Resueltas <span class="alerts-tab__count" id="tabCountResolved">(@s.ResolvedCount)</span>
+            </button>
         </div>
 
-        <form method="get" asp-controller="AlertasStock" asp-action="Index" id="alertsFilterForm" class="alerts-panel__filters @(hasAdvancedFilters ? "is-open" : "")">
-            <input type="hidden" name="status" value="@f.Status" />
+        <div class="alerts-panel__filters" id="alertsFilterForm">
             <div class="alerts-panel__filters-grid">
                 <div class="alerts-field">
                     <label for="idProduct">Producto</label>
@@ -128,37 +113,28 @@
                         }
                     </select>
                 </div>
+                <div class="alerts-field">
+                    <label for="search">Buscar</label>
+                    <div class="alerts-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="search" name="search" value="@f.Search" placeholder="Buscar alerta..." autocomplete="off" />
+                    </div>
+                </div>
                 <div class="alerts-field alerts-field--actions">
-                    <button type="submit" class="alerts-btn alerts-btn--primary">
-                        <i class="bi bi-funnel"></i> Aplicar filtros
-                    </button>
-                    <a asp-controller="AlertasStock" asp-action="Index" asp-route-status="@f.Status" class="alerts-btn alerts-btn--ghost">
-                        Limpiar
-                    </a>
+                    <button type="button" class="alerts-btn alerts-btn--ghost" id="alertsClearBtn">Limpiar</button>
                 </div>
             </div>
-        </form>
-
-        <form method="get" asp-controller="AlertasStock" asp-action="Index" class="alerts-panel__toolbar">
-            <input type="hidden" name="status" value="@f.Status" />
-            <input type="hidden" name="idProduct" value="@f.IdProduct" />
-            <input type="hidden" name="idWarehouse" value="@f.IdWarehouse" />
-            <div class="alerts-search">
-                <i class="bi bi-search"></i>
-                <input type="text" name="search" value="@f.Search" placeholder="Buscar alerta..." />
-            </div>
-            <button type="submit" class="alerts-btn alerts-btn--primary alerts-btn--sm">Buscar</button>
-        </form>
+        </div>
 
         @Html.AntiForgeryToken()
         <div id="alertsToast" class="alerts-toast" role="status" aria-live="polite"></div>
 
-        <div class="alerts-table-wrap">
-            <table id="alertsTable" class="alerts-table display">
+        <div class="alerts-table-wrap" id="alertsTableScroll">
+            <table id="alertsTable" class="alerts-table">
                 <thead>
                     <tr>
                         <th>Alerta</th>
-                        <th>Almacén</th>
+                        <th>Módulo</th>
                         <th>Nivel</th>
                         <th>Fecha y hora</th>
                         <th>Estado</th>
@@ -166,76 +142,32 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @if (Model.Alerts.Count == 0)
-                    {
-                        <tr class="alerts-table__empty-row">
-                            <td colspan="7">No se encontraron alertas con los filtros seleccionados.</td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var alert in Model.Alerts)
-                        {
-                            <tr data-alert-id="@alert.IdStockAlert" class="@(alert.IsActive ? "row-active" : "row-resolved")">
-                                <td>
-                                    <div class="alert-cell">
-                                        <span class="alert-cell__icon @(alert.IsActive ? "alert-cell__icon--critical" : "alert-cell__icon--resolved")">
-                                            <i class="bi @(alert.IsActive ? "bi-exclamation-triangle-fill" : "bi-check-circle-fill")"></i>
-                                        </span>
-                                        <div>
-                                            <span class="alert-cell__title">@alert.ProductName</span>
-                                            <span class="alert-cell__meta">
-                                                Stock @alert.Stock / Mín. @alert.MinStock
-                                                @if (alert.StockDeficit > 0)
-                                                {
-                                                    <text> · Faltan @alert.StockDeficit un.</text>
-                                                }
-                                                @if (!string.IsNullOrWhiteSpace(alert.Location))
-                                                {
-                                                    <text> · @alert.Location</text>
-                                                }
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>@alert.WarehouseName</td>
-                                <td>
-                                    <span class="level-badge @(alert.IsActive ? "level-badge--critical" : "level-badge--resolved")">
-                                        @(alert.IsActive ? "Crítica" : "Resuelta")
-                                    </span>
-                                </td>
-                                <td data-order="@alert.LastNotifiedAt.Ticks" class="cell-last-notified">
-                                    <span class="date-cell__date">@alert.LastNotifiedAt.ToString("dd/MM/yyyy")</span>
-                                    <span class="date-cell__time">@alert.LastNotifiedAt.ToString("hh:mm tt")</span>
-                                </td>
-                                <td>
-                                    <span class="state-text @(alert.IsActive ? "state-text--active" : "state-text--resolved")">
-                                        @(alert.IsActive ? "Activa" : "Resuelta")
-                                    </span>
-                                </td>
-                                <td class="cell-notification-count">@alert.NotificationCount</td>
-                                <td>
-                                    <div class="alerts-actions">
-                                        @if (alert.IsActive)
-                                        {
-                                            <button type="button"
-                                                    class="alerts-action-btn btn-resend-alert"
-                                                    data-alert-id="@alert.IdStockAlert"
-                                                    title="Reenviar alerta">
-                                                <i class="bi bi-send"></i>
-                                            </button>
-                                        }
-                                        <span class="alerts-action-hint" title="@(alert.LastSentByUsername ?? "Sistema")">
-                                            <i class="bi bi-person"></i>
-                                        </span>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
+                <tbody id="alertsTableBody">
+                    <tr class="alerts-table__loading-row">
+                        <td colspan="7">Cargando alertas...</td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="alerts-table-footer">
+            <div class="alerts-table-footer__info" id="alertsTableInfo">Mostrando 0 registros</div>
+            <div class="alerts-table-footer__controls">
+                <div class="alerts-page-size">
+                    <span>Mostrar</span>
+                    <select id="alertsPageSize">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>registros</span>
+                </div>
+                <div class="alerts-pagination">
+                    <button type="button" class="alerts-btn alerts-btn--ghost alerts-btn--sm" id="alertsPrevBtn" disabled>Anterior</button>
+                    <span id="alertsPageInfo">Página 1 de 1</span>
+                    <button type="button" class="alerts-btn alerts-btn--ghost alerts-btn--sm" id="alertsNextBtn" disabled>Siguiente</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -243,8 +175,8 @@
 @section Scripts {
     <script>
         window.alertasStockConfig = {
-            resendUrl: '@Url.Action("Resend", "AlertasStock")',
-            hasData: @(Model.Alerts.Count > 0 ? "true" : "false")
+            listUrl: '@Url.Action("List", "AlertasStock")',
+            resendUrl: '@Url.Action("Resend", "AlertasStock")'
         };
     </script>
     <script src="@Url.Content("~/Public/JS/AlertasStock/alertas-stock.js")" asp-append-version="true"></script>
