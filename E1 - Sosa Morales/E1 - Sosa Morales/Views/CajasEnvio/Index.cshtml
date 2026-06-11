@@ -1,21 +1,14 @@
-﻿@model E1___Sosa_Morales.Models.CajasEnvio.CajasEnvioViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/CajasEnvio/cajas-envio.css" asp-append-version="true" />
-}
-
+@model E1___Sosa_Morales.Models.CajasEnvio.CajasEnvioViewModel
+@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
+@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
-</div>
-
+<div class="crud-card"><div class="crud-header"><div><h2>Cajas de envio</h2><p>Asocia cajas ya empaquetadas (Detalle de caja) a envios. Tambien puede hacerlo desde Envios &gt; Editar.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Asociar caja</button></div><div class="crud-tools"><input id="txtSearch" placeholder="Buscar por caja o placa..." /><button id="btnBuscar" type="button">Buscar</button></div><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div></div>
+<partial name="_SimpleCrudModals" />
 @section Scripts {
-    <script src="~/Public/JS/CajasEnvio/cajas-envio.js" asp-append-version="true"></script>
+<script>
+window.kmlCrudConfig={idKey:"idShipmentBox",listUrl:"@Url.Action("List", "CajasEnvio")",createUrl:"@Url.Action("Create", "CajasEnvio")",deleteUrl:"@Url.Action("Delete", "CajasEnvio")",optionsUrl:"@Url.Action("Options", "CajasEnvio")",allowEdit:false,createTitle:"Asociar caja",columns:[{key:"idShipmentBox",label:"ID"},{key:"idShipment",label:"Envio"},{key:"idBox",label:"Caja",format:"box"},{key:"vehiclePlate",label:"Vehiculo"},{key:"weight",label:"Peso",type:"number"},{key:"volume",label:"Volumen",type:"number"}],detailColumns:[{key:"idShipmentBox",label:"ID"},{key:"idShipment",label:"Envio"},{key:"idBox",label:"Caja",format:"box"},{key:"vehiclePlate",label:"Vehiculo"}],fields:[{name:"shipmentId",dataKey:"idShipment",label:"Envio",type:"select",optionsKey:"shipments",valueKey:"idShipment",textKey:"name"},{name:"boxId",dataKey:"idBox",label:"Caja",type:"select",optionsKey:"boxes",valueKey:"idBox",textKey:"name"}]};
+window.ceUrls={available:"@Url.Action("AvailableBoxes", "CajasEnvio")"};
+</script><script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
+<script src="~/Public/JS/CajasEnvio/cajas-envio.js" asp-append-version="true"></script>
 }

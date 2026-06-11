@@ -91,9 +91,27 @@
             return !(src && isSharedAsset(src));
         });
 
+        var originalAddEventListener = document.addEventListener;
+        var replayDomReadyListeners = document.readyState !== 'loading';
+
+        document.addEventListener = function (type, listener, options) {
+            if (replayDomReadyListeners && type === 'DOMContentLoaded' && typeof listener === 'function') {
+                window.setTimeout(function () {
+                    listener.call(document, new Event('DOMContentLoaded'));
+                }, 0);
+            }
+
+            return originalAddEventListener.call(document, type, listener, options);
+        };
+
+        function finish() {
+            document.addEventListener = originalAddEventListener;
+            if (typeof done === 'function') done();
+        }
+
         function runNext(index) {
             if (index >= scripts.length) {
-                if (typeof done === 'function') done();
+                window.setTimeout(finish, 0);
                 return;
             }
 
@@ -162,13 +180,8 @@
     }
 
     function isDashboardNavLink(link) {
-        if (!link || !link.href) return false;
-        if (link.dataset.noAjax === 'true') return false;
-        if (link.target === '_blank') return false;
-        if (link.origin !== window.location.origin) return false;
-
-        return link.closest('.dashboard-sidebar') !== null ||
-            link.closest('#dashboard-content') !== null;
+        // Use normal navigation so each module runs its page scripts from a clean load.
+        return false;
     }
 
     function setupAjaxNavigation() {

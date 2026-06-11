@@ -1,1 +1,45 @@
-/* MÃ³dulo: EnvÃ­os */
+.env-modal { width: min(720px, calc(100vw - 32px)); }
+
+.env-boxes {
+    margin-top: 8px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+.env-boxes--hidden { display: none; }
+.env-boxes__header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.env-boxes__header h4 { margin: 0; font-size: .95rem; color: #0f172a; }
+.env-boxes__capacity { margin: 0; font-size: .8rem; color: #64748b; }
+
+.env-boxes__bars { display: grid; gap: 8px; margin-bottom: 12px; }
+.env-cap-bar { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 8px; font-size: .78rem; color: #475569; }
+.env-cap-bar__track { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.env-cap-bar__fill { height: 100%; background: linear-gradient(90deg, #2563eb, #16a34a); width: 0; transition: width .4s ease; max-width: 100%; }
+.env-cap-bar__fill--vol { background: linear-gradient(90deg, #7c3aed, #2563eb); }
+.env-cap-bar__fill.is-over { background: #ef4444; }
+
+.env-boxes__list { display: grid; gap: 8px; margin-bottom: 12px; max-height: 180px; overflow-y: auto; }
+.env-box-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    font-size: .85rem;
+}
+.env-box-item__meta { color: #64748b; font-size: .78rem; }
+.env-box-item__actions button { padding: 6px 10px; font-size: .78rem; }
+
+.env-boxes__add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.env-boxes__add select { flex: 1; min-width: 200px; }
+.env-boxes__hint { margin: 8px 0 0; font-size: .78rem; color: #64748b; }
+.env-boxes__empty { text-align: center; color: #94a3b8; font-size: .85rem; padding: 12px; }
+
+@media (max-width: 640px) {
+    .env-boxes__add { flex-direction: column; align-items: stretch; }
+    .env-cap-bar { grid-template-columns: 1fr; }
+}

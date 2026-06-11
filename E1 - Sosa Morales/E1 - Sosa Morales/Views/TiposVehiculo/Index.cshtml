@@ -9,11 +9,127 @@
     <link rel="stylesheet" href="~/Public/CSS/TiposVehiculo/tipos-vehiculo.css" asp-append-version="true" />
 }
 
+@Html.AntiForgeryToken()
+
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="crud-card">
+    <div class="crud-header">
+        <div>
+            <h2>Tipos de vehículo</h2>
+            <p>Gestiona las categorías de vehículos para logística.</p>
+        </div>
+        <button class="btn-primary" type="button" onclick="openCreateModal()">+ Nuevo tipo</button>
+    </div>
+
+    <div class="crud-tools">
+        <input id="txtSearch" type="text" placeholder="Buscar por nombre o descripción..." />
+        <select id="selectStatus">
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+        </select>
+        <button id="btnBuscar" type="button">Buscar</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Vehículos</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button type="button" onclick="changePage(-1)">Anterior</button>
+        <span id="pageInfo">Página 1</span>
+        <button type="button" onclick="changePage(1)">Siguiente</button>
+    </div>
+</div>
+
+<div id="modalForm" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Nuevo tipo de vehículo</h3>
+
+        <input type="hidden" id="txtId" />
+
+        <label>Nombre</label>
+        <input id="txtName" type="text" />
+
+        <label>Descripción</label>
+        <textarea id="txtDescription"></textarea>
+
+        <div class="modal-actions">
+            <button type="button" onclick="closeModal()">Cancelar</button>
+            <button class="btn-primary" type="button" onclick="saveItem()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalView" class="modal">
+    <div class="modal-content detail-modal">
+        <div class="detail-header">
+            <div>
+                <span class="detail-eyebrow">Registro</span>
+                <h3>Detalle del tipo de vehículo</h3>
+            </div>
+            <span id="detailStatus" class="status-badge"></span>
+        </div>
+
+        <div class="detail-summary">
+            <span class="detail-id">ID <strong id="detailId"></strong></span>
+            <h4 id="detailName"></h4>
+            <p id="detailDescription"></p>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span>Vehículos asociados</span>
+                <strong id="detailVehicleCount"></strong>
+            </div>
+            <div class="detail-item">
+                <span>Creado</span>
+                <strong id="detailCreatedAt"></strong>
+            </div>
+            <div class="detail-item">
+                <span>Actualizado</span>
+                <strong id="detailUpdatedAt"></strong>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" onclick="goToVehiclesFromDetail()">Ver vehículos</button>
+            <button class="btn-primary" type="button" onclick="closeViewModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalMessage" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="messageTitle">Mensaje</h3>
+        <p id="messageText"></p>
+        <div class="modal-actions">
+            <button class="btn-primary" type="button" onclick="closeMessageModal()">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalConfirm" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="confirmTitle">Confirmar acción</h3>
+        <p id="confirmText"></p>
+        <div class="modal-actions">
+            <button type="button" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="btn-danger" type="button" onclick="executeConfirmAction()">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

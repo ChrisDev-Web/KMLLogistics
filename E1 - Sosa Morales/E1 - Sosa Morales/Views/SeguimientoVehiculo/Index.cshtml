@@ -1,0 +1,103 @@
+@model E1___Sosa_Morales.Models.SeguimientoVehiculo.SeguimientoVehiculoViewModel
+
+@{
+
+    Layout = "_DashboardLayout";
+
+    ViewBag.PageTitle = Model.Module.Title;
+
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
+
+}
+
+
+
+@section Styles {
+
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/SeguimientoVehiculo/seguimiento-vehiculo.css")" asp-append-version="true" />
+
+}
+
+
+
+<partial name="_ModuleTabs" model="Model.Module" />
+
+
+
+<div class="sgv" id="sgvRoot">
+
+    @Html.AntiForgeryToken()
+
+    <div class="sgv__panel">
+
+        <div class="sgv__toolbar">
+
+            <div>
+
+                <h2>Seguimiento de vehiculo</h2>
+
+                <p>Simulacion GPS de camiones en transito hacia su destino.</p>
+
+            </div>
+
+            <div class="sgv__actions">
+
+                <div class="sgv__field">
+
+                    <label for="sgvVehicleSelect">Camion en transito</label>
+
+                    <select id="sgvVehicleSelect">
+
+                        <option value="">Seleccione un camion...</option>
+
+                    </select>
+
+                </div>
+
+                <button type="button" class="sgv__btn sgv__btn--ghost" id="sgvRefreshBtn">Actualizar</button>
+
+            </div>
+
+        </div>
+
+        <div id="sgvCountdownBar" class="sgv__countdown-bar sgv__countdown-bar--hidden" aria-live="polite">
+            <div class="sgv__countdown-label">Tiempo estimado de llegada</div>
+            <div class="sgv__countdown-value" id="sgvCountdownValue">--:--:--</div>
+            <div class="sgv__countdown-sub" id="sgvCountdownSub"></div>
+        </div>
+
+        <div id="sgvToast" class="sgv__toast" role="status"></div>
+
+        <div id="sgvDetail" class="sgv__detail">
+
+            <div class="sgv__loading">Cargando seguimiento...</div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+
+    <script>
+
+        window.sgvUrls = {
+
+            list: '@Url.Action("List", "SeguimientoVehiculo")',
+
+            sync: '@Url.Action("Sync", "SeguimientoVehiculo")',
+
+            alerts: '@Url.Action("Alerts", "SeguimientoVehiculo")'
+
+        };
+
+    </script>
+
+    <script src="@Url.Content("~/Public/JS/SeguimientoVehiculo/seguimiento-vehiculo.js")" asp-append-version="true"></script>
+
+}
+
+

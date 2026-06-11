@@ -1,21 +1,12 @@
-﻿@model E1___Sosa_Morales.Models.EstadosEnvio.EstadosEnvioViewModel
-@{
-    Layout = "_DashboardLayout";
-    ViewBag.PageTitle = Model.Module.Title;
-    ViewBag.SidebarActive = Model.Module.SidebarActive;
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/EstadosEnvio/estados-envio.css" asp-append-version="true" />
-}
-
+@model E1___Sosa_Morales.Models.EstadosEnvio.EstadosEnvioViewModel
+@{ Layout = "_DashboardLayout"; ViewBag.PageTitle = Model.Module.Title; ViewBag.SidebarActive = Model.Module.SidebarActive; }
+@section Styles { <link rel="stylesheet" href="~/Public/CSS/Shared/kml-simple-crud.css" asp-append-version="true" /> }
+@Html.AntiForgeryToken()
 <partial name="_ModuleTabs" model="Model.Module" />
-
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
-</div>
-
+<div class="crud-card"><div class="crud-header"><div><h2>Estados de envio</h2><p>Gestiona los estados usados por los envios.</p></div><button id="btnCreate" class="btn-primary" type="button">+ Nuevo estado</button></div><div class="crud-tools"><input id="txtSearch" placeholder="Buscar por nombre o descripcion..." /><select id="selectStatus"><option value="active">Activos</option><option value="inactive">Inactivos</option></select><button id="btnBuscar" type="button">Buscar</button></div><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div><div class="pagination"><button id="btnPrev" type="button">Anterior</button><span id="pageInfo">Pagina 1</span><button id="btnNext" type="button">Siguiente</button></div></div>
+<partial name="_SimpleCrudModals" />
 @section Scripts {
-    <script src="~/Public/JS/EstadosEnvio/estados-envio.js" asp-append-version="true"></script>
+<script>
+window.kmlCrudConfig={idKey:"idShipmentStatus",listUrl:"/EstadosEnvio/List",listInactiveUrl:"/EstadosEnvio/ListInactive",getUrl:"/EstadosEnvio/Get",createUrl:"/EstadosEnvio/Create",updateUrl:"/EstadosEnvio/Update",deleteLogicUrl:"/EstadosEnvio/DeleteLogic",restoreUrl:"/EstadosEnvio/Restore",deletePhysicalUrl:"/EstadosEnvio/DeletePhysical",createTitle:"Nuevo estado",editTitle:"Editar estado",columns:[{key:"idShipmentStatus",label:"ID"},{key:"name",label:"Nombre"},{key:"description",label:"Descripcion"},{key:"status",label:"Estado",type:"status"}],detailColumns:[{key:"idShipmentStatus",label:"ID"},{key:"name",label:"Nombre"},{key:"description",label:"Descripcion"},{key:"status",label:"Estado",type:"status"},{key:"createdAt",label:"Creado",type:"date"},{key:"updatedAt",label:"Actualizado",type:"date"}],fields:[{name:"name",label:"Nombre"},{name:"description",label:"Descripcion"}]};
+</script><script src="~/Public/JS/Shared/kml-simple-crud.js" asp-append-version="true"></script>
 }

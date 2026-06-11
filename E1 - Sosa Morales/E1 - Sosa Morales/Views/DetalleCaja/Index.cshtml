@@ -1,4 +1,4 @@
-﻿@model E1___Sosa_Morales.Models.DetalleCaja.DetalleCajaViewModel
+@model E1___Sosa_Morales.Models.DetalleCaja.DetalleCajaViewModel
 @{
     Layout = "_DashboardLayout";
     ViewBag.PageTitle = Model.Module.Title;
@@ -6,16 +6,129 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/Public/CSS/DetalleCaja/detalle-caja.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/Public/CSS/DetalleCaja/detalle-caja.css")" asp-append-version="true" />
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="dcb" id="dcbRoot">
+    <div class="dcb__panel">
+        <div class="dcb__toolbar">
+            <div class="dcb__search-group">
+                <div class="dcb__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="dcbSearchInput" placeholder="Buscar por caja, venta o producto..." autocomplete="off" />
+                </div>
+                <button type="button" class="dcb__btn dcb__btn--ghost" id="dcbClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="dcb__actions">
+                <button type="button" class="dcb__btn dcb__btn--primary" id="dcbCreateBtn"><i class="bi bi-plus-lg"></i> Empaquetar venta</button>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+        <div id="dcbToast" class="dcb__toast" role="status" aria-live="polite"></div>
+        <div class="dcb__table-scroll" id="dcbTableScroll">
+            <table class="dcb__table">
+                <thead><tr>
+                    <th>ID</th>
+                    <th>CAJA</th>
+                    <th>VENTA</th>
+                    <th>PRODUCTO</th>
+                    <th>CANTIDAD</th>
+                    <th class="dcb__th-actions">ACCIONES</th>
+                </tr></thead>
+                <tbody id="dcbActiveBody">
+                    <tr class="dcb__loading-row"><td colspan="6">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="dcb__footer">
+            <div class="dcb__page-size">
+                <span>Mostrar</span>
+                <select id="dcbPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select>
+                <span>registros</span>
+            </div>
+            <div class="dcb__pagination">
+                <span id="dcbPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="dcb__btn dcb__btn--ghost" id="dcbPrevBtn" disabled>Anterior</button>
+                <button type="button" class="dcb__btn dcb__btn--ghost" id="dcbNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dcb-modal" id="dcbFormModal" aria-hidden="true">
+    <div class="dcb-modal__backdrop"></div>
+    <div class="dcb-modal__dialog dcb-modal__dialog--md" role="dialog" aria-modal="true">
+        <div class="dcb-modal__header">
+            <h3>Empaquetar venta en caja</h3>
+            <button type="button" class="dcb-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="dcb-modal__body">
+            <div class="dcb-field">
+                <label for="dcbSaleDetail">Venta *</label>
+                <select id="dcbSaleDetail"><option value="">Seleccione una venta...</option></select>
+            </div>
+            <div class="dcb-field">
+                <label for="dcbBox">Caja *</label>
+                <select id="dcbBox"><option value="">Seleccione una caja...</option></select>
+                <p class="dcb-field__hint">Las cajas nuevas aparecen como &quot;vacia&quot;. Despues de empaquetar aqui, podra asignarlas al envio en Envios.</p>
+            </div>
+            <div id="dcbPreviewWrap" class="dcb-preview" hidden>
+                <div class="dcb-preview__summary" id="dcbPreviewSummary"></div>
+                <div class="dcb__table-scroll">
+                    <table class="dcb__table">
+                        <thead><tr>
+                            <th>PRODUCTO</th>
+                            <th>VENDIDO</th>
+                            <th>EMPAQUETADO</th>
+                            <th>PENDIENTE</th>
+                            <th>PESO U.</th>
+                            <th>VOL. U.</th>
+                        </tr></thead>
+                        <tbody id="dcbPreviewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="dcb-modal__footer">
+            <button type="button" class="dcb__btn dcb__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="dcb__btn dcb__btn--primary" id="dcbFormSaveBtn" disabled>Empaquetar</button>
+        </div>
+    </div>
+</div>
+
+<div class="dcb-modal" id="dcbDetailModal" aria-hidden="true">
+    <div class="dcb-modal__backdrop"></div>
+    <div class="dcb-modal__dialog dcb-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="dcb-modal__header"><h3>Detalle</h3><button type="button" class="dcb-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dcb-modal__body" id="dcbDetailBody"></div>
+        <div class="dcb-modal__footer"><button type="button" class="dcb__btn dcb__btn--ghost" data-dismiss="modal">Cerrar</button></div>
+    </div>
+</div>
+
+<div class="dcb-modal" id="dcbConfirmModal" aria-hidden="true">
+    <div class="dcb-modal__backdrop"></div>
+    <div class="dcb-modal__dialog dcb-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="dcb-modal__header"><h3 id="dcbConfirmTitle">Confirmar</h3><button type="button" class="dcb-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button></div>
+        <div class="dcb-modal__body"><p id="dcbConfirmMessage"></p></div>
+        <div class="dcb-modal__footer">
+            <button type="button" class="dcb__btn dcb__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="dcb__btn dcb__btn--danger" id="dcbConfirmBtn">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/Public/JS/DetalleCaja/detalle-caja.js" asp-append-version="true"></script>
+    <script>
+        window.dcbUrls = {
+            list: '@Url.Action("List", "DetalleCaja")',
+            get: '@Url.Action("Get", "DetalleCaja")',
+            options: '@Url.Action("Options", "DetalleCaja")',
+            preview: '@Url.Action("Preview", "DetalleCaja")',
+            createBySale: '@Url.Action("CreateBySale", "DetalleCaja")',
+            delete: '@Url.Action("Delete", "DetalleCaja")'
+        };
+    </script>
+    <script src="@Url.Content("~/Public/JS/DetalleCaja/detalle-caja.js")" asp-append-version="true"></script>
 }

@@ -1,4 +1,4 @@
-﻿@model E1___Sosa_Morales.Models.Vehiculos.VehiculosViewModel
+@model E1___Sosa_Morales.Models.Vehiculos.VehiculosViewModel
 @{
     Layout = "_DashboardLayout";
     ViewBag.PageTitle = Model.Module.Title;
@@ -9,11 +9,159 @@
     <link rel="stylesheet" href="~/Public/CSS/Vehiculos/vehiculos.css" asp-append-version="true" />
 }
 
+@Html.AntiForgeryToken()
+
 <partial name="_ModuleTabs" model="Model.Module" />
 
-<div class="module-placeholder">
-    <h2>EN DESARROLLO</h2>
-    <p>Modulo <strong>@Model.Module.Title</strong> - proximamente disponible.</p>
+<div class="crud-card">
+    <div class="crud-header">
+        <div>
+            <h2>Vehiculos</h2>
+            <p>Gestiona la flota disponible para los envios.</p>
+        </div>
+        <button class="btn-primary" type="button" onclick="openCreateModal()">+ Nuevo vehiculo</button>
+    </div>
+
+    <div class="crud-tools">
+        <input id="txtSearch" type="text" placeholder="Buscar por placa o tipo..." />
+        <select id="selectType">
+            <option value="">Todos los tipos</option>
+        </select>
+        <select id="selectStatus">
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+        </select>
+        <button id="btnBuscar" type="button">Buscar</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Placa</th>
+                    <th>Tipo</th>
+                    <th>Peso max.</th>
+                    <th>Volumen max.</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button type="button" onclick="changePage(-1)">Anterior</button>
+        <span id="pageInfo">Pagina 1</span>
+        <button type="button" onclick="changePage(1)">Siguiente</button>
+    </div>
+</div>
+
+<div id="modalForm" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Nuevo vehiculo</h3>
+
+        <input type="hidden" id="txtId" />
+
+        <label>Tipo de vehiculo</label>
+        <select id="txtVehicleType"></select>
+
+        <label>Placa</label>
+        <input id="txtPlate" type="text" maxlength="20" placeholder="ABC-123" />
+
+        <div class="form-grid">
+            <div>
+                <label>Peso maximo (kg)</label>
+                <input id="txtMaximumWeight" type="number" min="0" step="0.01" placeholder="0.00" />
+            </div>
+            <div>
+                <label>Volumen calculado</label>
+                <input id="txtMaximumVolume" type="text" readonly placeholder="Auto" />
+            </div>
+        </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label>Alto (m)</label>
+                <input id="txtHeight" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateVolumePreview()" />
+            </div>
+            <div>
+                <label>Ancho (m)</label>
+                <input id="txtWidth" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateVolumePreview()" />
+            </div>
+            <div>
+                <label>Largo (m)</label>
+                <input id="txtLength" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateVolumePreview()" />
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" onclick="closeModal()">Cancelar</button>
+            <button class="btn-primary" type="button" onclick="saveItem()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalView" class="modal">
+    <div class="modal-content detail-modal">
+        <div class="detail-header">
+            <div>
+                <span class="detail-eyebrow">Vehiculo</span>
+                <h3>Detalle del vehiculo</h3>
+            </div>
+            <span id="detailStatus" class="status-badge"></span>
+        </div>
+
+        <div class="detail-summary">
+            <span class="detail-id">ID <strong id="detailId"></strong></span>
+            <h4 id="detailPlate"></h4>
+            <p id="detailVehicleType"></p>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span>Peso maximo</span>
+                <strong id="detailMaximumWeight"></strong>
+            </div>
+            <div class="detail-item">
+                <span>Volumen maximo</span>
+                <strong id="detailMaximumVolume"></strong>
+            </div>
+            <div class="detail-item">
+                <span>Creado</span>
+                <strong id="detailCreatedAt"></strong>
+            </div>
+            <div class="detail-item">
+                <span>Actualizado</span>
+                <strong id="detailUpdatedAt"></strong>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-primary" type="button" onclick="closeViewModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalMessage" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="messageTitle">Mensaje</h3>
+        <p id="messageText"></p>
+        <div class="modal-actions">
+            <button class="btn-primary" type="button" onclick="closeMessageModal()">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalConfirm" class="modal">
+    <div class="modal-content message-modal">
+        <h3 id="confirmTitle">Confirmar accion</h3>
+        <p id="confirmText"></p>
+        <div class="modal-actions">
+            <button type="button" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="btn-danger" type="button" onclick="executeConfirmAction()">Confirmar</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
