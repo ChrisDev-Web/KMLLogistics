@@ -29,17 +29,7 @@ public class MarcasController : Controller
     {
         try
         {
-            var items = await _service.ListActiveAsync(search);
-
-            // Lo mandamos con la estructura de paginación que espera el JS
-            return Json(new
-            {
-                items = items,
-                totalCount = items.Count,
-                page = page,
-                pageSize = pageSize,
-                totalPages = 1
-            });
+            return Json(await _service.ListActiveAsync(search, page, pageSize));
         }
         catch (Exception ex)
         {
@@ -67,7 +57,7 @@ public class MarcasController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(string name, string description)
+    public async Task<IActionResult> Create(string name, string? description)
     {
         try
         {
@@ -85,7 +75,7 @@ public class MarcasController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(int id, string name, string description)
+    public async Task<IActionResult> Update(int id, string name, string? description)
     {
         try
         {
@@ -115,15 +105,7 @@ public class MarcasController : Controller
     {
         try
         {
-            var items = await _service.ListInactiveAsync(search);
-            return Json(new
-            {
-                items = items,
-                totalCount = items.Count,
-                page = page,
-                pageSize = pageSize,
-                totalPages = 1
-            });
+            return Json(await _service.ListInactiveAsync(search, page, pageSize));
         }
         catch (Exception ex)
         {

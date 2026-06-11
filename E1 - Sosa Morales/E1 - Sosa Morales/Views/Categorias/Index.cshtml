@@ -32,6 +32,7 @@
                 <table class="cat__table">
                     <thead>
                         <tr>
+                            <th>FOTO</th>
                             <th>ID</th>
                             <th>NOMBRE</th>
                             <th>DESCRIPCIÓN</th>
@@ -39,7 +40,7 @@
                         </tr>
                     </thead>
                     <tbody id="catActiveBody">
-                        <tr class="cat__loading-row"><td colspan="4">Cargando registros...</td></tr>
+                        <tr class="cat__loading-row"><td colspan="5">Cargando registros...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -65,8 +66,17 @@
                 <h3 id="catFormModalTitle">Crear</h3>
                 <button type="button" class="cat-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
             </div>
-            <form id="catForm" class="cat-modal__body" novalidate>
+            <form id="catForm" class="cat-modal__body" enctype="multipart/form-data" novalidate>
                 <input type="hidden" id="catFormId" value="" />
+                <input type="hidden" id="catRemovePhoto" name="removePhoto" value="false" />
+                <div class="cat-photo-field">
+                    <div class="cat-photo-preview cat-photo-preview--empty" id="catPhotoPreview"><span>Sin foto</span></div>
+                    <div class="cat-photo-field__actions">
+                        <label class="cat__btn cat__btn--outline" for="catPhotoInput"><i class="bi bi-image"></i> Elegir foto</label>
+                        <button type="button" class="cat__btn cat__btn--ghost" id="catPhotoRemoveBtn">Eliminar foto</button>
+                    </div>
+                    <input type="file" id="catPhotoInput" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="cat-photo-input" />
+                </div>
                 <div class="cat-field"><label for="catName">Nombre *</label><input type="text" id="catName" name="name" required maxlength="100" /></div>
                 <div class="cat-field"><label for="catDescription">Descripción</label><textarea id="catDescription" name="description" rows="3" maxlength="255"></textarea></div>
             </form>
@@ -99,6 +109,7 @@
                     <table class="cat__table">
                         <thead>
                             <tr>
+                                <th>FOTO</th>
                                 <th>ID</th>
                                 <th>NOMBRE</th>
                                 <th>DESCRIPCIÓN</th>

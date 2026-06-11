@@ -2,7 +2,7 @@
     'use strict';
 
     var state = { page: 1, pageSize: 10, search: '', inactivePage: 1, inactivePageSize: 10, inactiveSearch: '', confirmCallback: null };
-    var colCount = 3;
+    var colCount = 4;
 
     function urls() { return window.catUrls || {}; }
     function getToken() { var input = document.querySelector('input[name="__RequestVerificationToken"]'); return input ? input.value : ''; }
@@ -52,6 +52,41 @@
 
     function escapeHtml(text) { var div = document.createElement('div'); div.textContent = text == null ? '' : String(text); return div.innerHTML; }
 
+    function postForm(url, formData) {
+        var token = getToken();
+        formData.append('__RequestVerificationToken', token);
+        return fetchJson(url, { method: 'POST', headers: { 'RequestVerificationToken': token }, body: formData });
+    }
+
+    function resolvePhotoUrl(photo) {
+        if (!photo) return '';
+        var value = String(photo).trim();
+        if (!value) return '';
+        if (/^(https?:)?\/\//i.test(value) || /^data:/i.test(value) || value.charAt(0) === '/') return value;
+        return '/Public/Images/Categories/' + value;
+    }
+
+    function renderPhoto(photo, name) {
+        var url = resolvePhotoUrl(photo);
+        var initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+        if (!url) return '<span class="cat-photo cat-photo--empty"><span>' + escapeHtml(initial) + '</span></span>';
+        return '<span class="cat-photo"><img src="' + escapeHtml(url) + '" alt="' + escapeHtml(name || 'Categoría') + '" onerror="this.parentElement.classList.add(\'cat-photo--empty\');this.remove();" /><span>' + escapeHtml(initial) + '</span></span>';
+    }
+
+    function setPhotoPreview(photo, name) {
+        var preview = qs('catPhotoPreview');
+        if (!preview) return;
+        var url = resolvePhotoUrl(photo);
+        var initial = (name || 'CA').trim().slice(0, 2).toUpperCase() || 'CA';
+        if (!url) {
+            preview.className = 'cat-photo-preview cat-photo-preview--empty';
+            preview.innerHTML = '<span>' + escapeHtml(initial) + '</span>';
+            return;
+        }
+        preview.className = 'cat-photo-preview';
+        preview.innerHTML = '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(name || 'Categoría') + '" onerror="this.parentElement.className=\'cat-photo-preview cat-photo-preview--empty\';this.parentElement.innerHTML=\'<span>' + escapeHtml(initial) + '</span>\';" />';
+    }
+
     function renderRows(tbody, items, mode) {
         if (!tbody) return;
         // Ajustamos cómo se lee el arreglo. Si viene directo o envuelto en items.
@@ -63,7 +98,7 @@
             var cells = '';
             // Aseguramos leer idCategory si id no existe (por si tu C# manda idCategory)
             var id = row.id || row.idCategory;
-            cells = '<td>' + escapeHtml(id) + '</td><td>' + escapeHtml(row.name) + '</td><td>' + escapeHtml(row.description || '') + '</td>';
+            cells = '<td>' + renderPhoto(row.photo, row.name) + '</td><td>' + escapeHtml(id) + '</td><td>' + escapeHtml(row.name) + '</td><td>' + escapeHtml(row.description || '') + '</td>';
             var actions = mode === 'active'
                 ? '<button type="button" class="cat__icon-btn cat__icon-btn--view" data-action="view" data-id="' + id + '" title="Ver detalle"><i class="bi bi-eye"></i></button><button type="button" class="cat__icon-btn cat__icon-btn--edit" data-action="edit" data-id="' + id + '" title="Editar"><i class="bi bi-pencil"></i></button><button type="button" class="cat__icon-btn cat__icon-btn--delete" data-action="delete" data-id="' + id + '" title="Eliminar"><i class="bi bi-trash"></i></button>'
                 : '<button type="button" class="cat__icon-btn cat__icon-btn--restore" data-action="restore" data-id="' + id + '" title="Restaurar"><i class="bi bi-arrow-counterclockwise"></i></button><button type="button" class="cat__icon-btn cat__icon-btn--purge" data-action="purge" data-id="' + id + '" title="Eliminar permanentemente"><i class="bi bi-trash-fill"></i></button>';
@@ -126,7 +161,13 @@
         });
     }
 
-    function resetForm() { var form = qs('catForm'); if (form) form.reset(); qs('catFormId').value = ''; }
+    function resetForm() {
+        var form = qs('catForm');
+        if (form) form.reset();
+        qs('catFormId').value = '';
+        if (qs('catRemovePhoto')) qs('catRemovePhoto').value = 'false';
+        setPhotoPreview('', '');
+    }
 
     function openCreateModal() { resetForm(); qs('catFormModalTitle').textContent = 'Crear'; openModal('catFormModal'); }
 
@@ -139,6 +180,7 @@
             qs('catFormId').value = res.data.id || res.data.idCategory;
             qs('catName').value = res.data.name || '';
             qs('catDescription').value = res.data.description || '';
+            setPhotoPreview(res.data.photo, res.data.name);
             openModal('catFormModal');
         }).catch(function (err) { showToast(err.message || 'Error al cargar.', false); });
     }
@@ -156,7 +198,8 @@
             if (d.createdAt) rows.push({ label: 'Creado', value: d.createdAt });
             if (d.updatedAt) rows.push({ label: 'Actualizado', value: d.updatedAt });
 
-            qs('catDetailBody').innerHTML = rows.map(function (r) {
+            var photoHtml = '<div class="cat-detail__photo">' + renderPhoto(d.photo, d.name) + '</div>';
+            qs('catDetailBody').innerHTML = photoHtml + rows.map(function (r) {
                 return '<div class="cat-detail__row"><span class="cat-detail__label">' + escapeHtml(r.label) + '</span><span class="cat-detail__value">' + escapeHtml(r.value) + '</span></div>';
             }).join('');
             openModal('catDetailModal');
@@ -168,11 +211,15 @@
         var form = qs('catForm');
         if (!form.checkValidity()) { form.reportValidity(); return; }
         var id = qs('catFormId').value;
-        var data = { name: qs('catName').value.trim() };
-        data.description = qs('catDescription').value.trim();
+        var data = new FormData();
+        data.append('name', qs('catName').value.trim());
+        data.append('description', qs('catDescription').value.trim());
+        data.append('removePhoto', qs('catRemovePhoto') ? qs('catRemovePhoto').value : 'false');
+        var photoInput = qs('catPhotoInput');
+        if (photoInput && photoInput.files && photoInput.files[0]) data.append('photo', photoInput.files[0]);
 
         var url = id ? u.update + '?id=' + encodeURIComponent(id) : u.create;
-        postAction(url, data).then(function (res) {
+        postForm(url, data).then(function (res) {
             showToast(res.message, res.success);
             if (res.success) { closeModal('catFormModal'); loadActiveList(); }
         }).catch(function (err) { showToast(err.message || 'Error al guardar.', false); });
@@ -217,6 +264,32 @@
         qs('catNextBtn')?.addEventListener('click', function () { state.page++; loadActiveList(); });
         qs('catCreateBtn')?.addEventListener('click', openCreateModal);
         qs('catFormSaveBtn')?.addEventListener('click', saveForm);
+
+        qs('catPhotoInput')?.addEventListener('change', function (e) {
+            var file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (!/\.(jpe?g|png|webp)$/i.test(file.name)) {
+                showToast('Formato no permitido. Use JPG, PNG o WEBP.', false);
+                e.target.value = '';
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('La imagen no puede superar 2 MB.', false);
+                e.target.value = '';
+                return;
+            }
+            if (qs('catRemovePhoto')) qs('catRemovePhoto').value = 'false';
+            var reader = new FileReader();
+            reader.onload = function (ev) { setPhotoPreview(ev.target.result, qs('catName') ? qs('catName').value : 'Categoría'); };
+            reader.readAsDataURL(file);
+        });
+
+        qs('catPhotoRemoveBtn')?.addEventListener('click', function () {
+            var photoInput = qs('catPhotoInput');
+            if (photoInput) photoInput.value = '';
+            if (qs('catRemovePhoto')) qs('catRemovePhoto').value = 'true';
+            setPhotoPreview('', qs('catName') ? qs('catName').value : '');
+        });
 
         qs('catInactiveBtn')?.addEventListener('click', function () {
             state.inactivePage = 1; state.inactiveSearch = '';

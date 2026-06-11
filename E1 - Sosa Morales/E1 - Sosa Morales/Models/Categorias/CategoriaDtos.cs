@@ -11,10 +11,16 @@ public class CategoriaListItem
     public string Name { get; set; } = string.Empty;
 
     [Column("description")]
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
+
+    [Column("photo")]
+    public string? Photo { get; set; }
 
     [Column("status")]
     public byte Status { get; set; }
+
+    [Column("total_count")]
+    public int TotalCount { get; set; }
 }
 
 public class CategoriaDetail
@@ -26,7 +32,10 @@ public class CategoriaDetail
     public string Name { get; set; } = string.Empty;
 
     [Column("description")]
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
+
+    [Column("photo")]
+    public string? Photo { get; set; }
 }
 
 public class CategoriaSpResult

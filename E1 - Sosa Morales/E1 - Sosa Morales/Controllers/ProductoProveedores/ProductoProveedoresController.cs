@@ -3,10 +3,12 @@ using E1___Sosa_Morales.Models.ProductoProveedores;
 using E1___Sosa_Morales.Services.Productos;
 using E1___Sosa_Morales.Services.Proveedores;
 using E1___Sosa_Morales.Services.ProductoProveedores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E1___Sosa_Morales.Controllers.ProductoProveedores;
 
+[Authorize]
 public class ProductoProveedoresController : Controller
 {
     private readonly IPrpService _prpService;
@@ -20,18 +22,27 @@ public class ProductoProveedoresController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Cambia PrpViewModel por ProductoProveedoresViewModel
         return View(new ProductoProveedoresViewModel
         {
-            Module = ModuleRegistry.BuildModuleView("Logística", "Producto proveedores", "logistica"),
-            Productos = await _prodService.ListActiveAsync(null),
-            // Si el resultado de proveedores tiene una propiedad .Items, úsala. Si no, usa el resultado directo.
+            Module = ModuleRegistry.BuildModuleView("Catalogo", "ProductoProveedores", "productos"),
+            Productos = (await _prodService.ListActiveAsync(null, null, null, 1, 50)).Items,
             Proveedores = (await _provService.ListActiveAsync(null, null, null, 1, 1000)).Items
         });
     }
 
     [HttpGet]
-    public async Task<IActionResult> List() => Json(new { items = await _prpService.ListAsync(null) });
+    public async Task<IActionResult> List(string? search, int? idProduct, int? idSupplier, int page = 1, int pageSize = 10)
+    {
+        return Json(await _prpService.ListAsync(search, idProduct, idSupplier, page, pageSize));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ProductFilters()
+        => Json(new { items = await _prpService.GetProductFilterOptionsAsync() });
+
+    [HttpGet]
+    public async Task<IActionResult> SupplierFilters()
+        => Json(new { items = await _prpService.GetSupplierFilterOptionsAsync() });
 
     [HttpPost]
     [ValidateAntiForgeryToken]

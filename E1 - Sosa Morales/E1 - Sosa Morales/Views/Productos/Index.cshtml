@@ -18,6 +18,14 @@
                 <div class="pro__search"><i class="bi bi-search"></i><input type="text" id="proSearchInput" placeholder="Buscar Productos" autocomplete="off" /></div>
                 <button type="button" class="pro__btn pro__btn--ghost" id="proClearSearchBtn">Limpiar</button>
             </div>
+            <div class="pro__filter-group">
+                <select id="proCategoryFilter" class="pro__filter-select">
+                    <option value="">Todas las categorias</option>
+                </select>
+                <select id="proBrandFilter" class="pro__filter-select">
+                    <option value="">Todas las marcas</option>
+                </select>
+            </div>
             <div class="pro__actions">
                 <button type="button" class="pro__btn pro__btn--outline" id="proInactiveBtn">Ver inactivos</button>
                 <button type="button" class="pro__btn pro__btn--primary" id="proCreateBtn"><i class="bi bi-plus-lg"></i> Crear</button>
@@ -28,13 +36,13 @@
 
         <div class="pro__table-scroll" id="proTableScroll">
             <table class="pro__table">
-                <thead><tr><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>MARCA</th><th>COSTO</th><th>PRECIO VENTA</th><th class="pro__th-actions">ACCIONES</th></tr></thead>
-                <tbody id="proActiveBody"><tr class="pro__loading-row"><td colspan="7">Cargando registros...</td></tr></tbody>
+                <thead><tr><th>FOTO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>MARCA</th><th>COSTO</th><th>PRECIO VENTA</th><th class="pro__th-actions">ACCIONES</th></tr></thead>
+                <tbody id="proActiveBody"><tr class="pro__loading-row"><td colspan="8">Cargando registros...</td></tr></tbody>
             </table>
         </div>
 
         <div class="pro__footer">
-            <div class="pro__page-size"><span>Mostrar</span><select id="proPageSize"><option value="10" selected>10</option><option value="20">20</option></select><span>registros</span></div>
+            <div class="pro__page-size"><span>Mostrar</span><select id="proPageSize"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select><span>registros</span></div>
             <div class="pro__pagination"><span id="proPageInfo">Página 1 de 1</span><button type="button" class="pro__btn pro__btn--ghost" id="proPrevBtn" disabled>Anterior</button><button type="button" class="pro__btn pro__btn--ghost" id="proNextBtn" disabled>Siguiente</button></div>
         </div>
     </div>
@@ -44,10 +52,21 @@
     <div class="pro-modal__backdrop"></div>
     <div class="pro-modal__dialog pro-modal__dialog--lg" role="dialog" aria-modal="true">
         <div class="pro-modal__header"><h3 id="proFormModalTitle">Crear Producto</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div>
-        <form id="proForm" class="pro-modal__body" novalidate>
+        <form id="proForm" class="pro-modal__body" enctype="multipart/form-data" novalidate>
             <input type="hidden" id="proFormId" name="IdProduct" value="0" />
+            <input type="hidden" id="proRemovePhoto" name="removePhoto" value="false" />
 
             <div class="row">
+                <div class="col-md-12">
+                    <div class="pro-photo-field">
+                        <div class="pro-photo-preview pro-photo-preview--empty" id="proPhotoPreview"><span>Sin foto</span></div>
+                        <div class="pro-photo-field__actions">
+                            <label class="pro__btn pro__btn--outline" for="proPhotoInput"><i class="bi bi-image"></i> Elegir foto</label>
+                            <button type="button" class="pro__btn pro__btn--ghost" id="proPhotoRemoveBtn">Eliminar foto</button>
+                        </div>
+                        <input type="file" id="proPhotoInput" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="pro-photo-input" />
+                    </div>
+                </div>
                 <div class="col-md-12 pro-field"><label>Nombre *</label><input type="text" id="proName" name="Name" required maxlength="100" /></div>
 
                 <div class="col-md-6 pro-field">
@@ -86,7 +105,7 @@
     </div>
 </div>
 
-<div class="pro-modal" id="proInactiveModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--lg"><div class="pro-modal__header"><h3>Inactivos</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body"><div class="pro__table-scroll"><table class="pro__table"><thead><tr><th>ID</th><th>NOMBRE</th><th>PRECIO</th><th class="pro__th-actions">ACCIONES</th></tr></thead><tbody id="proInactiveBody"></tbody></table></div></div></div></div>
+<div class="pro-modal" id="proInactiveModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--lg"><div class="pro-modal__header"><h3>Inactivos</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body"><div class="pro__table-scroll"><table class="pro__table"><thead><tr><th>FOTO</th><th>ID</th><th>NOMBRE</th><th>PRECIO</th><th class="pro__th-actions">ACCIONES</th></tr></thead><tbody id="proInactiveBody"></tbody></table></div></div></div></div>
 
 <div class="pro-modal" id="proConfirmModal" aria-hidden="true"><div class="pro-modal__backdrop"></div><div class="pro-modal__dialog pro-modal__dialog--xs"><div class="pro-modal__header"><h3 id="proConfirmTitle">Confirmar</h3><button type="button" class="pro-modal__close" data-dismiss="modal">&times;</button></div><div class="pro-modal__body"><p id="proConfirmMessage"></p></div><div class="pro-modal__footer"><button type="button" class="pro__btn pro__btn--ghost" data-dismiss="modal">Cancelar</button><button type="button" class="pro__btn pro__btn--danger" id="proConfirmBtn">Confirmar</button></div></div></div>
 
@@ -97,6 +116,8 @@
         window.proUrls = {
             list: '@Url.Action("List", "Productos")',
             listInactive: '@Url.Action("ListInactive", "Productos")',
+            categoryFilters: '@Url.Action("CategoryFilters", "Productos")',
+            brandFilters: '@Url.Action("BrandFilters", "Productos")',
             get: '@Url.Action("Get", "Productos")',
             save: '@Url.Action("Save", "Productos")',
             deleteLogic: '@Url.Action("DeleteLogic", "Productos")',

@@ -6,4 +6,5 @@ public class PrpListItem
     public string SupplierName { get; set; } = "";
     public decimal SupplierCost { get; set; }
     public bool IsMainSupplier { get; set; }
+    public int TotalCount { get; set; }
 }

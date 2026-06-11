@@ -1,6 +1,8 @@
-﻿@model E1___Sosa_Morales.Models.ProductoProveedores.ProductoProveedoresViewModel
+@model E1___Sosa_Morales.Models.ProductoProveedores.ProductoProveedoresViewModel
 @{
-    Layout = "_DashboardLayout"; ViewBag.PageTitle = "Producto Proveedores";
+    Layout = "_DashboardLayout";
+    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
 }
 
 @section Styles {
@@ -8,41 +10,141 @@
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
-<div class="tabs">
-    <button onclick="loadModule('/Categorias')">Categorías</button>
-    <button onclick="loadModule('/Marcas')">Marcas</button>
-    <button onclick="loadModule('/ProductoProveedores')">Producto proveedores</button>
-</div>
+
 <div class="prp" id="prpRoot">
     <div class="prp__panel">
         <div class="prp__toolbar">
-            <button type="button" class="prp__btn prp__btn--primary" id="prpCreateBtn"><i class="bi bi-plus-lg"></i> Asignar</button>
+            <div class="prp__search-group">
+                <div class="prp__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="prpSearchInput" placeholder="Buscar asignaciones" autocomplete="off" />
+                </div>
+                <button type="button" class="prp__btn prp__btn--ghost" id="prpClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="prp__filter-group">
+                <select id="prpProductFilter" class="prp__filter-select">
+                    <option value="">Todos los productos</option>
+                </select>
+                <select id="prpSupplierFilter" class="prp__filter-select">
+                    <option value="">Todos los proveedores</option>
+                </select>
+            </div>
+            <div class="prp__actions">
+                <button type="button" class="prp__btn prp__btn--primary" id="prpCreateBtn">
+                    <i class="bi bi-plus-lg"></i> Crear
+                </button>
+            </div>
         </div>
+
         @Html.AntiForgeryToken()
-        <table class="prp__table">
-            <thead><tr><th>PRODUCTO</th><th>PROVEEDOR</th><th>COSTO</th><th>¿PRINCIPAL?</th><th>ACCIONES</th></tr></thead>
-            <tbody id="prpBody"></tbody>
-        </table>
+        <div id="prpToast" class="prp__toast" role="status" aria-live="polite"></div>
+
+        <div class="prp__table-scroll" id="prpTableScroll">
+            <table class="prp__table">
+                <thead>
+                    <tr>
+                        <th>PRODUCTO</th>
+                        <th>PROVEEDOR</th>
+                        <th>COSTO</th>
+                        <th>PRINCIPAL</th>
+                        <th class="prp__th-actions">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="prpBody">
+                    <tr class="prp__loading-row"><td colspan="5">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="prp__footer">
+            <div class="prp__page-size">
+                <span>Mostrar</span>
+                <select id="prpPageSize">
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <span>registros</span>
+            </div>
+            <div class="prp__pagination">
+                <span id="prpPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="prp__btn prp__btn--ghost" id="prpPrevBtn" disabled>Anterior</button>
+                <button type="button" class="prp__btn prp__btn--ghost" id="prpNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="prp-modal" id="prpModal">
+<div class="prp-modal" id="prpDetailModal" aria-hidden="true">
     <div class="prp-modal__backdrop"></div>
-    <div class="prp-modal__dialog">
-        <div class="prp-modal__header"><h3>Asignar Producto</h3></div>
-        <form id="prpForm" class="prp-modal__body">
-            <div class="prp-field"><label>Producto</label><select id="pId" name="idProduct" required>@foreach(var p in (IEnumerable<dynamic>)Model.Productos){
-            <option value="@p.IdProduct">@p.Name</option>
-                        }
-</select></div>
-            <div class="prp-field"><label>Proveedor</label><select id="sId" name="idSupplier" required>@foreach(var s in (IEnumerable<dynamic>)Model.Proveedores){
-            <option value="@s.IdSupplier">@s.Name</option>
-                        }
-</select></div>
-            <div class="prp-field"><label>Costo</label><input type="number" step="0.01" id="cost" name="cost" required /></div>
-            <div class="prp-field"><input type="checkbox" id="isMain" name="isMain" /> <label style="display:inline">¿Es principal?</label></div>
+    <div class="prp-modal__dialog prp-modal__dialog--sm" role="dialog" aria-modal="true">
+        <div class="prp-modal__header">
+            <h3>Detalle</h3>
+            <button type="button" class="prp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="prp-modal__body" id="prpDetailBody"></div>
+        <div class="prp-modal__footer">
+            <button type="button" class="prp__btn prp__btn--ghost" data-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="prp-modal" id="prpModal" aria-hidden="true">
+    <div class="prp-modal__backdrop"></div>
+    <div class="prp-modal__dialog" role="dialog" aria-modal="true">
+        <div class="prp-modal__header">
+            <h3>Asignar Producto</h3>
+            <button type="button" class="prp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="prpForm" class="prp-modal__body" novalidate>
+            <div class="prp-field">
+                <label for="pId">Producto *</label>
+                <select id="pId" name="idProduct" required>
+                    @foreach (var p in (IEnumerable<dynamic>)Model.Productos)
+                    {
+                        <option value="@p.IdProduct">@p.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="prp-field">
+                <label for="sId">Proveedor *</label>
+                <select id="sId" name="idSupplier" required>
+                    @foreach (var s in (IEnumerable<dynamic>)Model.Proveedores)
+                    {
+                        <option value="@s.IdSupplier">@s.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="prp-field">
+                <label for="cost">Costo *</label>
+                <input type="number" step="0.01" min="0" id="cost" name="cost" required />
+            </div>
+            <label class="prp-check">
+                <input type="checkbox" id="isMain" name="isMain" />
+                <span>Proveedor principal</span>
+            </label>
         </form>
-        <div class="prp-modal__footer"><button class="prp__btn" onclick="closeModal('prpModal')">Cancelar</button><button class="prp__btn prp__btn--primary" id="prpSaveBtn">Guardar</button></div>
+        <div class="prp-modal__footer">
+            <button type="button" class="prp__btn prp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="prp__btn prp__btn--primary" id="prpSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="prp-modal" id="prpConfirmModal" aria-hidden="true">
+    <div class="prp-modal__backdrop"></div>
+    <div class="prp-modal__dialog prp-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="prp-modal__header">
+            <h3>Confirmar</h3>
+            <button type="button" class="prp-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="prp-modal__body">
+            <p id="prpConfirmMessage">Desea eliminar esta asignacion?</p>
+        </div>
+        <div class="prp-modal__footer">
+            <button type="button" class="prp__btn prp__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="prp__btn prp__btn--danger" id="prpConfirmBtn">Eliminar</button>
+        </div>
     </div>
 </div>
 
@@ -50,6 +152,8 @@
     <script>
         window.prpUrls = {
             list: '@Url.Action("List", "ProductoProveedores")',
+            productFilters: '@Url.Action("ProductFilters", "ProductoProveedores")',
+            supplierFilters: '@Url.Action("SupplierFilters", "ProductoProveedores")',
             save: '@Url.Action("Save", "ProductoProveedores")',
             delete: '@Url.Action("Delete", "ProductoProveedores")'
         };

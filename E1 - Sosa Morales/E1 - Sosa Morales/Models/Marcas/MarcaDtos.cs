@@ -6,8 +6,9 @@ public class MarcaListItem
 {
     [Column("id_brand")] public int IdBrand { get; set; }
     [Column("name")] public string Name { get; set; } = string.Empty;
-    [Column("description")] public string Description { get; set; } = string.Empty;
+    [Column("description")] public string? Description { get; set; }
     [Column("status")] public byte Status { get; set; }
+    [Column("total_count")] public int TotalCount { get; set; }
 }
 
 public class MarcaDetail : MarcaListItem

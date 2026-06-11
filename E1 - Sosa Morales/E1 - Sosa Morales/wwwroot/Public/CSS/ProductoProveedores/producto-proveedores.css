@@ -60,6 +60,23 @@
     gap: 0.5rem;
 }
 
+.prp__filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.prp__filter-select {
+    min-width: 190px;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-dark, #0f172a);
+    font-size: 0.875rem;
+}
+
 .prp__btn {
     display: inline-flex;
     align-items: center;
@@ -218,8 +235,19 @@
 .prp__footer {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
     margin-top: 1rem;
     padding-top: 0.75rem;
+}
+
+.prp__page-size,
+.prp__pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted, #64748b);
+    font-size: 0.875rem;
 }
 
 .prp__page-size select {
@@ -289,11 +317,35 @@
     max-width: 800px;
 }
 
+.prp-modal__dialog--xs {
+    max-width: 380px;
+}
+
+.prp-modal__dialog--sm {
+    max-width: 520px;
+}
+
 .prp-modal__header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     padding: 1rem;
     border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.prp-modal__header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.prp-modal__close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted, #64748b);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .prp-modal__body {
@@ -325,6 +377,66 @@
         border: 1px solid var(--border, #e2e8f0);
         border-radius: 8px;
     }
+
+.prp-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-dark, #0f172a);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.prp-check input {
+    width: 16px;
+    height: 16px;
+}
+
+.prp-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.prp-tag--ok {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.prp-tag--muted {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.prp__loading-row td,
+.prp__empty-row td {
+    text-align: center;
+    color: var(--text-muted, #64748b);
+}
+
+@media (max-width: 720px) {
+    .prp__toolbar,
+    .prp__footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .prp__search-group,
+    .prp__filter-group,
+    .prp__actions {
+        max-width: none;
+        width: 100%;
+    }
+
+    .prp__actions .prp__btn {
+        width: 100%;
+    }
+}
 
 .prp-detail__row {
     display: flex;

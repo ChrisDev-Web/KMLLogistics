@@ -5,6 +5,7 @@ namespace E1___Sosa_Morales.Models.Productos;
 public class ProductoListItem
 {
     [Column("id_product")] public int IdProduct { get; set; }
+    [Column("photo")] public string? Photo { get; set; }
     [Column("name")] public string Name { get; set; } = string.Empty;
     [Column("category_name")] public string CategoryName { get; set; } = string.Empty;
     [Column("brand_name")] public string BrandName { get; set; } = string.Empty;
@@ -12,6 +13,7 @@ public class ProductoListItem
     [Column("profit_percentage")] public decimal ProfitPercentage { get; set; }
     [Column("sale_price")] public decimal SalePrice { get; set; }
     [Column("status")] public byte Status { get; set; }
+    [Column("total_count")] public int TotalCount { get; set; }
 }
 
 public class ProductoDetail
@@ -21,6 +23,7 @@ public class ProductoDetail
     [Column("id_brand")] public int IdBrand { get; set; }
     [Column("name")] public string Name { get; set; } = string.Empty;
     [Column("description")] public string? Description { get; set; }
+    [Column("photo")] public string? Photo { get; set; }
     [Column("cost")] public decimal Cost { get; set; }
     [Column("profit_percentage")] public decimal ProfitPercentage { get; set; }
     [Column("sale_price")] public decimal SalePrice { get; set; }

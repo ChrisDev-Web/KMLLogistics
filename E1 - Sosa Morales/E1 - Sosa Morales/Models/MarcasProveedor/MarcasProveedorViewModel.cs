@@ -18,4 +18,5 @@ public class SbrListItem
     public int IdBrand { get; set; }
     public string SupplierName { get; set; } = "";
     public string BrandName { get; set; } = "";
+    public int TotalCount { get; set; }
 }

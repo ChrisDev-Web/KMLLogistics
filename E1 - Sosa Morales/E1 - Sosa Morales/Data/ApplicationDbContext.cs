@@ -85,6 +85,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SupplierDistrictOption>().HasNoKey();
         modelBuilder.Entity<SupplierSpResult>().HasNoKey();
         modelBuilder.Entity<GeographyInfo>().HasNoKey();
+        modelBuilder.Entity<CatalogFilterOption>().HasNoKey();
         modelBuilder.Entity<JobPositionListItem>().HasNoKey();
         modelBuilder.Entity<JobPositionDetail>().HasNoKey();
         modelBuilder.Entity<JobPositionSpResult>().HasNoKey();

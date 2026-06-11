@@ -1,7 +1,8 @@
-﻿@model E1___Sosa_Morales.Models.MarcasProveedor.MarcasProveedorViewModel
+@model E1___Sosa_Morales.Models.MarcasProveedor.MarcasProveedorViewModel
 @{
     Layout = "_DashboardLayout";
-    ViewBag.PageTitle = "Marcas de Proveedor";
+    ViewBag.PageTitle = Model.Module.Title;
+    ViewBag.SidebarActive = Model.Module.SidebarActive;
 }
 
 @section Styles {
@@ -9,48 +10,88 @@
 }
 
 <partial name="_ModuleTabs" model="Model.Module" />
-<div class="tabs">
-    <button onclick="loadModule('/Categorias')">Categorías</button>
-    <button onclick="loadModule('/Marcas')">Marcas</button>
-    <button onclick="loadModule('/ProductoProveedores')">Producto proveedores</button>
-</div>
+
 <div class="sbr" id="sbrRoot">
     <div class="sbr__panel">
         <div class="sbr__toolbar">
-            <button type="button" class="sbr__btn sbr__btn--primary" id="sbrCreateBtn">
-                <i class="bi bi-plus-lg"></i> Asignar Marca
-            </button>
+            <div class="sbr__search-group">
+                <div class="sbr__search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="sbrSearchInput" placeholder="Buscar asignaciones" autocomplete="off" />
+                </div>
+                <button type="button" class="sbr__btn sbr__btn--ghost" id="sbrClearSearchBtn">Limpiar</button>
+            </div>
+            <div class="sbr__filter-group">
+                <select id="sbrBrandFilter" class="sbr__filter-select">
+                    <option value="">Todas las marcas</option>
+                </select>
+                <select id="sbrSupplierFilter" class="sbr__filter-select">
+                    <option value="">Todos los proveedores</option>
+                </select>
+            </div>
+            <div class="sbr__actions">
+                <button type="button" class="sbr__btn sbr__btn--primary" id="sbrCreateBtn">
+                    <i class="bi bi-plus-lg"></i> Crear
+                </button>
+            </div>
         </div>
+
         @Html.AntiForgeryToken()
-        <table class="sbr__table">
-            <thead>
-                <tr>
-                    <th>PROVEEDOR</th>
-                    <th>MARCA</th>
-                    <th>ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody id="sbrBody"></tbody>
-        </table>
+        <div id="sbrToast" class="sbr__toast" role="status" aria-live="polite"></div>
+
+        <div class="sbr__table-scroll" id="sbrTableScroll">
+            <table class="sbr__table">
+                <thead>
+                    <tr>
+                        <th>PROVEEDOR</th>
+                        <th>MARCA</th>
+                        <th class="sbr__th-actions">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="sbrBody">
+                    <tr class="sbr__loading-row"><td colspan="3">Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sbr__footer">
+            <div class="sbr__page-size">
+                <span>Mostrar</span>
+                <select id="sbrPageSize">
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <span>registros</span>
+            </div>
+            <div class="sbr__pagination">
+                <span id="sbrPageInfo">Pagina 1 de 1</span>
+                <button type="button" class="sbr__btn sbr__btn--ghost" id="sbrPrevBtn" disabled>Anterior</button>
+                <button type="button" class="sbr__btn sbr__btn--ghost" id="sbrNextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="sbr-modal" id="sbrModal">
-    <div class="sbr-modal__backdrop" onclick="closeModal('sbrModal')"></div>
-    <div class="sbr-modal__dialog">
-        <div class="sbr-modal__header"><h3>Asignar Marca a Proveedor</h3></div>
-        <form id="sbrForm" class="sbr-modal__body">
+<div class="sbr-modal" id="sbrModal" aria-hidden="true">
+    <div class="sbr-modal__backdrop"></div>
+    <div class="sbr-modal__dialog" role="dialog" aria-modal="true">
+        <div class="sbr-modal__header">
+            <h3>Asignar Marca</h3>
+            <button type="button" class="sbr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="sbrForm" class="sbr-modal__body" novalidate>
             <div class="sbr-field">
-                <label>Proveedor</label>
+                <label for="sId">Proveedor *</label>
                 <select id="sId" name="idSupplier" required>
                     @foreach (var s in Model.Proveedores)
                     {
                         <option value="@s.IdSupplier">@s.Name</option>
-                    }   
+                    }
                 </select>
             </div>
             <div class="sbr-field">
-                <label>Marca</label>
+                <label for="bId">Marca *</label>
                 <select id="bId" name="idBrand" required>
                     @foreach (var b in Model.Marcas)
                     {
@@ -60,16 +101,35 @@
             </div>
         </form>
         <div class="sbr-modal__footer">
-            <button class="sbr__btn" onclick="closeModal('sbrModal')">Cancelar</button>
-            <button class="sbr__btn sbr__btn--primary" id="sbrSaveBtn">Guardar</button>
+            <button type="button" class="sbr__btn sbr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="sbr__btn sbr__btn--primary" id="sbrSaveBtn">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="sbr-modal" id="sbrConfirmModal" aria-hidden="true">
+    <div class="sbr-modal__backdrop"></div>
+    <div class="sbr-modal__dialog sbr-modal__dialog--xs" role="dialog" aria-modal="true">
+        <div class="sbr-modal__header">
+            <h3>Confirmar</h3>
+            <button type="button" class="sbr-modal__close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="sbr-modal__body">
+            <p id="sbrConfirmMessage">Desea eliminar esta asignacion?</p>
+        </div>
+        <div class="sbr-modal__footer">
+            <button type="button" class="sbr__btn sbr__btn--ghost" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="sbr__btn sbr__btn--danger" id="sbrConfirmBtn">Eliminar</button>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        const sbrUrls = {
+        window.sbrUrls = {
             list: '@Url.Action("List", "MarcasProveedor")',
+            brandFilters: '@Url.Action("BrandFilters", "MarcasProveedor")',
+            supplierFilters: '@Url.Action("SupplierFilters", "MarcasProveedor")',
             save: '@Url.Action("Save", "MarcasProveedor")',
             delete: '@Url.Action("Delete", "MarcasProveedor")'
         };

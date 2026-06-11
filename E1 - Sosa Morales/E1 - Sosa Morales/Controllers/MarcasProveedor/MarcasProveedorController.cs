@@ -4,9 +4,11 @@ using E1___Sosa_Morales.Models.MarcasProveedor;
 using E1___Sosa_Morales.Services.MarcasProveedor;
 using E1___Sosa_Morales.Services.Proveedores;
 using E1___Sosa_Morales.Services.Marcas;
+using Microsoft.AspNetCore.Authorization;
 
 namespace E1___Sosa_Morales.Controllers.MarcasProveedor;
 
+[Authorize]
 public class MarcasProveedorController : Controller
 {
     private readonly ISbrService _sbrService;
@@ -20,20 +22,38 @@ public class MarcasProveedorController : Controller
 
     public async Task<IActionResult> Index() => View(new MarcasProveedorViewModel
     {
-        Module = ModuleRegistry.BuildModuleView("Logística", "Marcas Proveedor", "logistica"),
+        Module = ModuleRegistry.BuildModuleView("Catalogo", "MarcasProveedor", "productos"),
         Proveedores = (await _supService.ListActiveAsync(null, null, null, 1, 1000)).Items,
-        Marcas = await _marcaService.ListActiveAsync(null)
+        Marcas = (await _marcaService.ListActiveAsync(null, 1, 50)).Items
     });
 
-    [HttpGet] public async Task<IActionResult> List() => Json(new { items = await _sbrService.ListAsync(null) });
+    [HttpGet]
+    public async Task<IActionResult> List(string? search, int? idBrand, int? idSupplier, int page = 1, int pageSize = 10)
+    {
+        return Json(await _sbrService.ListAsync(search, idBrand, idSupplier, page, pageSize));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> BrandFilters()
+        => Json(new { items = await _sbrService.GetBrandFilterOptionsAsync() });
+
+    [HttpGet]
+    public async Task<IActionResult> SupplierFilters()
+        => Json(new { items = await _sbrService.GetSupplierFilterOptionsAsync() });
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(int idSupplier, int idBrand)
-        => Json(await _sbrService.CreateAsync(idSupplier, idBrand));
+    {
+        var (success, message) = await _sbrService.CreateAsync(idSupplier, idBrand);
+        return Json(new { success, message });
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int idSupplier, int idBrand)
-        => Json(await _sbrService.DeleteAsync(idSupplier, idBrand));
+    {
+        var (success, message) = await _sbrService.DeleteAsync(idSupplier, idBrand);
+        return Json(new { success, message });
+    }
 }

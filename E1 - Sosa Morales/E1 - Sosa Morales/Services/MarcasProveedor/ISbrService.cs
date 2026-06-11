@@ -1,21 +1,13 @@
-﻿using E1___Sosa_Morales.Models.MarcasProveedor;
+using E1___Sosa_Morales.Models.MarcasProveedor;
+using E1___Sosa_Morales.Models.Shared;
 
 namespace E1___Sosa_Morales.Services.MarcasProveedor;
 
 public interface ISbrService
 {
-    /// <summary>
-    /// Lista todas las relaciones existentes entre proveedores y marcas.
-    /// </summary>
-    Task<List<SbrListItem>> ListAsync(string? search);
-
-    /// <summary>
-    /// Crea una nueva relación entre un proveedor y una marca.
-    /// </summary>
+    Task<CatalogPagedResult<SbrListItem>> ListAsync(string? search, int? idBrand = null, int? idSupplier = null, int page = 1, int pageSize = 10);
+    Task<List<CatalogFilterOption>> GetBrandFilterOptionsAsync();
+    Task<List<CatalogFilterOption>> GetSupplierFilterOptionsAsync();
     Task<(bool Success, string Message)> CreateAsync(int idSupplier, int idBrand);
-
-    /// <summary>
-    /// Elimina una relación específica entre un proveedor y una marca.
-    /// </summary>
     Task<(bool Success, string Message)> DeleteAsync(int idSupplier, int idBrand);
 }
