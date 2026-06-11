@@ -260,9 +260,7 @@ GO
    VEHICULOS
 ========================= */
 
-IF OBJECT_ID('dbo.sp_vehicle_list_active', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_list_active;
-GO
-CREATE PROCEDURE dbo.sp_vehicle_list_active
+CREATE OR ALTER PROCEDURE dbo.sp_vehicle_list_active
     @search VARCHAR(100) = NULL,
     @page INT = 1,
     @page_size INT = 10,
@@ -277,7 +275,13 @@ BEGIN
         vt.name AS VehicleTypeName,
         v.plate AS Plate,
         v.maximum_weight AS MaximumWeight,
-        v.maximum_volume AS MaximumVolume,
+        v.height AS Height,
+        v.width AS Width,
+        v.length AS Length,
+        COALESCE(
+            CAST(v.maximum_volume AS DECIMAL(18,2)),
+            NULLIF(TRY_CONVERT(DECIMAL(18,2), CAST(ISNULL(v.height, 0) AS FLOAT) * CAST(ISNULL(v.width, 0) AS FLOAT) * CAST(ISNULL(v.length, 0) AS FLOAT)), 0)
+        ) AS MaximumVolume,
         v.status AS Status,
         COUNT(*) OVER() AS TotalCount
     FROM Vehicles v
@@ -296,9 +300,7 @@ BEGIN
 END
 GO
 
-IF OBJECT_ID('dbo.sp_vehicle_list_inactive', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_list_inactive;
-GO
-CREATE PROCEDURE dbo.sp_vehicle_list_inactive
+CREATE OR ALTER PROCEDURE dbo.sp_vehicle_list_inactive
     @search VARCHAR(100) = NULL,
     @page INT = 1,
     @page_size INT = 10,
@@ -313,7 +315,13 @@ BEGIN
         vt.name AS VehicleTypeName,
         v.plate AS Plate,
         v.maximum_weight AS MaximumWeight,
-        v.maximum_volume AS MaximumVolume,
+        v.height AS Height,
+        v.width AS Width,
+        v.length AS Length,
+        COALESCE(
+            CAST(v.maximum_volume AS DECIMAL(18,2)),
+            NULLIF(TRY_CONVERT(DECIMAL(18,2), CAST(ISNULL(v.height, 0) AS FLOAT) * CAST(ISNULL(v.width, 0) AS FLOAT) * CAST(ISNULL(v.length, 0) AS FLOAT)), 0)
+        ) AS MaximumVolume,
         v.status AS Status,
         COUNT(*) OVER() AS TotalCount
     FROM Vehicles v
@@ -349,9 +357,7 @@ BEGIN
 END
 GO
 
-IF OBJECT_ID('dbo.sp_vehicle_get_by_id', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_get_by_id;
-GO
-CREATE PROCEDURE dbo.sp_vehicle_get_by_id
+CREATE OR ALTER PROCEDURE dbo.sp_vehicle_get_by_id
     @id_vehicle INT
 AS
 BEGIN
@@ -363,7 +369,13 @@ BEGIN
         vt.name AS VehicleTypeName,
         v.plate AS Plate,
         v.maximum_weight AS MaximumWeight,
-        v.maximum_volume AS MaximumVolume,
+        v.height AS Height,
+        v.width AS Width,
+        v.length AS Length,
+        COALESCE(
+            CAST(v.maximum_volume AS DECIMAL(18,2)),
+            NULLIF(TRY_CONVERT(DECIMAL(18,2), CAST(ISNULL(v.height, 0) AS FLOAT) * CAST(ISNULL(v.width, 0) AS FLOAT) * CAST(ISNULL(v.length, 0) AS FLOAT)), 0)
+        ) AS MaximumVolume,
         v.status AS Status,
         v.created_at AS CreatedAt,
         v.updated_at AS UpdatedAt
@@ -374,18 +386,20 @@ BEGIN
 END
 GO
 
-IF OBJECT_ID('dbo.sp_vehicle_create', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_create;
-GO
-CREATE PROCEDURE dbo.sp_vehicle_create
+CREATE OR ALTER PROCEDURE dbo.sp_vehicle_create
     @id_vehicle_type INT,
     @plate VARCHAR(20),
     @maximum_weight DECIMAL(10,2) = NULL,
-    @maximum_volume DECIMAL(10,2) = NULL
+    @height DECIMAL(10,2) = NULL,
+    @width DECIMAL(10,2) = NULL,
+    @length DECIMAL(10,2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SET @plate = UPPER(LTRIM(RTRIM(@plate)));
+    DECLARE @calculated_volume DECIMAL(10,2) =
+        NULLIF(TRY_CONVERT(DECIMAL(10,2), CAST(ISNULL(@height, 0) AS FLOAT) * CAST(ISNULL(@width, 0) AS FLOAT) * CAST(ISNULL(@length, 0) AS FLOAT)), 0);
 
     IF NOT EXISTS (
         SELECT 1 FROM VehicleTypes
@@ -408,8 +422,8 @@ BEGIN
         RETURN;
     END
 
-    INSERT INTO Vehicles (id_vehicle_type, plate, maximum_weight, maximum_volume)
-    VALUES (@id_vehicle_type, @plate, @maximum_weight, @maximum_volume);
+    INSERT INTO Vehicles (id_vehicle_type, plate, maximum_weight, height, width, length, maximum_volume)
+    VALUES (@id_vehicle_type, @plate, @maximum_weight, @height, @width, @length, @calculated_volume);
 
     SELECT
         1 AS Success,
@@ -418,19 +432,21 @@ BEGIN
 END
 GO
 
-IF OBJECT_ID('dbo.sp_vehicle_update', 'P') IS NOT NULL DROP PROCEDURE dbo.sp_vehicle_update;
-GO
-CREATE PROCEDURE dbo.sp_vehicle_update
+CREATE OR ALTER PROCEDURE dbo.sp_vehicle_update
     @id_vehicle INT,
     @id_vehicle_type INT,
     @plate VARCHAR(20),
     @maximum_weight DECIMAL(10,2) = NULL,
-    @maximum_volume DECIMAL(10,2) = NULL
+    @height DECIMAL(10,2) = NULL,
+    @width DECIMAL(10,2) = NULL,
+    @length DECIMAL(10,2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SET @plate = UPPER(LTRIM(RTRIM(@plate)));
+    DECLARE @calculated_volume DECIMAL(10,2) =
+        NULLIF(TRY_CONVERT(DECIMAL(10,2), CAST(ISNULL(@height, 0) AS FLOAT) * CAST(ISNULL(@width, 0) AS FLOAT) * CAST(ISNULL(@length, 0) AS FLOAT)), 0);
 
     IF NOT EXISTS (
         SELECT 1 FROM Vehicles
@@ -468,7 +484,10 @@ BEGIN
     SET id_vehicle_type = @id_vehicle_type,
         plate = @plate,
         maximum_weight = @maximum_weight,
-        maximum_volume = @maximum_volume,
+        height = @height,
+        width = @width,
+        length = @length,
+        maximum_volume = @calculated_volume,
         updated_at = GETDATE()
     WHERE id_vehicle = @id_vehicle
       AND deleted_at IS NULL;
