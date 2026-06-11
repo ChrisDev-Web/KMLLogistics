@@ -124,14 +124,26 @@ BEGIN
               AND status = 'ACTIVE'
         )
         BEGIN
+            RETURN;
+        END
+        ELSE IF EXISTS (
+            SELECT 1
+            FROM dbo.StockAlerts
+            WHERE id_warehouse_detail = @id_warehouse_detail
+              AND status = 'RESOLVED'
+        )
+        BEGIN
             UPDATE dbo.StockAlerts
             SET
+                status             = 'ACTIVE',
+                first_triggered_at = GETDATE(),
                 last_notified_at   = GETDATE(),
-                notification_count = notification_count + 1,
+                notification_count = 1,
                 last_sent_by_user  = NULL,
+                resolved_at        = NULL,
                 updated_at         = GETDATE()
             WHERE id_warehouse_detail = @id_warehouse_detail
-              AND status = 'ACTIVE';
+              AND status = 'RESOLVED';
         END
         ELSE
         BEGIN

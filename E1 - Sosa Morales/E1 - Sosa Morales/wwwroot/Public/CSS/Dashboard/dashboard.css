@@ -660,6 +660,33 @@ body.dashboard-body {
     max-width: min(22rem, calc(100vw - 2rem));
 }
 
+.global-alerts__close-all {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.global-alerts__close-all:hover {
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.global-alerts__close-all[hidden] {
+    display: none;
+}
+
 .global-alert {
     display: flex;
     align-items: flex-start;

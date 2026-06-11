@@ -249,6 +249,12 @@
                     showToast(data.message, data.success ? 'success' : 'error');
                     if (!data.success) return;
 
+                    if (data.notification &&
+                        window.kmlGlobalAlerts &&
+                        typeof window.kmlGlobalAlerts.showImmediately === 'function') {
+                        window.kmlGlobalAlerts.showImmediately(data.notification);
+                    }
+
                     if (data.message.indexOf('cerr') !== -1) {
                         if (row) row.remove();
                         loadList();

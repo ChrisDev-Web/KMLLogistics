@@ -115,7 +115,21 @@ public class AlertasStockController : Controller
             return Json(new { success = false, message = "Usuario no identificado." });
 
         var (success, message) = await _stockAlertService.ResendAsync(kind, id, userId);
-        return Json(new { success, message });
+        AlertNotificationItem? notification = null;
+
+        if (success && !message.Contains("cerr", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalizedKind = string.Equals(kind, "LOGISTICS", StringComparison.OrdinalIgnoreCase)
+                ? "LOGISTICS"
+                : "STOCK";
+
+            var feed = await _stockAlertService.GetNotificationFeedAsync();
+            notification = feed.FirstOrDefault(item =>
+                item.Id == id &&
+                string.Equals(item.Kind, normalizedKind, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return Json(new { success, message, notification });
     }
 
     private static string NormalizeStatus(string? status)
